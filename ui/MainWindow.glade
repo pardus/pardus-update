@@ -1219,6 +1219,7 @@ Fatih Altun</property>
                             <property name="receives-default">True</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
+                            <signal name="clicked" handler="on_ui_fix_button_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1281,6 +1282,7 @@ Use with caution. Are you sure you want to continue?</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_ui_fixcancel_button_clicked" swapped="no"/>
                                 <style>
                                   <class name="destructive-action"/>
                                 </style>
@@ -1297,6 +1299,7 @@ Use with caution. Are you sure you want to continue?</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_ui_fixaccept_button_clicked" swapped="no"/>
                                 <style>
                                   <class name="suggested-action"/>
                                 </style>
@@ -1359,6 +1362,7 @@ Use with caution. Are you sure you want to continue?</property>
                                 <property name="receives-default">True</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
+                                <signal name="clicked" handler="on_ui_fixcompleted_button_clicked" swapped="no"/>
                                 <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
