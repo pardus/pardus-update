@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-17 15:34+0300\n"
+"POT-Creation-Date: 2023-08-17 18:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,7 @@ msgid "Newly Installed"
 msgstr ""
 
 #: ui/MainWindow.glade:218
-msgid "Remove"
+msgid "To Remove"
 msgstr ""
 
 #: ui/MainWindow.glade:245
@@ -97,7 +97,7 @@ msgstr ""
 msgid "Your system is up to date."
 msgstr ""
 
-#: ui/MainWindow.glade:898 src/MainWindow.py:217
+#: ui/MainWindow.glade:898 src/MainWindow.py:239
 msgid "Check Updates"
 msgstr ""
 
@@ -121,110 +121,102 @@ msgstr ""
 msgid "Never"
 msgstr ""
 
-#: ui/MainWindow.glade:984
-msgid "30"
-msgstr ""
-
-#: ui/MainWindow.glade:985
-msgid "Seconds"
-msgstr ""
-
-#: ui/MainWindow.glade:1002
+#: ui/MainWindow.glade:984 ui/MainWindow.glade:1001
 msgid "seconds"
 msgstr ""
 
-#: ui/MainWindow.glade:1041
+#: ui/MainWindow.glade:1040
 msgid "Last Update Check Date:"
 msgstr ""
 
-#: ui/MainWindow.glade:1079
+#: ui/MainWindow.glade:1078
 msgid "Launch at Startup:"
 msgstr ""
 
-#: ui/MainWindow.glade:1148 src/MainWindow.py:344
+#: ui/MainWindow.glade:1147 src/MainWindow.py:366
 msgid "Home Page"
 msgstr ""
 
-#: ui/MainWindow.glade:1299 src/MainWindow.py:325 src/MainWindow.py:340
+#: ui/MainWindow.glade:1298 src/MainWindow.py:347 src/MainWindow.py:362
 msgid "Settings"
 msgstr ""
 
-#: ui/MainWindow.glade:1355
+#: ui/MainWindow.glade:1354
 msgid "About"
 msgstr ""
 
-#: ui/MainWindow.glade:1407
+#: ui/MainWindow.glade:1406
 msgid "Package configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:1426
+#: ui/MainWindow.glade:1425
 msgid "Use new configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:1442
+#: ui/MainWindow.glade:1441
 msgid "Use old configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:1458
+#: ui/MainWindow.glade:1457
 msgid "Ask me what to do"
 msgstr ""
 
-#: ui/MainWindow.glade:1484
+#: ui/MainWindow.glade:1483
 msgid "Interaction"
 msgstr ""
 
-#: ui/MainWindow.glade:1503
+#: ui/MainWindow.glade:1502
 msgid "Start process (with -yq option)"
 msgstr ""
 
-#: ui/MainWindow.glade:1519
+#: ui/MainWindow.glade:1518
 msgid "Ask me before starting the process (without -yq)"
 msgstr ""
 
-#: ui/MainWindow.glade:1570
+#: ui/MainWindow.glade:1569
 msgid "Restore Defaults"
 msgstr ""
 
-#: src/MainWindow.py:61 src/MainWindow.py:214
+#: src/MainWindow.py:68 src/MainWindow.py:236
 msgid "Pardus Update"
 msgstr ""
 
-#: src/MainWindow.py:175
+#: src/MainWindow.py:190
 msgid "Copy selected text"
 msgstr ""
 
-#: src/MainWindow.py:224
+#: src/MainWindow.py:246
 msgid "Quit"
 msgstr ""
 
-#: src/MainWindow.py:228 src/MainWindow.py:571
+#: src/MainWindow.py:250 src/MainWindow.py:593
 msgid "Last Check"
 msgstr ""
 
-#: src/MainWindow.py:241 src/MainWindow.py:258
+#: src/MainWindow.py:263 src/MainWindow.py:280
 msgid "Hide App"
 msgstr ""
 
-#: src/MainWindow.py:243 src/MainWindow.py:255 src/MainWindow.py:421
+#: src/MainWindow.py:265 src/MainWindow.py:277 src/MainWindow.py:443
 msgid "Show App"
 msgstr ""
 
-#: src/MainWindow.py:318
+#: src/MainWindow.py:340
 msgid "Package manager is busy, try again later."
 msgstr ""
 
-#: src/MainWindow.py:586 src/MainWindow.py:592
+#: src/MainWindow.py:608 src/MainWindow.py:614
 msgid "Software Update"
 msgstr ""
 
-#: src/MainWindow.py:587
+#: src/MainWindow.py:609
 msgid "There are {} software updates available."
 msgstr ""
 
-#: src/MainWindow.py:593
+#: src/MainWindow.py:615
 msgid "There is {} software update available."
 msgstr ""
 
-#: src/MainWindow.py:696
+#: src/MainWindow.py:719
 msgid "Process completed."
 msgstr ""
