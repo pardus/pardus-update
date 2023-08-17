@@ -215,7 +215,7 @@ Fatih Altun</property>
                           </object>
                           <packing>
                             <property name="name">removable</property>
-                            <property name="title" translatable="yes">Remove</property>
+                            <property name="title" translatable="yes">To Remove</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
