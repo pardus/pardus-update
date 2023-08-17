@@ -284,7 +284,7 @@ class MainWindow(object):
         if self.autoupdate_glibid:
             GLib.source_remove(self.autoupdate_glibid)
             self.autoupdate_glibid = None
-        self.aptUpdate(force=False)
+        self.aptUpdate(force=True)
 
     def on_ui_upgradeinfoback_button_clicked(self, button):
         self.ui_main_stack.set_visible_child_name("updateinfo")
