@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933333"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   sodipodi:docname="pardus-update.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="2.3307343"
+     inkscape:cx="32.607749"
+     inkscape:cy="21.023417"
+     inkscape:window-width="1540"
+     inkscape:window-height="830"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="SVGID_00000129901450951144020920000007753056098303935627_"
+       gradientUnits="userSpaceOnUse"
+       x1="-434.02811"
+       y1="-74.135002"
+       x2="-434.02811"
+       y2="-49.8008"
+       gradientTransform="matrix(1,0,0,-1,0,-121.5918)">
+      <stop
+         offset="0"
+         style="stop-color:#27AFD9"
+         id="stop80" />
+      <stop
+         offset="1"
+         style="stop-color:#42BDD9"
+         id="stop81" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g2"
+       transform="matrix(1.3559798,0,0,1.3559798,-3.0139622,-3.0139622)">
+      <g
+         id="g1">
+        <path
+           class="st0"
+           d="M 12.594167,2.4077082 H 4.3656252 c -0.9789583,0.079375 -1.74625,0.873125 -1.825625,1.825625 v 8.4137498 c 0.079375,1.031875 0.873125,1.799167 1.8785417,1.878542 h 0.052917 l 8.0697911,-0.02646 c 1.031875,-0.05292 1.852083,-0.899583 1.852083,-1.931458 V 4.2862498 c 0,-1.0054166 -0.767291,-1.825625 -1.799166,-1.8785416 z"
+           id="path2"
+           style="opacity:0.3;fill:#ffffff;stroke-width:0.264583;enable-background:new" />
+        <path
+           class="st1"
+           d="m 4.4714585,14.393333 h -0.052917 c -0.9260417,-0.05292 -1.666875,-0.79375 -1.74625,-1.74625 v -0.05292 -8.3079162 -0.052917 c 0.052917,-0.8995834 0.79375,-1.6139584 1.6933333,-1.6933334 h 0.052917 8.1756252 c 0.926041,0.052917 1.666875,0.8202084 1.666875,1.74625 v 8.2814586 c 0,0.9525 -0.740834,1.74625 -1.719792,1.799167 h -0.02646 z"
+           id="path3"
+           style="fill:#ffffff;stroke-width:0.264583;enable-background:new" />
+        <path
+           class="st12"
+           d="m 4.4714585,14.393333 h -0.052917 c -0.9260417,-0.05292 -1.666875,-0.79375 -1.74625,-1.74625 v -0.05292 -8.3079162 -0.052917 c 0.052917,-0.8995834 0.79375,-1.6139584 1.6933333,-1.6933334 h 0.052917 8.1756252 c 0.926041,0.052917 1.666875,0.8202084 1.666875,1.74625 v 8.2814586 c 0,0.9525 -0.740834,1.74625 -1.719792,1.799167 h -0.02646 z"
+           id="path74"
+           style="opacity:0.3;fill:#bbd8e8;stroke-width:0.264583;enable-background:new" />
+        <g
+           id="g75"
+           transform="matrix(0.26458333,0,0,0.26458333,-38.179374,24.817916)">
+          <path
+             class="st2"
+             d="M 161.2,-39.4 H 161 c -3.5,-0.2 -6.3,-3 -6.6,-6.6 v -0.2 -31.4 -0.2 c 0.2,-3.4 3,-6.1 6.4,-6.4 h 0.2 30.9 c 3.5,0.2 6.3,3.1 6.3,6.6 v 31.3 c 0,3.6 -2.8,6.6 -6.5,6.8 h -0.1 z m 0,-2.1 h 30.4 c 2.5,-0.2 4.5,-2.2 4.5,-4.7 v -31.3 c 0,-2.4 -1.9,-4.3 -4.3,-4.5 H 191.7 161 c -2.3,0.2 -4.2,2 -4.4,4.4 v 0.1 31.5 c 0.1,2.4 2.1,4.3 4.6,4.5 z"
+             id="path75"
+             style="fill:#2f3536" />
+        </g>
+        <polygon
+           class="st25"
+           points="187.2,-58.6 176.3,-77.5 165.4,-58.6 171.9,-58.6 171.9,-45.5 180.7,-45.5 180.7,-58.6 "
+           id="polygon110"
+           style="fill:#36b7d9;fill-opacity:1"
+           transform="matrix(0.26458333,0,0,0.26458333,-38.179374,24.817916)" />
+        <path
+           class="st10"
+           d="M 9.7631254,12.911666 H 7.1702088 V 9.4456245 H 5.3445838 L 8.4666671,4.0481246 11.58875,9.4456245 H 9.7631254 Z M 7.4347921,12.647083 h 2.06375 V 9.1810412 H 11.138959 L 8.4666671,4.5772913 5.7943754,9.1810412 h 1.6139584 v 3.4660418 z"
+           id="path110"
+           style="fill:#ffffff;stroke-width:0.264583" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Pardus Update
+Name[tr]=Pardus Güncelleyici
+Comment=Simple update application
+Comment[tr]=Basit güncelleme uygulaması
+Exec=pardus-update --tray
+Icon=pardus-update
+Terminal=false
+Type=Application
+Categories=GTK;System;X-Pardus-Apps;
+StartupNotify=true
+Keywords=apt;update;upgrade
