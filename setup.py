@@ -50,7 +50,8 @@ data_files = [
       "data/pardus-update-available-symbolic.svg",
       "data/pardus-update-error-symbolic.svg",
       "data/pardus-update-inprogress-symbolic.svg",
-      "data/pardus-update-symbolic.svg"]),
+      "data/pardus-update-symbolic.svg",
+      "data/pardus-update-uptodate.svg"]),
     ("/usr/share/polkit-1/actions",
       ["data/tr.org.pardus.pkexec.pardus-update.policy"]),
     ("/etc/skel/.config/autostart",
@@ -60,7 +61,8 @@ data_files = [
       "data/pardus-update-available-symbolic.svg",
       "data/pardus-update-error-symbolic.svg",
       "data/pardus-update-inprogress-symbolic.svg",
-      "data/pardus-update-symbolic.svg"])
+      "data/pardus-update-symbolic.svg",
+      "data/pardus-update-uptodate.svg"])
 ] + create_mo_files()
 
 setup(

@@ -17,7 +17,7 @@ gi.require_version("GLib", "2.0")
 gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")
 gi.require_version("Notify", "0.7")
-from gi.repository import Gtk, GObject, Gdk, GLib, Pango, Vte, Notify
+from gi.repository import Gtk, GObject, Gdk, GLib, Pango, Vte, Notify, GdkPixbuf
 
 try:
     gi.require_version('AppIndicator3', '0.1')
@@ -136,6 +136,7 @@ class MainWindow(object):
         self.ui_upgradeoptions_button = self.GtkBuilder.get_object("ui_upgradeoptions_button")
         self.ui_upgrade_buttonbox = self.GtkBuilder.get_object("ui_upgrade_buttonbox")
         self.ui_upgrade_buttonbox.set_homogeneous(False)
+        self.ui_uptodate_image = self.GtkBuilder.get_object("ui_uptodate_image")
 
         self.ui_menu_popover = self.GtkBuilder.get_object("ui_menu_popover")
         self.ui_menusettings_image = self.GtkBuilder.get_object("ui_menusettings_image")
@@ -246,6 +247,9 @@ class MainWindow(object):
             self.main_window.set_default_icon_from_file(
                 os.path.dirname(os.path.abspath(__file__)) + "/../data/pardus-update.svg")
             self.about_dialog.set_logo(None)
+            self.ui_uptodate_image.set_from_pixbuf(
+                GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    os.path.dirname(os.path.abspath(__file__)) + "/../data/pardus-update-uptodate.svg", 288, 288))
 
     def init_indicator(self):
         self.indicator = appindicator.Indicator.new(
