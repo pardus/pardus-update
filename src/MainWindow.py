@@ -99,6 +99,7 @@ class MainWindow(object):
             self.isbroken = True
             print("Error while updating Cache")
         print("package completed")
+        print("broken: {}".format(self.isbroken))
 
     def aptUpdate(self, force=False):
         print("in aptUpdate")
@@ -183,6 +184,12 @@ class MainWindow(object):
         self.ui_upgradeinfoback_button = self.GtkBuilder.get_object("ui_upgradeinfoback_button")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
 
+
+        self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
+        self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
+        self.ui_fix_spinner = self.GtkBuilder.get_object("ui_fix_spinner")
+        self.ui_fixvte_sw = self.GtkBuilder.get_object("ui_fixvte_sw")
+
         # upgrade vte box
         self.upgrade_vteterm = Vte.Terminal()
         self.upgrade_vteterm.set_scrollback_lines(-1)
@@ -193,6 +200,17 @@ class MainWindow(object):
         upgrade_vte_menu_items.show()
         self.upgrade_vteterm.connect_object("event", self.upgrade_vte_event, upgrade_vte_menu)
         self.ui_upgradevte_sw.add(self.upgrade_vteterm)
+
+        # fix apt vte box
+        self.fix_vteterm = Vte.Terminal()
+        self.fix_vteterm.set_scrollback_lines(-1)
+        fix_vte_menu = Gtk.Menu()
+        fix_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        fix_vte_menu.append(fix_vte_menu_items)
+        fix_vte_menu_items.connect("activate", self.fix_vte_menu_action, self.fix_vteterm)
+        fix_vte_menu_items.show()
+        self.fix_vteterm.connect_object("event", self.fix_vte_event, fix_vte_menu)
+        self.ui_fixvte_sw.add(self.fix_vteterm)
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -438,6 +456,24 @@ class MainWindow(object):
             self.UserSettings.writeConfig(self.UserSettings.config_interval, self.UserSettings.config_lastupdate, state)
             self.user_settings()
 
+    def on_ui_fix_button_clicked(self, button):
+        self.ui_fix_stack.set_visible_child_name("info")
+
+    def on_ui_fixaccept_button_clicked(self, button):
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                   "fixapt"]
+        self.ui_fix_stack.set_visible_child_name("main")
+        self.ui_fix_button.set_sensitive(False)
+        self.ui_fix_spinner.start()
+        self.fix_vte_start_process(command)
+
+    def on_ui_fixcancel_button_clicked(self, button):
+        self.ui_fix_stack.set_visible_child_name("main")
+
+    def on_ui_fixcompleted_button_clicked(self, button):
+        self.ui_main_stack.set_visible_child_name("spinner")
+        self.aptUpdate(force=True)
+
     def on_ui_main_window_delete_event(self, widget, event):
         self.main_window.hide()
         self.item_sh_app.set_label(_("Show App"))
@@ -598,28 +634,31 @@ class MainWindow(object):
             self.autoupdate_glibid = GLib.timeout_add_seconds(self.UserSettings.config_interval, self.aptUpdate)
 
     def set_upgradable_page_and_notify(self):
-        upgradable = self.Package.upgradable()
-        if upgradable:
-            self.control_required_changes()
-            self.indicator.set_icon(self.icon_available)
-            if self.ui_main_stack.get_visible_child_name() == "spinner":
-                self.ui_main_stack.set_visible_child_name("updateinfo")
-            if len(upgradable) > 1:
-                notification = Notification(summary=_("Software Update"),
-                                            body=_("There are {} software updates available.".format(len(upgradable))),
-                                            icon=self.icon_available, appid=self.Application.get_application_id())
-                notification.show()
 
-            else:
-                notification = Notification(summary=_("Software Update"),
-                                            body=_("There is {} software update available.".format(len(upgradable))),
-                                            icon=self.icon_available, appid=self.Application.get_application_id())
-                notification.show()
+        if self.isbroken:
+            self.ui_main_stack.set_visible_child_name("fix")
+            self.indicator.set_icon(self.icon_error)
         else:
-            self.ui_main_stack.set_visible_child_name("ok")
-            self.indicator.set_icon(self.icon_normal)
+            upgradable = self.Package.upgradable()
+            if upgradable:
+                self.control_required_changes()
+                self.indicator.set_icon(self.icon_available)
+                if self.ui_main_stack.get_visible_child_name() == "spinner":
+                    self.ui_main_stack.set_visible_child_name("updateinfo")
+                if len(upgradable) > 1:
+                    notification = Notification(summary=_("Software Update"),
+                                                body=_("There are {} software updates available.".format(len(upgradable))),
+                                                icon=self.icon_available, appid=self.Application.get_application_id())
+                    notification.show()
 
-
+                else:
+                    notification = Notification(summary=_("Software Update"),
+                                                body=_("There is {} software update available.".format(len(upgradable))),
+                                                icon=self.icon_available, appid=self.Application.get_application_id())
+                    notification.show()
+            else:
+                self.ui_main_stack.set_visible_child_name("ok")
+                self.indicator.set_icon(self.icon_normal)
 
     def startAptUpdateProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
@@ -721,6 +760,67 @@ class MainWindow(object):
             GLib.idle_add(self.ui_upgradeinfoback_button.set_visible, False)
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
         self.upgrade_inprogress = False
+
+    def fix_vte_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            if event.button.button == 3:
+                widget.popup_for_device(None, None, None, None, None,
+                                        event.button.button, event.time)
+                return True
+        return False
+
+    def fix_vte_menu_action(self, widget, terminal):
+        terminal.copy_clipboard()
+
+    def fix_vte_start_process(self, command):
+        pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
+        self.fix_vteterm.set_pty(pty)
+        try:
+            self.fix_vteterm.spawn_async(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                None,
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+                -1,
+                None,
+                self.fix_vte_create_spawn_callback,
+                None
+            )
+        except Exception as e:
+            # old version VTE doesn't have spawn_async so use spawn_sync
+            print("{}".format(e))
+            self.fix_vteterm.connect("child-exited", self.fix_vte_on_done)
+            self.fix_vteterm.spawn_sync(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                [],
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+            )
+
+    def fix_vte_create_spawn_callback(self, terminal, pid, error, userdata):
+        self.fix_vteterm.connect("child-exited", self.fix_vte_on_done)
+
+    def fix_vte_on_done(self, terminal, status):
+        print("fix_vte_on_done status: {}".format(status))
+        self.ui_fix_spinner.stop()
+        self.ui_fix_button.set_sensitive(True)
+        if status == 0:
+            self.Package = Package()
+            if self.Package.updatecache():
+                self.ui_fix_stack.set_visible_child_name("done")
+                self.isbroken = False
+                self.indicator.set_icon(self.icon_normal)
+            else:
+                self.ui_fix_stack.set_visible_child_name("error")
+                self.isbroken = True
+                print("Error while updating cache on fix_vte_on_done")
+
 
 
 class Notification(GObject.GObject):
