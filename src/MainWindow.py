@@ -651,13 +651,13 @@ class MainWindow(object):
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                 if len(upgradable) > 1:
                     notification = Notification(summary=_("Software Update"),
-                                                body=_("There are {} software updates available.".format(len(upgradable))),
+                                                body=_("There are {} software updates available.").format(len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
 
                 else:
                     notification = Notification(summary=_("Software Update"),
-                                                body=_("There is {} software update available.".format(len(upgradable))),
+                                                body=_("There is {} software update available.").format(len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
             else:
