@@ -130,6 +130,7 @@ class MainWindow(object):
     def define_components(self):
         self.main_window = self.GtkBuilder.get_object("ui_main_window")
         self.about_dialog = self.GtkBuilder.get_object("ui_about_dialog")
+        self.ui_quit_dialog = self.GtkBuilder.get_object("ui_quit_dialog")
         self.ui_main_stack = self.GtkBuilder.get_object("ui_main_stack")
         self.ui_upgrade_button = self.GtkBuilder.get_object("ui_upgrade_button")
         self.ui_versionupgrade_button = self.GtkBuilder.get_object("ui_versionupgrade_button")
@@ -312,7 +313,7 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("updateinfo")
 
     def on_ui_upgradeinfook_button_clicked(self, button):
-        if self.Package.upgradable() and not self.keep_ok_clicked:
+        if self.Package.upgradable():
             self.aptUpdate()
         else:
             self.ui_main_stack.set_visible_child_name("ok")
@@ -478,13 +479,24 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("spinner")
         self.aptUpdate(force=True)
 
+    def on_ui_quitdialogyes_button_clicked(self, button):
+        self.ui_quit_dialog.hide()
+        self.main_window.get_application().quit()
+
+    def on_ui_quitdialogno_button_clicked(self, button):
+        self.ui_quit_dialog.hide()
+
     def on_ui_main_window_delete_event(self, widget, event):
         self.main_window.hide()
         self.item_sh_app.set_label(_("Show App"))
         return True
 
     def on_menu_quit_app(self, *args):
-        self.main_window.get_application().quit()
+        if self.upgrade_inprogress:
+            self.ui_quit_dialog.run()
+            self.ui_quit_dialog.hide()
+        else:
+            self.main_window.get_application().quit()
 
     def control_required_changes(self):
         def start_thread():
@@ -841,7 +853,7 @@ class Notification(GObject.GObject):
         Notify.init(appid)
         self.notification = Notify.Notification.new(summary, body, icon)
         self.notification.set_timeout(Notify.EXPIRES_NEVER)
-        self.notification.add_action('update', 'Update', self.update_callback)
+        self.notification.add_action('update', _('Update'), self.update_callback)
         self.notification.connect('closed', self.on_closed)
 
     def show(self):
