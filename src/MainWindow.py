@@ -59,6 +59,7 @@ class MainWindow(object):
         self.define_components()
         self.define_variables()
         self.main_window.set_application(application)
+        self.control_display()
 
         self.user_settings()
         self.UserSettings.set_autostart(self.UserSettings.config_autostart)
@@ -231,6 +232,31 @@ class MainWindow(object):
         self.update_inprogress = False
         self.upgrade_inprogress = False
         self.laststack = None
+
+    def control_display(self):
+        width = 857
+        height = 657
+        s = 1
+        w = 1920
+        h = 1080
+        try:
+            display = Gdk.Display.get_default()
+            monitor = display.get_primary_monitor()
+            geometry = monitor.get_geometry()
+            w = geometry.width
+            h = geometry.height
+            s = Gdk.Monitor.get_scale_factor(monitor)
+
+            if w > 1920 or h > 1080:
+                width = int(w / 2.24)
+                height = int(h / 1.643)
+
+            self.main_window.resize(width, height)
+
+        except Exception as e:
+            print("Error in controlDisplay: {}".format(e))
+
+        print("window w:{} h:{} | monitor w:{} h:{} s:{}".format(width, height, w, h, s))
 
     def user_settings(self):
         self.UserSettings = UserSettings()
