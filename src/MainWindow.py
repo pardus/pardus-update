@@ -89,7 +89,7 @@ class MainWindow(object):
 
     def worker(self):
         self.package()
-        GLib.idle_add(self.aptUpdate)
+        GLib.idle_add(self.apt_update)
 
     def package(self):
         self.Package = Package()
@@ -102,8 +102,8 @@ class MainWindow(object):
         print("package completed")
         print("broken: {}".format(self.isbroken))
 
-    def aptUpdate(self, force=False):
-        print("in aptUpdate")
+    def apt_update(self, force=False):
+        print("in apt_update")
         if force:
             self.start_aptupdate()
             return
@@ -317,7 +317,7 @@ class MainWindow(object):
         if self.autoupdate_glibid:
             GLib.source_remove(self.autoupdate_glibid)
             self.autoupdate_glibid = None
-        self.aptUpdate(force=True)
+        self.apt_update(force=True)
 
     def on_menu_show_app(self, *args):
         window_state = self.main_window.is_visible()
@@ -333,14 +333,14 @@ class MainWindow(object):
         if self.autoupdate_glibid:
             GLib.source_remove(self.autoupdate_glibid)
             self.autoupdate_glibid = None
-        self.aptUpdate(force=True)
+        self.apt_update(force=True)
 
     def on_ui_upgradeinfoback_button_clicked(self, button):
         self.ui_main_stack.set_visible_child_name("updateinfo")
 
     def on_ui_upgradeinfook_button_clicked(self, button):
         if self.Package.upgradable():
-            self.aptUpdate()
+            self.apt_update()
         else:
             self.ui_main_stack.set_visible_child_name("ok")
 
@@ -503,7 +503,7 @@ class MainWindow(object):
 
     def on_ui_fixcompleted_button_clicked(self, button):
         self.ui_main_stack.set_visible_child_name("spinner")
-        self.aptUpdate(force=True)
+        self.apt_update(force=True)
 
     def on_ui_quitdialogyes_button_clicked(self, button):
         self.ui_quit_dialog.hide()
@@ -662,7 +662,7 @@ class MainWindow(object):
             self.startAptUpdateProcess(command)
             self.update_inprogress = True
         else:
-            print("aptUpdate: upgrade_inprogress | update_inprogress")
+            print("apt_update: upgrade_inprogress | update_inprogress")
 
     def update_lastcheck_labels(self):
         self.ui_settingslastupdate_label.set_markup("{}".format(
@@ -673,7 +673,7 @@ class MainWindow(object):
 
     def create_autoupdate_glibid(self):
         if self.UserSettings.config_interval != -1:
-            self.autoupdate_glibid = GLib.timeout_add_seconds(self.UserSettings.config_interval, self.aptUpdate)
+            self.autoupdate_glibid = GLib.timeout_add_seconds(self.UserSettings.config_interval, self.apt_update)
 
     def set_upgradable_page_and_notify(self):
 
