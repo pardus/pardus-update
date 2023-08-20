@@ -287,26 +287,49 @@ class MainWindow(object):
         self.indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
         self.indicator.set_title(_("Pardus Update"))
         self.menu = Gtk.Menu()
+
         self.item_update = Gtk.MenuItem()
         self.item_update.set_label(_("Check Updates"))
         self.item_update.connect("activate", self.on_menu_update)
+
         self.item_sh_app = Gtk.MenuItem()
         self.item_sh_app.connect("activate", self.on_menu_show_app)
+
         self.item_separator1 = Gtk.SeparatorMenuItem()
         self.item_separator2 = Gtk.SeparatorMenuItem()
+        self.item_separator3 = Gtk.SeparatorMenuItem()
+
         self.item_quit = Gtk.MenuItem()
         self.item_quit.set_label(_("Quit"))
         self.item_quit.connect('activate', self.on_menu_quit_app)
+
         self.item_lastcheck = Gtk.MenuItem()
         self.item_lastcheck.set_sensitive(False)
         self.item_lastcheck.set_label("{}: {}".format(_("Last Check"),
                                                       datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
+
+        self.item_settings = Gtk.MenuItem()
+        self.item_settings.set_label(_("Settings"))
+        self.item_settings.connect('activate', self.on_menu_settings_app)
+
+        self.item_systemstatus = Gtk.MenuItem()
+        self.item_systemstatus.set_label(_("System is Up to Date"))
+        self.item_systemstatus.set_sensitive(False)
+        self.item_systemstatus.connect('activate', self.on_menu_updatespage_app)
+
         self.menu.append(self.item_sh_app)
         self.menu.append(self.item_separator1)
+
+        self.menu.append(self.item_systemstatus)
+        self.menu.append(self.item_separator2)
+
         self.menu.append(self.item_update)
         self.menu.append(self.item_lastcheck)
-        self.menu.append(self.item_separator2)
+        self.menu.append(self.item_separator3)
+
+        self.menu.append(self.item_settings)
         self.menu.append(self.item_quit)
+
         self.menu.show_all()
         self.indicator.set_menu(self.menu)
 
@@ -330,6 +353,39 @@ class MainWindow(object):
         else:
             self.main_window.set_visible(True)
             self.item_sh_app.set_label(_("Hide App"))
+
+    def on_menu_settings_app(self, *args):
+
+        if self.ui_main_stack.get_visible_child_name() != "settings":
+            self.laststack = self.ui_main_stack.get_visible_child_name()
+
+        self.ui_menusettings_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menusettings_label.set_text(_("Home Page"))
+        self.ui_main_stack.set_visible_child_name("settings")
+
+        interval = self.interval_to_combo(self.UserSettings.config_interval)
+
+        if interval is not None:
+            self.ui_updatefreq_stack.set_visible_child_name("combo")
+            self.ui_updatefreq_combobox.set_active(interval)
+        else:
+            self.ui_updatefreq_stack.set_visible_child_name("spin")
+            self.ui_updatefreq_spin.set_value(self.UserSettings.config_interval)
+
+        self.ui_settingslastupdate_label.set_markup("{}".format(
+            datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
+
+        self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
+
+        self.main_window.set_visible(True)
+        self.main_window.present()
+        self.item_sh_app.set_label(_("Hide App"))
+
+    def on_menu_updatespage_app(self, *args):
+        self.ui_main_stack.set_visible_child_name("updateinfo")
+        self.main_window.set_visible(True)
+        self.main_window.present()
+        self.item_sh_app.set_label(_("Hide App"))
 
     def on_ui_checkupdates_button_clicked(self, button):
         self.ui_main_stack.set_visible_child_name("spinner")
@@ -699,6 +755,8 @@ class MainWindow(object):
         if self.isbroken:
             self.ui_main_stack.set_visible_child_name("fix")
             self.indicator.set_icon(self.icon_error)
+            self.item_systemstatus.set_sensitive(False)
+            self.item_systemstatus.set_label(_("System is Broken"))
         else:
             upgradable = self.Package.upgradable()
             if upgradable:
@@ -722,6 +780,21 @@ class MainWindow(object):
             else:
                 self.ui_main_stack.set_visible_child_name("ok")
                 self.indicator.set_icon(self.icon_normal)
+
+            self.update_indicator_updates_labels(upgradable)
+
+    def update_indicator_updates_labels(self, upgradable):
+        updates = _("System is Up to Date")
+        if upgradable:
+            if len(upgradable) > 1:
+                updates = _("{} Updates Pending".format(len(upgradable)))
+            else:
+                updates = _("{} Update Pending".format(len(upgradable)))
+            self.item_systemstatus.set_sensitive(True)
+            self.item_systemstatus.set_label(updates)
+        else:
+            self.item_systemstatus.set_sensitive(False)
+            self.item_systemstatus.set_label(updates)
 
     def startAptUpdateProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
