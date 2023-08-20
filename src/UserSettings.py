@@ -6,15 +6,16 @@ Created on Wed Feb 16 14:53:13 2022
 @author: fatih
 """
 
+import os
 from configparser import ConfigParser
 from pathlib import Path
-from shutil import copy2, rmtree
-import os
+
+
 class UserSettings(object):
     def __init__(self):
         self.userhome = str(Path.home())
 
-        self.default_interval = 86400 # daily
+        self.default_interval = 86400  # daily
         self.default_lastupdate = 0
         self.default_autostart = True
 
@@ -32,7 +33,7 @@ class UserSettings(object):
 
     def createDefaultConfig(self, force=False):
         self.config['Update'] = {"interval": self.default_interval,
-                               "lastupdate": self.default_lastupdate}
+                                 "lastupdate": self.default_lastupdate}
 
         self.config['Main'] = {"autostart": self.default_autostart}
 

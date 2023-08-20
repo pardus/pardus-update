@@ -36,13 +36,16 @@ from locale import gettext as _
 locale.bindtextdomain('pardus-update', '/usr/share/locale')
 locale.textdomain('pardus-update')
 
+
 def getenv(str):
     env = os.environ.get(str)
     return env if env else ""
 
+
 gnome_desktop = False
 if "gnome" in getenv("SESSION").lower() or "gnome" in getenv("XDG_CURRENT_DESKTOP").lower():
     gnome_desktop = True
+
 
 class MainWindow(object):
     def __init__(self, application):
@@ -110,7 +113,8 @@ class MainWindow(object):
         if self.UserSettings.config_interval == -1:  # never auto update
             self.set_upgradable_page_and_notify()
             return
-        if self.UserSettings.config_lastupdate + self.UserSettings.config_interval - 10 <= int(datetime.now().timestamp()):
+        if self.UserSettings.config_lastupdate + self.UserSettings.config_interval - 10 <= int(
+                datetime.now().timestamp()):
             print("started timed update check")
             print("lu:{} inv:{} now:{}".format(self.UserSettings.config_lastupdate,
                                                self.UserSettings.config_interval, int(datetime.now().timestamp())))
@@ -186,7 +190,6 @@ class MainWindow(object):
         self.ui_upgradeinfo_label = self.GtkBuilder.get_object("ui_upgradeinfo_label")
         self.ui_upgradeinfoback_button = self.GtkBuilder.get_object("ui_upgradeinfoback_button")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
-
 
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
         self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
@@ -689,13 +692,15 @@ class MainWindow(object):
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                 if len(upgradable) > 1:
                     notification = Notification(summary=_("Software Update"),
-                                                body=_("There are {} software updates available.").format(len(upgradable)),
+                                                body=_("There are {} software updates available.").format(
+                                                    len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
 
                 else:
                     notification = Notification(summary=_("Software Update"),
-                                                body=_("There is {} software update available.").format(len(upgradable)),
+                                                body=_("There is {} software update available.").format(
+                                                    len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
             else:
@@ -862,7 +867,6 @@ class MainWindow(object):
                 self.ui_fix_stack.set_visible_child_name("error")
                 self.isbroken = True
                 print("Error while updating cache on fix_vte_on_done")
-
 
 
 class Notification(GObject.GObject):

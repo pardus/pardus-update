@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
+import subprocess
+
 from setuptools import setup, find_packages
-import os, subprocess
+
 
 def create_mo_files():
     podir = "po"
@@ -31,39 +34,39 @@ if os.path.exists(changelog):
     f.close()
 
 data_files = [
-    ("/usr/bin", ["pardus-update"]),
-    ("/usr/share/applications",
-     ["data/tr.org.pardus.update.desktop"]),
-    ("/usr/share/pardus/pardus-update/ui",
-     ["ui/MainWindow.glade"]),
-    ("/usr/share/pardus/pardus-update/src",
-     ["src/AutoAptUpdate.py",
-      "src/Main.py",
-      "src/MainWindow.py",
-      "src/Package.py",
-      "src/SysActions.py",
-      "src/UserSettings.py",
-      "src/__version__"]),
-    ("/usr/share/pardus/pardus-update/data",
-     ["data/tr.org.pardus.update-autostart.desktop",
-      "data/pardus-update.svg",
-      "data/pardus-update-available-symbolic.svg",
-      "data/pardus-update-error-symbolic.svg",
-      "data/pardus-update-inprogress-symbolic.svg",
-      "data/pardus-update-symbolic.svg",
-      "data/pardus-update-uptodate.svg"]),
-    ("/usr/share/polkit-1/actions",
-      ["data/tr.org.pardus.pkexec.pardus-update.policy"]),
-    ("/etc/skel/.config/autostart",
-     ["data/tr.org.pardus.update-autostart.desktop"]),
-    ("/usr/share/icons/hicolor/scalable/apps/",
-     ["data/pardus-update.svg",
-      "data/pardus-update-available-symbolic.svg",
-      "data/pardus-update-error-symbolic.svg",
-      "data/pardus-update-inprogress-symbolic.svg",
-      "data/pardus-update-symbolic.svg",
-      "data/pardus-update-uptodate.svg"])
-] + create_mo_files()
+                 ("/usr/bin", ["pardus-update"]),
+                 ("/usr/share/applications",
+                  ["data/tr.org.pardus.update.desktop"]),
+                 ("/usr/share/pardus/pardus-update/ui",
+                  ["ui/MainWindow.glade"]),
+                 ("/usr/share/pardus/pardus-update/src",
+                  ["src/AutoAptUpdate.py",
+                   "src/Main.py",
+                   "src/MainWindow.py",
+                   "src/Package.py",
+                   "src/SysActions.py",
+                   "src/UserSettings.py",
+                   "src/__version__"]),
+                 ("/usr/share/pardus/pardus-update/data",
+                  ["data/tr.org.pardus.update-autostart.desktop",
+                   "data/pardus-update.svg",
+                   "data/pardus-update-available-symbolic.svg",
+                   "data/pardus-update-error-symbolic.svg",
+                   "data/pardus-update-inprogress-symbolic.svg",
+                   "data/pardus-update-symbolic.svg",
+                   "data/pardus-update-uptodate.svg"]),
+                 ("/usr/share/polkit-1/actions",
+                  ["data/tr.org.pardus.pkexec.pardus-update.policy"]),
+                 ("/etc/skel/.config/autostart",
+                  ["data/tr.org.pardus.update-autostart.desktop"]),
+                 ("/usr/share/icons/hicolor/scalable/apps/",
+                  ["data/pardus-update.svg",
+                   "data/pardus-update-available-symbolic.svg",
+                   "data/pardus-update-error-symbolic.svg",
+                   "data/pardus-update-inprogress-symbolic.svg",
+                   "data/pardus-update-symbolic.svg",
+                   "data/pardus-update-uptodate.svg"])
+             ] + create_mo_files()
 
 setup(
     name="pardus-update",

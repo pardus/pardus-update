@@ -9,8 +9,8 @@ Created on Fri Sep 18 14:53:00 2020
 import os
 import subprocess
 
-import apt
 
+# import apt
 
 def main():
     # try:
