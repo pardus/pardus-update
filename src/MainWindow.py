@@ -467,7 +467,23 @@ class MainWindow(object):
             # update autoupdate timer
             if self.autoupdate_glibid:
                 GLib.source_remove(self.autoupdate_glibid)
-            self.create_autoupdate_glibid()
+            # self.create_autoupdate_glibid()
+
+            if self.UserSettings.config_interval == -1:  # never auto update
+                return
+
+            if not self.upgrade_inprogress and not self.update_inprogress:
+                if self.UserSettings.config_lastupdate + self.UserSettings.config_interval - 10 <= int(
+                        datetime.now().timestamp()):
+                    print("started timed update check from on_ui_updatefreq_combobox_changed")
+                    print("lu:{} inv:{} now:{}".format(self.UserSettings.config_lastupdate,
+                                                       self.UserSettings.config_interval,
+                                                       int(datetime.now().timestamp())))
+                    self.start_aptupdate()
+                else:
+                    self.create_autoupdate_glibid()
+            else:
+                self.create_autoupdate_glibid()
 
     def on_ui_updatefreq_spin_value_changed(self, spin_button):
         seconds = int(spin_button.get_value())
