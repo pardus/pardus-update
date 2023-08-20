@@ -788,9 +788,9 @@ class MainWindow(object):
         updates = _("System is Up to Date")
         if upgradable:
             if len(upgradable) > 1:
-                updates = _("{} Updates Pending".format(len(upgradable)))
+                updates = _("{} Updates Pending").format(len(upgradable))
             else:
-                updates = _("{} Update Pending".format(len(upgradable)))
+                updates = _("{} Update Pending").format(len(upgradable))
             self.item_systemstatus.set_sensitive(True)
             self.item_systemstatus.set_label(updates)
         else:
