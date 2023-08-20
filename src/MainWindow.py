@@ -762,7 +762,8 @@ class MainWindow(object):
             if upgradable:
                 self.control_required_changes()
                 self.indicator.set_icon(self.icon_available)
-                if self.ui_main_stack.get_visible_child_name() == "spinner":
+                if self.ui_main_stack.get_visible_child_name() == "spinner" or \
+                        self.ui_main_stack.get_visible_child_name() == "ok":
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                 if len(upgradable) > 1:
                     notification = Notification(summary=_("Software Update"),
