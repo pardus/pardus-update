@@ -1,5 +1,28 @@
 pardus-update (0.1.0) unstable; urgency=medium
 
   * Initial Commit
+  * Fix typo
+  * Update pot file
+  * Update Turkish translations
+  * Fix ui check updates button
+  * Add fix broken apt functions with vte
+  * Add uptodate icon
+  * Add missing signals
+  * Fix translatable string
+  * Fix tray mode main window present
+  * Add quit confirmation dialog
+  * Update pot file
+  * Update Turkish translations
+  * Add control_display func
+  * Update apt update func name
+  * Reformat code
+  * Update update_freq combobox controls for trigger update
+  * Update spinner page
+  * Update spacing values of main box
+  * Add system update status, count and settings to indicator menu
+  * Add ok page control to menu update check
+  * Fix translatables
+  * Update pot file
+  * Update Turkish translations
 
- -- Fatih Altun <fatih.altun@pardus.org.tr>  Thu, 17 Aug 2023 17:56:58 +0300
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Sun, 20 Aug 2023 16:29:11 +0300
