@@ -17,7 +17,7 @@ gi.require_version("GLib", "2.0")
 gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")
 gi.require_version("Notify", "0.7")
-from gi.repository import Gtk, GObject, Gdk, GLib, Pango, Vte, Notify, GdkPixbuf
+from gi.repository import Gtk, GObject, Gdk, GLib, Pango, Vte, Notify, GdkPixbuf, Gio
 
 try:
     gi.require_version('AppIndicator3', '0.1')
@@ -68,6 +68,7 @@ class MainWindow(object):
         self.UserSettings.set_autostart(self.UserSettings.config_autostart)
         self.init_indicator()
         self.init_ui()
+        self.monitoring()
 
         self.about_dialog.set_program_name(_("Pardus Update"))
         # Set version
@@ -98,7 +99,6 @@ class MainWindow(object):
         self.Package = Package()
         if self.Package.updatecache():
             self.isbroken = False
-            self.Package.getApps()
         else:
             self.isbroken = True
             print("Error while updating Cache")
@@ -232,9 +232,12 @@ class MainWindow(object):
             self.icon_error = "security-low-symbolic"
 
         self.autoupdate_glibid = None
+        self.autoupdate_monitoring_glibid = None
+        self.monitoring_timeoutadd_sec = 60
         self.update_inprogress = False
         self.upgrade_inprogress = False
         self.laststack = None
+        self.aptlist_directory = "/var/lib/apt/lists"
 
     def control_display(self):
         width = 857
@@ -572,6 +575,7 @@ class MainWindow(object):
         self.ui_fix_button.set_sensitive(False)
         self.ui_fix_spinner.start()
         self.fix_vte_start_process(command)
+        self.update_inprogress = True
 
     def on_ui_fixcancel_button_clicked(self, button):
         self.ui_fix_stack.set_visible_child_name("main")
@@ -598,6 +602,29 @@ class MainWindow(object):
             self.ui_quit_dialog.hide()
         else:
             self.main_window.get_application().quit()
+
+    def monitoring(self):
+        self.aptlist_directory = "/var/lib/apt/lists"
+        self.apt_dir = Gio.file_new_for_path(self.aptlist_directory)
+        self.apt_monitor = self.apt_dir.monitor_directory(0, None);
+        self.apt_monitor.connect('changed', self.on_apt_folder_changed)
+
+    def on_apt_folder_changed(self, file_monitor, file, other_file, event_type):
+        print("{} folder changed, update_inprogress: {}, upgrade_inprogress: {}".format(
+            self.aptlist_directory, self.update_inprogress, self.upgrade_inprogress))
+        if not self.update_inprogress and not self.upgrade_inprogress:
+            print("Triggering control_upgradables from monitoring {}".format(self.aptlist_directory))
+            if self.autoupdate_monitoring_glibid:
+                GLib.source_remove(self.autoupdate_monitoring_glibid)
+            self.autoupdate_monitoring_glibid = GLib.timeout_add_seconds(
+                self.monitoring_timeoutadd_sec, self.control_upgradables)
+
+    def control_upgradables(self):
+        print("STARTING control_upgradables from monitoring {}".format(self.aptlist_directory))
+        if self.autoupdate_monitoring_glibid:
+            GLib.source_remove(self.autoupdate_monitoring_glibid)
+        self.package()
+        self.set_upgradable_page_and_notify()
 
     def control_required_changes(self):
         def start_thread():
@@ -956,6 +983,7 @@ class MainWindow(object):
                 self.ui_fix_stack.set_visible_child_name("error")
                 self.isbroken = True
                 print("Error while updating cache on fix_vte_on_done")
+        self.update_inprogress = False
 
 
 class Notification(GObject.GObject):
