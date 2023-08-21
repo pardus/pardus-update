@@ -761,7 +761,6 @@ class MainWindow(object):
             upgradable = self.Package.upgradable()
             if upgradable:
                 self.control_required_changes()
-                self.indicator.set_icon(self.icon_available)
                 if self.ui_main_stack.get_visible_child_name() == "spinner" or \
                         self.ui_main_stack.get_visible_child_name() == "ok":
                     self.ui_main_stack.set_visible_child_name("updateinfo")
@@ -771,7 +770,6 @@ class MainWindow(object):
                                                     len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
-
                 else:
                     notification = Notification(summary=_("Software Update"),
                                                 body=_("There is {} software update available.").format(
@@ -780,8 +778,6 @@ class MainWindow(object):
                     notification.show()
             else:
                 self.ui_main_stack.set_visible_child_name("ok")
-                self.indicator.set_icon(self.icon_normal)
-
             self.update_indicator_updates_labels(upgradable)
 
     def update_indicator_updates_labels(self, upgradable):
@@ -793,9 +789,11 @@ class MainWindow(object):
                 updates = _("{} Update Pending").format(len(upgradable))
             self.item_systemstatus.set_sensitive(True)
             self.item_systemstatus.set_label(updates)
+            self.indicator.set_icon(self.icon_available)
         else:
             self.item_systemstatus.set_sensitive(False)
             self.item_systemstatus.set_label(updates)
+            self.indicator.set_icon(self.icon_normal)
 
     def startAptUpdateProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
@@ -896,6 +894,7 @@ class MainWindow(object):
             GLib.idle_add(self.ui_upgradeinfo_box.set_visible, True)
             GLib.idle_add(self.ui_upgradeinfoback_button.set_visible, False)
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
+            self.update_indicator_updates_labels(self.Package.upgradable())
         self.upgrade_inprogress = False
 
     def fix_vte_event(self, widget, event):
