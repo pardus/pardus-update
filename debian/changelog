@@ -1,3 +1,12 @@
+pardus-update (0.1.1) unstable; urgency=medium
+
+  * Fix update of indicator labels after upgrade
+  * Add monitoring controls for apt lists directory
+  * Fix copyright opacity
+  * Update about dialog icon and window position
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 22 Aug 2023 02:42:00 +0300
+
 pardus-update (0.1.0) unstable; urgency=medium
 
   * Initial Commit
