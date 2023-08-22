@@ -608,7 +608,7 @@ class MainWindow(object):
     def monitoring(self):
         self.aptlist_directory = "/var/lib/apt/lists"
         self.apt_dir = Gio.file_new_for_path(self.aptlist_directory)
-        self.apt_monitor = self.apt_dir.monitor_directory(0, None);
+        self.apt_monitor = self.apt_dir.monitor_directory(0, None)
         self.apt_monitor.connect('changed', self.on_apt_folder_changed)
 
     def on_apt_folder_changed(self, file_monitor, file, other_file, event_type):
