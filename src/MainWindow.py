@@ -206,6 +206,7 @@ class MainWindow(object):
         upgrade_vte_menu_items.show()
         self.upgrade_vteterm.connect_object("event", self.upgrade_vte_event, upgrade_vte_menu)
         self.ui_upgradevte_sw.add(self.upgrade_vteterm)
+        self.upgrade_vteterm.show_all()
 
         # fix apt vte box
         self.fix_vteterm = Vte.Terminal()
@@ -217,6 +218,7 @@ class MainWindow(object):
         fix_vte_menu_items.show()
         self.fix_vteterm.connect_object("event", self.fix_vte_event, fix_vte_menu)
         self.ui_fixvte_sw.add(self.fix_vteterm)
+        self.fix_vteterm.show_all()
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
