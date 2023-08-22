@@ -240,6 +240,7 @@ class MainWindow(object):
         self.upgrade_inprogress = False
         self.laststack = None
         self.aptlist_directory = "/var/lib/apt/lists"
+        self.dpkg_directory = "/var/lib/dpkg"
 
     def control_display(self):
         width = 857
@@ -607,22 +608,28 @@ class MainWindow(object):
 
     def monitoring(self):
         self.aptlist_directory = "/var/lib/apt/lists"
+        self.dpkg_directory = "/var/lib/dpkg"
+
         self.apt_dir = Gio.file_new_for_path(self.aptlist_directory)
         self.apt_monitor = self.apt_dir.monitor_directory(0, None)
-        self.apt_monitor.connect('changed', self.on_apt_folder_changed)
+        self.apt_monitor.connect('changed', self.on_apt_changed)
 
-    def on_apt_folder_changed(self, file_monitor, file, other_file, event_type):
-        print("{} folder changed, update_inprogress: {}, upgrade_inprogress: {}".format(
-            self.aptlist_directory, self.update_inprogress, self.upgrade_inprogress))
+        self.dpkg_dir = Gio.file_new_for_path(self.dpkg_directory)
+        self.dpkg_monitor = self.dpkg_dir.monitor_directory(0, None)
+        self.dpkg_monitor.connect('changed', self.on_apt_changed)
+
+    def on_apt_changed(self, file_monitor, file, other_file, event_type):
+        print("{} file changed, update_inprogress: {}, upgrade_inprogress: {}".format(
+            file.get_path(), self.update_inprogress, self.upgrade_inprogress))
         if not self.update_inprogress and not self.upgrade_inprogress:
-            print("Triggering control_upgradables from monitoring {}".format(self.aptlist_directory))
+            print("Triggering control_upgradables from monitoring {}".format(file.get_path()))
             if self.autoupdate_monitoring_glibid:
                 GLib.source_remove(self.autoupdate_monitoring_glibid)
             self.autoupdate_monitoring_glibid = GLib.timeout_add_seconds(
                 self.monitoring_timeoutadd_sec, self.control_upgradables)
 
     def control_upgradables(self):
-        print("STARTING control_upgradables from monitoring {}".format(self.aptlist_directory))
+        print("STARTING control_upgradables from monitoring")
         if self.autoupdate_monitoring_glibid:
             GLib.source_remove(self.autoupdate_monitoring_glibid)
         self.package()
