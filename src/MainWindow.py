@@ -674,6 +674,7 @@ class MainWindow(object):
             image = Gtk.Image.new_from_icon_name(iconname, Gtk.IconSize.BUTTON)
             name = Gtk.Label.new()
             name.set_markup("<b>{}</b>".format(GLib.markup_escape_text(package, -1)))
+            name.set_ellipsize(Pango.EllipsizeMode.END)
             name.props.halign = Gtk.Align.START
 
             summarylabel = Gtk.Label.new()
