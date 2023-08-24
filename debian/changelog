@@ -1,3 +1,10 @@
+pardus-update (0.1.3) unstable; urgency=medium
+
+  * Add ellipsize to update package name
+  * Update default width and height of main window
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Fri, 25 Aug 2023 02:53:00 +0300
+
 pardus-update (0.1.2) unstable; urgency=medium
 
   * Fix vte display problem from init tray
