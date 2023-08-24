@@ -243,8 +243,8 @@ class MainWindow(object):
         self.dpkg_directory = "/var/lib/dpkg"
 
     def control_display(self):
-        width = 857
-        height = 657
+        width = 575
+        height = 650
         s = 1
         w = 1920
         h = 1080
@@ -257,8 +257,8 @@ class MainWindow(object):
             s = Gdk.Monitor.get_scale_factor(monitor)
 
             if w > 1920 or h > 1080:
-                width = int(w / 2.24)
-                height = int(h / 1.643)
+                width = int(w / 3.339)
+                height = int(h / 1.661)
 
             self.main_window.resize(width, height)
 
