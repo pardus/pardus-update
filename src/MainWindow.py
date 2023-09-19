@@ -87,6 +87,8 @@ class MainWindow(object):
 
         self.set_indicator()
 
+        GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
+
         p1 = threading.Thread(target=self.worker)
         p1.daemon = True
         p1.start()
@@ -147,11 +149,18 @@ class MainWindow(object):
         self.ui_menu_popover = self.GtkBuilder.get_object("ui_menu_popover")
         self.ui_menusettings_image = self.GtkBuilder.get_object("ui_menusettings_image")
         self.ui_menusettings_label = self.GtkBuilder.get_object("ui_menusettings_label")
+        self.ui_headerbar_messagebutton = self.GtkBuilder.get_object("ui_headerbar_messagebutton")
+        self.ui_headerbar_messageimage = self.GtkBuilder.get_object("ui_headerbar_messageimage")
         self.ui_updatefreq_combobox = self.GtkBuilder.get_object("ui_updatefreq_combobox")
         self.ui_updatefreq_spin = self.GtkBuilder.get_object("ui_updatefreq_spin")
         self.ui_updatefreq_stack = self.GtkBuilder.get_object("ui_updatefreq_stack")
         self.ui_settingslastupdate_label = self.GtkBuilder.get_object("ui_settingslastupdate_label")
         self.ui_autostart_switch = self.GtkBuilder.get_object("ui_autostart_switch")
+
+        self.ui_autoremovable_box = self.GtkBuilder.get_object("ui_autoremovable_box")
+        self.ui_residual_box = self.GtkBuilder.get_object("ui_residual_box")
+        self.ui_autoremovable_textview = self.GtkBuilder.get_object("ui_autoremovable_textview")
+        self.ui_residual_textview = self.GtkBuilder.get_object("ui_residual_textview")
 
         self.ui_upgradable_sw = self.GtkBuilder.get_object("ui_upgradable_sw")
         self.ui_newly_sw = self.GtkBuilder.get_object("ui_newly_sw")
@@ -196,29 +205,9 @@ class MainWindow(object):
         self.ui_fix_spinner = self.GtkBuilder.get_object("ui_fix_spinner")
         self.ui_fixvte_sw = self.GtkBuilder.get_object("ui_fixvte_sw")
 
-        # upgrade vte box
-        self.upgrade_vteterm = Vte.Terminal()
-        self.upgrade_vteterm.set_scrollback_lines(-1)
-        upgrade_vte_menu = Gtk.Menu()
-        upgrade_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
-        upgrade_vte_menu.append(upgrade_vte_menu_items)
-        upgrade_vte_menu_items.connect("activate", self.upgrade_vte_menu_action, self.upgrade_vteterm)
-        upgrade_vte_menu_items.show()
-        self.upgrade_vteterm.connect_object("event", self.upgrade_vte_event, upgrade_vte_menu)
-        self.ui_upgradevte_sw.add(self.upgrade_vteterm)
-        self.upgrade_vteterm.show_all()
+        self.upgrade_vteterm = None
+        self.fix_vteterm = None
 
-        # fix apt vte box
-        self.fix_vteterm = Vte.Terminal()
-        self.fix_vteterm.set_scrollback_lines(-1)
-        fix_vte_menu = Gtk.Menu()
-        fix_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
-        fix_vte_menu.append(fix_vte_menu_items)
-        fix_vte_menu_items.connect("activate", self.fix_vte_menu_action, self.fix_vteterm)
-        fix_vte_menu_items.show()
-        self.fix_vteterm.connect_object("event", self.fix_vte_event, fix_vte_menu)
-        self.ui_fixvte_sw.add(self.fix_vteterm)
-        self.fix_vteterm.show_all()
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -241,6 +230,8 @@ class MainWindow(object):
         self.laststack = None
         self.aptlist_directory = "/var/lib/apt/lists"
         self.dpkg_directory = "/var/lib/dpkg"
+
+        self.clean_residuals_clicked = False
 
     def control_display(self):
         width = 575
@@ -389,6 +380,9 @@ class MainWindow(object):
 
     def on_menu_updatespage_app(self, *args):
         self.ui_main_stack.set_visible_child_name("updateinfo")
+        self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menusettings_label.set_text(_("Settings"))
+        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
         self.main_window.set_visible(True)
         self.main_window.present()
         self.item_sh_app.set_label(_("Hide App"))
@@ -407,6 +401,7 @@ class MainWindow(object):
         if self.Package.upgradable():
             self.apt_update()
         else:
+            self.control_update_residual_message_section()
             self.ui_main_stack.set_visible_child_name("ok")
 
     def on_ui_upgradeconf_radiobutton_toggled(self, button):
@@ -423,7 +418,8 @@ class MainWindow(object):
             not self.ui_upgradenewconf_radiobutton.get_active() or not self.ui_upgradewithyq_radiobutton.get_active())
 
     def on_ui_upgrade_button_clicked(self, button):
-        self.upgrade_vteterm.reset(True, True)
+        if self.upgrade_vteterm:
+            self.upgrade_vteterm.reset(True, True)
         self.ui_upgradeinfo_box.set_visible(False)
         self.ui_upgradevte_sw.set_visible(True)
         self.ui_upgradeinfook_button.set_visible(False)
@@ -455,10 +451,50 @@ class MainWindow(object):
             self.ui_upgradeinfo_box.set_visible(True)
             self.ui_upgradevte_sw.set_visible(False)
 
+    def on_ui_autoremovable_button_clicked(self, button):
+        self.clean_residuals_clicked = True
+        if self.upgrade_vteterm:
+            self.upgrade_vteterm.reset(True, True)
+        self.ui_upgradeinfo_box.set_visible(False)
+        self.ui_upgradevte_sw.set_visible(True)
+        self.ui_upgradeinfook_button.set_visible(False)
+        self.ui_main_stack.set_visible_child_name("upgrade")
+
+        if not self.upgrade_inprogress:
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "removeauto"]
+            self.upgrade_vte_start_process(command)
+            self.upgrade_inprogress = True
+        else:
+            self.ui_upgradeinfo_label.set_markup(
+                "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
+            self.ui_upgradeinfo_box.set_visible(True)
+            self.ui_upgradevte_sw.set_visible(False)
+
+    def on_ui_residual_button_clicked(self, button):
+        self.clean_residuals_clicked = True
+        if self.upgrade_vteterm:
+            self.upgrade_vteterm.reset(True, True)
+        self.ui_upgradeinfo_box.set_visible(False)
+        self.ui_upgradevte_sw.set_visible(True)
+        self.ui_upgradeinfook_button.set_visible(False)
+        self.ui_main_stack.set_visible_child_name("upgrade")
+
+        if not self.upgrade_inprogress:
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "removeresidual",
+                       " ".join(self.Package.residual())]
+            self.upgrade_vte_start_process(command)
+            self.upgrade_inprogress = True
+        else:
+            self.ui_upgradeinfo_label.set_markup(
+                "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
+            self.ui_upgradeinfo_box.set_visible(True)
+            self.ui_upgradevte_sw.set_visible(False)
+
     def on_ui_homepage_button_clicked(self, button):
-        if self.ui_main_stack.get_visible_child_name() == "settings":
+        if self.ui_main_stack.get_visible_child_name() == "settings" or self.ui_main_stack.get_visible_child_name() == "clean":
             self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Settings"))
+            self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
             self.ui_main_stack.set_visible_child_name(self.laststack)
 
     def on_ui_menuabout_button_clicked(self, button):
@@ -468,7 +504,7 @@ class MainWindow(object):
 
     def on_ui_menusettings_button_clicked(self, button):
 
-        if self.ui_main_stack.get_visible_child_name() != "settings":
+        if self.ui_main_stack.get_visible_child_name() != "clean" and self.ui_main_stack.get_visible_child_name() != "settings":
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         if self.ui_main_stack.get_visible_child_name() == "settings":
@@ -479,6 +515,8 @@ class MainWindow(object):
             self.ui_menusettings_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Home Page"))
             self.ui_main_stack.set_visible_child_name("settings")
+
+            self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
 
             interval = self.interval_to_combo(self.UserSettings.config_interval)
 
@@ -495,6 +533,22 @@ class MainWindow(object):
             self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
 
         self.ui_menu_popover.popdown()
+
+    def on_ui_headerbar_messagebutton_clicked(self, button):
+        self.ui_menu_popover.popdown()
+
+        if self.ui_main_stack.get_visible_child_name() != "clean" and self.ui_main_stack.get_visible_child_name() != "settings":
+            self.laststack = self.ui_main_stack.get_visible_child_name()
+
+        if self.ui_main_stack.get_visible_child_name() == "clean":
+            self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_main_stack.set_visible_child_name(self.laststack)
+        else:
+            self.ui_headerbar_messageimage.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_main_stack.set_visible_child_name("clean")
+
+            self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menusettings_label.set_text(_("Settings"))
 
     def interval_to_combo(self, interval):
         if interval == 3600:  # Hourly
@@ -634,6 +688,7 @@ class MainWindow(object):
             GLib.source_remove(self.autoupdate_monitoring_glibid)
         self.package()
         self.set_upgradable_page_and_notify()
+        self.control_update_residual_message_section()
 
     def control_required_changes(self):
         def start_thread():
@@ -794,13 +849,16 @@ class MainWindow(object):
             self.indicator.set_icon(self.icon_error)
             self.item_systemstatus.set_sensitive(False)
             self.item_systemstatus.set_label(_("System is Broken"))
+            GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
         else:
             upgradable = self.Package.upgradable()
             if upgradable:
                 self.control_required_changes()
                 if self.ui_main_stack.get_visible_child_name() == "spinner" or \
-                        self.ui_main_stack.get_visible_child_name() == "ok":
+                        self.ui_main_stack.get_visible_child_name() == "ok" or \
+                        self.ui_main_stack.get_visible_child_name() == "upgrade":
                     self.ui_main_stack.set_visible_child_name("updateinfo")
+                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
                 if len(upgradable) > 1:
                     notification = Notification(summary=_("Software Update"),
                                                 body=_("There are {} software updates available.").format(
@@ -816,6 +874,21 @@ class MainWindow(object):
             else:
                 self.ui_main_stack.set_visible_child_name("ok")
             self.update_indicator_updates_labels(upgradable)
+
+    def control_update_residual_message_section(self):
+        residual = self.Package.residual()
+        autoremovable = self.Package.autoremovable()
+        if residual or autoremovable:
+            GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, True)
+            GLib.idle_add(self.ui_headerbar_messagebutton.set_tooltip_text, "You have removable residual packages.")
+            GLib.idle_add(self.ui_autoremovable_box.set_visible, autoremovable)
+            GLib.idle_add(self.ui_residual_box.set_visible, residual)
+            self.ui_autoremovable_textview.get_buffer().set_text("\n".join(autoremovable))
+            self.ui_residual_textview.get_buffer().set_text("\n".join(residual))
+            if self.ui_main_stack.get_visible_child_name() != "clean":
+                self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+        else:
+            GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
 
     def update_indicator_updates_labels(self, upgradable):
         updates = _("System is Up to Date")
@@ -871,6 +944,7 @@ class MainWindow(object):
             self.update_lastcheck_labels()
             self.create_autoupdate_glibid()
             self.set_upgradable_page_and_notify()
+            self.control_update_residual_message_section()
         else:
             self.indicator.set_icon(self.icon_error)
 
@@ -888,6 +962,21 @@ class MainWindow(object):
         terminal.copy_clipboard()
 
     def upgrade_vte_start_process(self, command):
+
+        if self.upgrade_vteterm:
+            self.upgrade_vteterm.get_parent().remove(self.upgrade_vteterm)
+
+        self.upgrade_vteterm = Vte.Terminal()
+        self.upgrade_vteterm.set_scrollback_lines(-1)
+        upgrade_vte_menu = Gtk.Menu()
+        upgrade_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        upgrade_vte_menu.append(upgrade_vte_menu_items)
+        upgrade_vte_menu_items.connect("activate", self.upgrade_vte_menu_action, self.upgrade_vteterm)
+        upgrade_vte_menu_items.show()
+        self.upgrade_vteterm.connect_object("event", self.upgrade_vte_event, upgrade_vte_menu)
+        self.ui_upgradevte_sw.add(self.upgrade_vteterm)
+        self.upgrade_vteterm.show_all()
+
         pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
         self.upgrade_vteterm.set_pty(pty)
         try:
@@ -924,7 +1013,10 @@ class MainWindow(object):
     def upgrade_vte_on_done(self, terminal, status):
         print("upgrade_vte_on_done status: {}".format(status))
         if status == 32256:  # operation cancelled | Request dismissed
-            self.ui_main_stack.set_visible_child_name("updateinfo")
+            if self.clean_residuals_clicked:
+                self.ui_main_stack.set_visible_child_name("clean")
+            else:
+                self.ui_main_stack.set_visible_child_name("updateinfo")
         else:
             self.Package.updatecache()
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
@@ -933,6 +1025,7 @@ class MainWindow(object):
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
             self.update_indicator_updates_labels(self.Package.upgradable())
         self.upgrade_inprogress = False
+        self.clean_residuals_clicked = False
 
     def fix_vte_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
@@ -946,6 +1039,20 @@ class MainWindow(object):
         terminal.copy_clipboard()
 
     def fix_vte_start_process(self, command):
+        if self.fix_vteterm:
+            self.fix_vteterm.get_parent().remove(self.fix_vteterm)
+
+        self.fix_vteterm = Vte.Terminal()
+        self.fix_vteterm.set_scrollback_lines(-1)
+        fix_vte_menu = Gtk.Menu()
+        fix_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        fix_vte_menu.append(fix_vte_menu_items)
+        fix_vte_menu_items.connect("activate", self.fix_vte_menu_action, self.fix_vteterm)
+        fix_vte_menu_items.show()
+        self.fix_vteterm.connect_object("event", self.fix_vte_event, fix_vte_menu)
+        self.ui_fixvte_sw.add(self.fix_vteterm)
+        self.fix_vteterm.show_all()
+
         pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
         self.fix_vteterm.set_pty(pty)
         try:
