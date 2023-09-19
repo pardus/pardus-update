@@ -51,6 +51,15 @@ def main():
         subprocess.call(["apt", "clean"],
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
+    def removeresidual(packages):
+        packagelist = packages.split(" ")
+        subprocess.call(["apt", "remove", "--purge", "-yq"] + packagelist,
+                        env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+
+    def removeauto():
+        subprocess.call(["apt", "autoremove", "-yq"],
+                        env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+
     def externalrepo(key, sources, name):
         tmpkeyfilename = ''.join(random.choice(string.ascii_lowercase) for i in range(13))
         tmpkeyfile = open(os.path.join("/tmp", tmpkeyfilename), "w")
@@ -186,6 +195,10 @@ def main():
         elif sys.argv[1] == "upgrade":
             subupdate()
             subupgrade(sys.argv[2], sys.argv[3])
+        elif sys.argv[1] == "removeresidual":
+            removeresidual(sys.argv[2])
+        elif sys.argv[1] == "removeauto":
+            removeauto()
         else:
             print("unknown argument error")
     else:
