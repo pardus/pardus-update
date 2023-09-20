@@ -379,7 +379,10 @@ class MainWindow(object):
         self.item_sh_app.set_label(_("Hide App"))
 
     def on_menu_updatespage_app(self, *args):
-        self.ui_main_stack.set_visible_child_name("updateinfo")
+        if self.upgrade_inprogress:
+            self.ui_main_stack.set_visible_child_name("upgrade")
+        else:
+            self.ui_main_stack.set_visible_child_name("updateinfo")
         self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
         self.ui_menusettings_label.set_text(_("Settings"))
         self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
