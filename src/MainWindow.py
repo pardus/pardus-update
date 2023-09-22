@@ -501,9 +501,9 @@ class MainWindow(object):
             self.ui_main_stack.set_visible_child_name(self.laststack)
 
     def on_ui_menuabout_button_clicked(self, button):
+        self.ui_menu_popover.popdown()
         self.about_dialog.run()
         self.about_dialog.hide()
-        self.ui_menu_popover.popdown()
 
     def on_ui_menusettings_button_clicked(self, button):
 
