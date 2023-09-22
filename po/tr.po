@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-22 17:04+0300\n"
-"PO-Revision-Date: 2023-09-22 17:14+0300\n"
+"POT-Creation-Date: 2023-09-22 17:20+0300\n"
+"PO-Revision-Date: 2023-09-22 17:22+0300\n"
 "Last-Translator: Fatih Altun <fatih.altun@pardus.org.tr>\n"
 "Language-Team: Turkish <dev@pardus.org.tr>\n"
 "Language: tr\n"
@@ -321,6 +321,10 @@ msgstr "{} paket güncellemesi mevcut."
 #: src/MainWindow.py:873
 msgid "There is {} software update available."
 msgstr "{} paket güncellemesi mevcut."
+
+#: src/MainWindow.py:886
+msgid "You have removable residual packages."
+msgstr "Kaldırılabilir artık paketleriniz var."
 
 #: src/MainWindow.py:900
 msgid "{} Updates Pending"

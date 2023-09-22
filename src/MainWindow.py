@@ -883,7 +883,7 @@ class MainWindow(object):
         autoremovable = self.Package.autoremovable()
         if residual or autoremovable:
             GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, True)
-            GLib.idle_add(self.ui_headerbar_messagebutton.set_tooltip_text, "You have removable residual packages.")
+            GLib.idle_add(self.ui_headerbar_messagebutton.set_tooltip_text, _("You have removable residual packages."))
             GLib.idle_add(self.ui_autoremovable_box.set_visible, autoremovable)
             GLib.idle_add(self.ui_residual_box.set_visible, residual)
             self.ui_autoremovable_textview.get_buffer().set_text("\n".join(autoremovable))
