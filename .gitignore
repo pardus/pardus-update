@@ -154,3 +154,5 @@ cython_debug/
 
 *.glade~
 *.glade#
+
+required_changes_for_upgrade.json
