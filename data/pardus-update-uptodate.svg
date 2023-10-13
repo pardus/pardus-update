@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="128"
-   height="128"
-   viewBox="0 0 33.866666 33.866666"
+   width="120"
+   height="101.871"
+   viewBox="0 0 31.749999 26.953369"
    version="1.1"
    id="svg1"
-   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
-   sodipodi:docname="pardus-up-to-date.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="pardus-update-uptodate.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,14 +25,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      inkscape:zoom="3.2997194"
-     inkscape:cx="45.912995"
-     inkscape:cy="83.491948"
+     inkscape:cx="46.064523"
+     inkscape:cy="83.643476"
      inkscape:window-width="1920"
-     inkscape:window-height="1137"
+     inkscape:window-height="1009"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     showgrid="false" />
   <defs
      id="defs1" />
   <g
@@ -41,7 +42,7 @@
      id="layer1">
     <g
        id="g321"
-       transform="matrix(0.18302488,0,0,0.18302488,207.934,2.6494142)">
+       transform="matrix(0.18376848,0,0,0.18376848,207.65167,-0.86526761)">
       <path
          style="fill:#2f3536;fill-opacity:1;stroke:#dddddd;stroke-width:3.33387;stroke-dasharray:none;stroke-opacity:1"
          d="m -1052.5216,147.66366 c -21.587,-10.82281 -36.8986,-32.07617 -42.4577,-58.933269 -0.9429,-4.55549 -1.41,-9.260134 -1.0584,-10.661121 0.3872,-1.542494 2.253,-3.277959 5.1376,-4.778688 1.8459,-0.960396 3.5374,-2.205718 5.0585,-3.724285 3.6523,-3.646063 5.3906,-7.120251 6.3541,-12.699422 0.5826,-3.371968 1.2207,-4.448104 3.1296,-5.27577 1.3389,-0.580471 3.3241,-0.632147 28.449,-0.745055 26.8348,-0.120342 27.016,-0.116802 27.9645,0.591089 1.6469,1.228898 2.1842,2.303689 2.731,5.462865 1.2574,7.265439 5.4329,12.849566 12.1259,16.216649 4.249,2.137547 5.26488,4.105555 4.6306,8.970394 -3.0778,23.606743 -14.2523,44.666003 -30.5828,57.635273 -5.2972,4.207 -14.9818,9.98934 -16.7307,9.98934 -0.366,0 -2.5043,-0.92175 -4.7512,-2.04821 z"
