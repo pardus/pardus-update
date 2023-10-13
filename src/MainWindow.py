@@ -5,12 +5,13 @@ Created on Sat Feb  5 19:05:13 2022
 
 @author: fatihaltun
 """
-
+import json
 import os
 import subprocess
 import threading
 from datetime import datetime
 
+import distro
 import gi
 
 gi.require_version("GLib", "2.0")
@@ -29,6 +30,7 @@ except:
 
 from UserSettings import UserSettings
 from Package import Package
+from RepoDistControl import RepoDistControl
 
 import locale
 from locale import gettext as _
@@ -87,7 +89,7 @@ class MainWindow(object):
 
         self.set_indicator()
 
-        GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
+        self.set_initial_hide_widgets()
 
         p1 = threading.Thread(target=self.worker)
         p1.daemon = True
@@ -95,7 +97,68 @@ class MainWindow(object):
 
     def worker(self):
         self.package()
+        self.control_distupgrade()
         GLib.idle_add(self.apt_update)
+
+    def control_distupgrade(self):
+        if distro.id() == "pardus":
+            try:
+                self.user_distro_version = int(distro.major_version())
+                self.user_distro_codename = distro.codename().lower()
+
+                # self.user_distro_version = 19
+                # self.user_distro_codename = "ondokuz"
+
+                self.repo_dist_control = RepoDistControl()
+                self.repo_dist_control.ServerGet = self.server_get_dist
+                self.repo_dist_control.get("http://depo.pardus.org.tr/dists.json")
+            except Exception as e:
+                print("{}".format(e))
+                self.user_distro_version = None
+                self.user_distro_codename = None
+
+        else:
+            print("{} not yet supported for dist upgrade".format(distro.id()))
+
+    def server_get_dist(self, response):
+        def get_dist_key():
+            if self.user_distro_codename == "ondokuz" or self.user_distro_codename == "yirmibir" or \
+                    self.user_distro_codename == "yirmiuc" or self.user_distro_codename == "yirmibes" or \
+                    self.user_distro_codename == "yirmiyedi" or self.user_distro_codename == "yirmidokuz":
+                return "pardus"
+            elif self.user_distro_codename == "etap":
+                return "etap"
+            else:
+                return "none-{}".format(self.user_distro_codename)
+
+        if "error" not in response.keys():
+            if self.user_distro_version:
+                dist_key = get_dist_key()
+                datas = response["repo"][dist_key]
+                for data in datas:
+                    if data["version"] > self.user_distro_version:
+                        if "stable" in data["status"]:
+                            print("server:{} > user:{}".format(data["version"], self.user_distro_version))
+                            self.dist_upgradable = True
+                            self.dist_new_version = "{} {}".format(dist_key.title(), data["version"], data["name"])
+                            self.dist_new_codename = "{}".format(data["name"])
+                            self.dist_new_sources = data["sources"]
+                            break
+                if self.dist_upgradable:
+                    GLib.idle_add(self.ui_menudistupgrade_separator.set_visible, True)
+                    GLib.idle_add(self.ui_menudistupgrade_button.set_visible, True)
+                    GLib.idle_add(self.ui_homedistupgrade_box.set_visible, True)
+
+                    self.ui_distup_now_label.set_text("{} {} ({})".format(dist_key.title(), self.user_distro_version,
+                                                                          self.user_distro_codename))
+                    self.ui_distup_new_label.set_text("{} ({})".format(self.dist_new_version, self.dist_new_codename))
+
+                    self.ui_controldistup_button.set_label(_("Start {} Upgrade").format(self.dist_new_version))
+                    self.ui_homecontroldistup_label.set_label(_("Start {} Upgrade").format(self.dist_new_version))
+
+        else:
+            error_message = response["message"]
+            print(error_message)
 
     def package(self):
         self.Package = Package()
@@ -149,6 +212,10 @@ class MainWindow(object):
         self.ui_menu_popover = self.GtkBuilder.get_object("ui_menu_popover")
         self.ui_menusettings_image = self.GtkBuilder.get_object("ui_menusettings_image")
         self.ui_menusettings_label = self.GtkBuilder.get_object("ui_menusettings_label")
+        self.ui_menudistupgrade_image = self.GtkBuilder.get_object("ui_menudistupgrade_image")
+        self.ui_menudistupgrade_label = self.GtkBuilder.get_object("ui_menudistupgrade_label")
+        self.ui_menudistupgrade_separator = self.GtkBuilder.get_object("ui_menudistupgrade_separator")
+        self.ui_menudistupgrade_button = self.GtkBuilder.get_object("ui_menudistupgrade_button")
         self.ui_headerbar_messagebutton = self.GtkBuilder.get_object("ui_headerbar_messagebutton")
         self.ui_headerbar_messageimage = self.GtkBuilder.get_object("ui_headerbar_messageimage")
         self.ui_updatefreq_combobox = self.GtkBuilder.get_object("ui_updatefreq_combobox")
@@ -205,9 +272,72 @@ class MainWindow(object):
         self.ui_fix_spinner = self.GtkBuilder.get_object("ui_fix_spinner")
         self.ui_fixvte_sw = self.GtkBuilder.get_object("ui_fixvte_sw")
 
-        self.upgrade_vteterm = None
-        self.fix_vteterm = None
+        self.ui_distup_now_label = self.GtkBuilder.get_object("ui_distup_now_label")
+        self.ui_distup_new_label = self.GtkBuilder.get_object("ui_distup_new_label")
 
+        # Dist upgrade widgets
+        self.ui_distupgrade_stack = self.GtkBuilder.get_object("ui_distupgrade_stack")
+        self.ui_distupgradeoptions_popover = self.GtkBuilder.get_object("ui_distupgradeoptions_popover")
+        self.ui_distupgradecontrol_spinner = self.GtkBuilder.get_object("ui_distupgradecontrol_spinner")
+        self.ui_controldistup_button = self.GtkBuilder.get_object("ui_controldistup_button")
+        self.ui_homedistupgrade_box = self.GtkBuilder.get_object("ui_homedistupgrade_box")
+        self.ui_homecontroldistup_label = self.GtkBuilder.get_object("ui_homecontroldistup_label")
+        self.ui_distupgotoupdates_box = self.GtkBuilder.get_object("ui_distupgotoupdates_box")
+        self.ui_distuptodown_button = self.GtkBuilder.get_object("ui_distuptodown_button")
+        self.ui_distuptodownretry_button = self.GtkBuilder.get_object("ui_distuptodownretry_button")
+        self.ui_rootdisk_box = self.GtkBuilder.get_object("ui_rootdisk_box")
+        self.ui_distupgradevte_sw = self.GtkBuilder.get_object("ui_distupgradevte_sw")
+        self.ui_distuptoinstallcancel_button = self.GtkBuilder.get_object("ui_distuptoinstallcancel_button")
+        self.ui_distupgrade_buttonbox = self.GtkBuilder.get_object("ui_distupgrade_buttonbox")
+        self.ui_distupgrade_buttonbox.set_homogeneous(False)
+
+        self.ui_controldistuperror_box = self.GtkBuilder.get_object("ui_controldistuperror_box")
+        self.ui_controldistuperror_label = self.GtkBuilder.get_object("ui_controldistuperror_label")
+
+        self.ui_distupgrade_defaults_button = self.GtkBuilder.get_object("ui_distupgrade_defaults_button")
+        self.ui_distupgradenewconf_radiobutton = self.GtkBuilder.get_object("ui_distupgradenewconf_radiobutton")
+        self.ui_distupgradeoldconf_radiobutton = self.GtkBuilder.get_object("ui_distupgradeoldconf_radiobutton")
+
+        self.ui_distuptoinstall_button = self.GtkBuilder.get_object("ui_distuptoinstall_button")
+        self.ui_distupdowninfo_label = self.GtkBuilder.get_object("ui_distupdowninfo_label")
+        self.ui_distupdowninfo_spinner = self.GtkBuilder.get_object("ui_distupdowninfo_spinner")
+
+        self.ui_distupgrade_button = self.GtkBuilder.get_object("ui_distupgrade_button")
+        self.ui_distupgrade_lastinfo_box = self.GtkBuilder.get_object("ui_distupgrade_lastinfo_box")
+        self.ui_distupgrade_lastinfo_spinner = self.GtkBuilder.get_object("ui_distupgrade_lastinfo_spinner")
+
+        self.ui_distupgradable_sw = self.GtkBuilder.get_object("ui_distupgradable_sw")
+        self.ui_distnewly_sw = self.GtkBuilder.get_object("ui_distnewly_sw")
+        self.ui_distremovable_sw = self.GtkBuilder.get_object("ui_distremovable_sw")
+        self.ui_distkept_sw = self.GtkBuilder.get_object("ui_distkept_sw")
+
+        self.ui_distupgradable_listbox = self.GtkBuilder.get_object("ui_distupgradable_listbox")
+        self.ui_distnewly_listbox = self.GtkBuilder.get_object("ui_distnewly_listbox")
+        self.ui_distremovable_listbox = self.GtkBuilder.get_object("ui_distremovable_listbox")
+        self.ui_distkept_listbox = self.GtkBuilder.get_object("ui_distkept_listbox")
+
+        self.ui_distdownloadsize_box = self.GtkBuilder.get_object("ui_distdownloadsize_box")
+        self.ui_distinstallsize_box = self.GtkBuilder.get_object("ui_distinstallsize_box")
+        self.ui_distupgradecount_box = self.GtkBuilder.get_object("ui_distupgradecount_box")
+        self.ui_distnewlycount_box = self.GtkBuilder.get_object("ui_distnewlycount_box")
+        self.ui_distremovecount_box = self.GtkBuilder.get_object("ui_distremovecount_box")
+        self.ui_distkeptcount_box = self.GtkBuilder.get_object("ui_distkeptcount_box")
+
+        self.ui_distdownloadsize_label = self.GtkBuilder.get_object("ui_distdownloadsize_label")
+        self.ui_distinstallsize_label = self.GtkBuilder.get_object("ui_distinstallsize_label")
+        self.ui_distupgradecount_label = self.GtkBuilder.get_object("ui_distupgradecount_label")
+        self.ui_distnewlycount_label = self.GtkBuilder.get_object("ui_distnewlycount_label")
+        self.ui_distremovecount_label = self.GtkBuilder.get_object("ui_distremovecount_label")
+        self.ui_distkeptcount_label = self.GtkBuilder.get_object("ui_distkeptcount_label")
+
+        self.ui_rootusage_progressbar = self.GtkBuilder.get_object("ui_rootusage_progressbar")
+        self.ui_rootfree_label = self.GtkBuilder.get_object("ui_rootfree_label")
+        self.ui_roottotal_label = self.GtkBuilder.get_object("ui_roottotal_label")
+        self.ui_distrequireddiskinfo_label = self.GtkBuilder.get_object("ui_distrequireddiskinfo_label")
+
+        self.upgrade_vteterm = None
+        self.distupgrade_vteterm = None
+        self.fix_vteterm = None
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -227,11 +357,24 @@ class MainWindow(object):
         self.monitoring_timeoutadd_sec = 60
         self.update_inprogress = False
         self.upgrade_inprogress = False
+        self.distup_download_inprogress = False
         self.laststack = None
         self.aptlist_directory = "/var/lib/apt/lists"
         self.dpkg_directory = "/var/lib/dpkg"
 
         self.clean_residuals_clicked = False
+
+        self.dist_upgradable = False
+
+    def set_initial_hide_widgets(self):
+        GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
+        GLib.idle_add(self.ui_menudistupgrade_separator.set_visible, False)
+        GLib.idle_add(self.ui_menudistupgrade_button.set_visible, False)
+        GLib.idle_add(self.ui_distupgotoupdates_box.set_visible, False)
+        GLib.idle_add(self.ui_rootdisk_box.set_visible, False)
+        GLib.idle_add(self.ui_distuptodownretry_button.set_visible, False)
+        GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
+        GLib.idle_add(self.ui_homedistupgrade_box.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -353,12 +496,17 @@ class MainWindow(object):
 
     def on_menu_settings_app(self, *args):
 
-        if self.ui_main_stack.get_visible_child_name() != "settings":
+        if self.ui_main_stack.get_visible_child_name() != "clean" and \
+                self.ui_main_stack.get_visible_child_name() != "settings" and \
+                self.ui_main_stack.get_visible_child_name() != "distupgrade":
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         self.ui_menusettings_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
         self.ui_menusettings_label.set_text(_("Home Page"))
         self.ui_main_stack.set_visible_child_name("settings")
+
+        self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
 
         interval = self.interval_to_combo(self.UserSettings.config_interval)
 
@@ -385,12 +533,18 @@ class MainWindow(object):
             self.ui_main_stack.set_visible_child_name("updateinfo")
         self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
         self.ui_menusettings_label.set_text(_("Settings"))
+        self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
         self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
         self.main_window.set_visible(True)
         self.main_window.present()
         self.item_sh_app.set_label(_("Hide App"))
 
     def on_ui_checkupdates_button_clicked(self, button):
+        if button.get_name() == "fromdist":
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
+
         self.ui_main_stack.set_visible_child_name("spinner")
         if self.autoupdate_glibid:
             GLib.source_remove(self.autoupdate_glibid)
@@ -483,8 +637,8 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("upgrade")
 
         if not self.upgrade_inprogress:
-            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "removeresidual",
-                       " ".join(self.Package.residual())]
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                       "removeresidual", " ".join(self.Package.residual())]
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
@@ -493,10 +647,141 @@ class MainWindow(object):
             self.ui_upgradeinfo_box.set_visible(True)
             self.ui_upgradevte_sw.set_visible(False)
 
+    def on_ui_controldistup_button_clicked(self, button):
+        if self.ui_main_stack.get_visible_child_name() != "clean" and \
+                self.ui_main_stack.get_visible_child_name() != "settings" and \
+                self.ui_main_stack.get_visible_child_name() != "distupgrade":
+            self.laststack = self.ui_main_stack.get_visible_child_name()
+        self.ui_menudistupgrade_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menudistupgrade_label.set_text(_("Home Page"))
+        self.ui_main_stack.set_visible_child_name("distupgrade")
+        self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menusettings_label.set_text(_("Settings"))
+        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+
+        if button.get_name() == "retry":
+            self.ui_distupgrade_stack.set_visible_child_name("control")
+        elif button.get_name() == "homecontrol":
+            self.ui_distupgrade_stack.set_visible_child_name("control")
+            if self.distup_download_inprogress:
+                self.ui_distupgrade_stack.set_visible_child_name("download")
+                return
+
+        GLib.idle_add(self.ui_controldistup_button.set_sensitive, False)
+
+        GLib.idle_add(self.ui_distupgotoupdates_box.set_visible, False)
+        GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
+
+        upg_thread = threading.Thread(target=self.before_distupgradables_worker_thread, daemon=True)
+        upg_thread.start()
+
+    def before_distupgradables_worker_thread(self):
+        rcbu = self.before_distupgradables_worker()
+        GLib.idle_add(self.before_distupgradables_worker_thread_done, rcbu)
+
+    def before_distupgradables_worker(self):
+        return self.Package.required_changes_upgrade()
+
+    def before_distupgradables_worker_thread_done(self, requireds):
+
+        if requireds["changes_available"] and (requireds["to_install"] or requireds["to_upgrade"]):
+            print("changes_available:{}, to_install:{}, to_upgrade:{}".format(
+                requireds["changes_available"], requireds["to_install"], requireds["to_upgrade"]))
+
+            GLib.idle_add(self.ui_distupgotoupdates_box.set_visible, True)
+            GLib.idle_add(self.ui_controldistup_button.set_sensitive, True)
+
+        else:
+            self.control_distup_messages = ""
+
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                       "controldistupgrade", self.dist_new_sources]
+
+            self.startControlDistUpgradeProcess(command)
+            self.upgrade_inprogress = True
+            self.ui_distupgradecontrol_spinner.start()
+            GLib.idle_add(self.ui_controldistup_button.set_sensitive, False)
+            GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
+
+
+
+    def on_ui_distuptodown_button_clicked(self, button):
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                   "downupgrade", self.dist_new_sources]
+
+        # self.startDownDistUpgradeProcess(command)
+
+        if self.distupgrade_vteterm:
+            self.distupgrade_vteterm.reset(True, True)
+
+        self.ui_distupgradevte_sw.set_visible(True)
+
+        self.ui_distupdowninfo_label.set_markup("<b>{}</b>".format(_("Packages are downloading, please wait.")))
+
+        self.ui_distupdowninfo_spinner.start()
+        self.ui_distupdowninfo_spinner.set_visible(True)
+
+        self.ui_distuptoinstall_button.set_sensitive(False)
+        self.ui_distuptoinstall_button.set_visible(False)
+
+        self.ui_distuptodownretry_button.set_visible(False)
+        self.ui_distuptodownretry_button.set_sensitive(False)
+
+        self.ui_distupgrade_stack.set_visible_child_name("download")
+
+        self.distupgrade_vte_start_process(command)
+        self.upgrade_inprogress = True
+        self.distup_download_inprogress = True
+
+    def on_ui_distuptoinstall_button_clicked(self, button):
+        self.ui_distupgrade_lastinfo_box.set_visible(False)
+        self.ui_distupgrade_lastinfo_spinner.stop()
+        self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
+        self.ui_distupgrade_stack.set_visible_child_name("install")
+
+    def on_ui_distupgrade_button_clicked(self, button):
+        self.upgrade_inprogress = True
+
+        self.ui_distupgrade_buttonbox.set_sensitive(False)
+        self.ui_distuptoinstallcancel_button.set_sensitive(False)
+
+
+        ask_conf = ""
+        if self.ui_distupgradenewconf_radiobutton.get_active():
+            ask_conf = "--force-confnew"
+        elif self.ui_distupgradeoldconf_radiobutton.get_active():
+            ask_conf = "--force-confold"
+
+
+        print("dpkg_conf: {}".format(ask_conf))
+
+
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                   "distupgradeoffline", self.dist_new_sources, ask_conf]
+
+        self.startDistUpgradeProcess(command)
+
+        self.ui_distupgrade_lastinfo_box.set_visible(True)
+        self.ui_distupgrade_lastinfo_spinner.start()
+
+    def on_ui_distupgradeconf_radiobutton_toggled(self, button):
+        self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
+
+    def on_ui_distupgrade_defaults_button_clicked(self, button):
+        self.ui_distupgradenewconf_radiobutton.set_active(True)
+
+    def on_ui_distupgradeoptions_button_clicked(self, button):
+        self.ui_distupgradeoptions_popover.popup()
+        self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
+
     def on_ui_homepage_button_clicked(self, button):
-        if self.ui_main_stack.get_visible_child_name() == "settings" or self.ui_main_stack.get_visible_child_name() == "clean":
+        if self.ui_main_stack.get_visible_child_name() == "clean" or \
+                self.ui_main_stack.get_visible_child_name() == "settings" or \
+                self.ui_main_stack.get_visible_child_name() == "distupgrade":
             self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Settings"))
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
             self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
             self.ui_main_stack.set_visible_child_name(self.laststack)
 
@@ -507,7 +792,9 @@ class MainWindow(object):
 
     def on_ui_menusettings_button_clicked(self, button):
 
-        if self.ui_main_stack.get_visible_child_name() != "clean" and self.ui_main_stack.get_visible_child_name() != "settings":
+        if self.ui_main_stack.get_visible_child_name() != "clean" and \
+                self.ui_main_stack.get_visible_child_name() != "settings" and \
+                self.ui_main_stack.get_visible_child_name() != "distupgrade":
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         if self.ui_main_stack.get_visible_child_name() == "settings":
@@ -517,7 +804,11 @@ class MainWindow(object):
         else:
             self.ui_menusettings_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Home Page"))
+
             self.ui_main_stack.set_visible_child_name("settings")
+
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
 
             self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
 
@@ -537,10 +828,40 @@ class MainWindow(object):
 
         self.ui_menu_popover.popdown()
 
+    def on_ui_menudistupgrade_button_clicked(self, button):
+        self.ui_menu_popover.popdown()
+
+        if self.ui_main_stack.get_visible_child_name() != "clean" and \
+                self.ui_main_stack.get_visible_child_name() != "settings" and \
+                self.ui_main_stack.get_visible_child_name() != "distupgrade":
+
+
+            self.laststack = self.ui_main_stack.get_visible_child_name()
+
+        if self.ui_main_stack.get_visible_child_name() == "distupgrade":
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
+            self.ui_main_stack.set_visible_child_name(self.laststack)
+        else:
+
+            GLib.idle_add(self.ui_distupgotoupdates_box.set_visible, False)
+            GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
+
+            self.ui_menudistupgrade_image.set_from_icon_name("user-home-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Home Page"))
+
+            self.ui_main_stack.set_visible_child_name("distupgrade")
+
+            self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menusettings_label.set_text(_("Settings"))
+
+            self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
     def on_ui_headerbar_messagebutton_clicked(self, button):
         self.ui_menu_popover.popdown()
 
-        if self.ui_main_stack.get_visible_child_name() != "clean" and self.ui_main_stack.get_visible_child_name() != "settings":
+        if self.ui_main_stack.get_visible_child_name() != "clean" and \
+                self.ui_main_stack.get_visible_child_name() != "settings" and \
+                self.ui_main_stack.get_visible_child_name() != "distupgrade":
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         if self.ui_main_stack.get_visible_child_name() == "clean":
@@ -552,6 +873,9 @@ class MainWindow(object):
 
             self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Settings"))
+
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
 
     def interval_to_combo(self, interval):
         if interval == 3600:  # Hourly
@@ -807,8 +1131,7 @@ class MainWindow(object):
             GLib.idle_add(self.ui_installsize_box.set_visible, True)
 
         if requireds["to_upgrade"] and requireds["to_upgrade"] is not None:
-            GLib.idle_add(self.ui_upgradecount_label.set_markup,
-                          "{}".format(len(requireds["to_upgrade"])))
+            GLib.idle_add(self.ui_upgradecount_label.set_markup, "{}".format(len(requireds["to_upgrade"])))
             GLib.idle_add(self.ui_upgradecount_box.set_visible, True)
 
         if requireds["to_install"] and requireds["to_install"] is not None:
@@ -833,6 +1156,8 @@ class MainWindow(object):
             self.update_inprogress = True
         else:
             print("apt_update: upgrade_inprogress | update_inprogress")
+            if self.ui_main_stack.get_visible_child_name() == "spinner":
+                self.ui_main_stack.set_visible_child_name("ok")
 
     def update_lastcheck_labels(self):
         self.ui_settingslastupdate_label.set_markup("{}".format(
@@ -875,7 +1200,8 @@ class MainWindow(object):
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
                     notification.show()
             else:
-                self.ui_main_stack.set_visible_child_name("ok")
+                if self.ui_main_stack.get_visible_child_name() != "distupgrade":
+                    self.ui_main_stack.set_visible_child_name("ok")
             self.update_indicator_updates_labels(upgradable)
 
     def control_update_residual_message_section(self):
@@ -907,6 +1233,246 @@ class MainWindow(object):
             self.item_systemstatus.set_sensitive(False)
             self.item_systemstatus.set_label(updates)
             self.indicator.set_icon(self.icon_normal)
+
+    def startControlDistUpgradeProcess(self, params):
+        pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                                                      standard_output=True, standard_error=True)
+        GLib.io_add_watch(GLib.IOChannel(stdout), GLib.IO_IN | GLib.IO_HUP, self.onControlDistUpgradeStdout)
+        GLib.io_add_watch(GLib.IOChannel(stderr), GLib.IO_IN | GLib.IO_HUP, self.onControlDistUpgradeStderr)
+        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, self.onControlDistUpgradeExit)
+
+        return pid
+
+    def onControlDistUpgradeStdout(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("onControlDistUpgradeStdout: {}".format(line))
+        self.control_distup_messages += "{}".format(line)
+        return True
+
+    def onControlDistUpgradeStderr(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("onControlDistUpgradeStderr: {}".format(line))
+        self.control_distup_messages += "{}".format(line)
+        return True
+
+    def onControlDistUpgradeExit(self, pid, status):
+        self.upgrade_inprogress = False
+
+        self.ui_distupgradecontrol_spinner.stop()
+        self.ui_controldistup_button.set_sensitive(True)
+        self.ui_distuptodown_button.set_label(_("Upgrade to {}").format(self.dist_new_version))
+
+        self.ui_controldistuperror_box.set_visible(False)
+
+        print("onControlDistUpgradeExit: {}".format(status))
+        self.control_distup_messages += "ControlDistUpgrade Exit Code: {}".format(status)
+
+
+        if status != 0:
+            print("onControlDistUpgradeExit exited with error")
+            self.ui_controldistuperror_label.set_text("{}".format(self.control_distup_messages))
+            self.ui_controldistuperror_box.set_visible(True)
+            return
+
+        ### read all changes from a file and set ui
+
+        rc_file_path = os.path.dirname(os.path.abspath(__file__)) + "/../required_changes_for_upgrade.json"
+        rc_file = open(rc_file_path, "r")
+
+        if os.path.isfile(rc_file_path):
+            requireds = json.load(rc_file)
+
+            self.ui_distupgradable_listbox.foreach(lambda child: self.ui_distupgradable_listbox.remove(child))
+            self.ui_distnewly_listbox.foreach(lambda child: self.ui_distnewly_listbox.remove(child))
+            self.ui_distremovable_listbox.foreach(lambda child: self.ui_distremovable_listbox.remove(child))
+            self.ui_distkept_listbox.foreach(lambda child: self.ui_distkept_listbox.remove(child))
+            self.ui_distupgradable_sw.set_visible(False)
+            self.ui_distnewly_sw.set_visible(False)
+            self.ui_distremovable_sw.set_visible(False)
+            self.ui_distkept_sw.set_visible(False)
+            self.ui_distdownloadsize_box.set_visible(False)
+            self.ui_distinstallsize_box.set_visible(False)
+            self.ui_distupgradecount_box.set_visible(False)
+            self.ui_distnewlycount_box.set_visible(False)
+            self.ui_distremovecount_box.set_visible(False)
+            self.ui_distkeptcount_box.set_visible(False)
+
+            def add_to_listbox(iconname, package, listbox, pagename):
+                image = Gtk.Image.new_from_icon_name(iconname, Gtk.IconSize.BUTTON)
+                name = Gtk.Label.new()
+                name.set_markup("<b>{}</b>".format(GLib.markup_escape_text(package["name"], -1)))
+                name.set_ellipsize(Pango.EllipsizeMode.END)
+                name.props.halign = Gtk.Align.START
+
+                summarylabel = Gtk.Label.new()
+                summarylabel.set_markup(
+                    "<small>{}</small>".format(GLib.markup_escape_text(package["summary"], -1)))
+                summarylabel.set_ellipsize(Pango.EllipsizeMode.END)
+                summarylabel.props.halign = Gtk.Align.START
+
+                old_version = Gtk.Label.new()
+                old_version.set_markup("<span size='x-small'>{}</span>".format(
+                    GLib.markup_escape_text(package["oldversion"], -1)))
+                old_version.set_ellipsize(Pango.EllipsizeMode.END)
+
+                sep_label = Gtk.Label.new()
+                sep_label.set_markup("<span size='x-small'>>></span>")
+
+                new_version = Gtk.Label.new()
+                new_version.set_markup("<span size='x-small'>{}</span>".format(
+                    GLib.markup_escape_text(package["newversion"], -1)))
+                new_version.set_ellipsize(Pango.EllipsizeMode.END)
+
+                box_version = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 5)
+                box_version.pack_start(old_version, False, True, 0)
+                box_version.pack_start(sep_label, False, True, 0)
+                box_version.pack_start(new_version, False, True, 0)
+
+                box1 = Gtk.Box.new(Gtk.Orientation.VERTICAL, 3)
+                box1.pack_start(name, False, True, 0)
+                box1.pack_start(summarylabel, False, True, 0)
+                box1.pack_start(box_version, False, True, 0)
+                box1.props.valign = Gtk.Align.CENTER
+                box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 3)
+                box.set_margin_top(5)
+                box.set_margin_bottom(5)
+                box.set_margin_start(5)
+                box.set_margin_end(5)
+                box.pack_start(image, False, True, 5)
+                box.pack_start(box1, False, True, 5)
+                GLib.idle_add(listbox.insert, box, GLib.PRIORITY_DEFAULT_IDLE)
+                GLib.idle_add(pagename.set_visible, True)
+
+            if requireds["to_upgrade"] and requireds["to_upgrade"] is not None:
+                for package in requireds["to_upgrade"]:
+                    add_to_listbox("go-up-symbolic", package, self.ui_distupgradable_listbox, self.ui_distupgradable_sw)
+
+            if requireds["to_install"] and requireds["to_install"] is not None:
+                for package in requireds["to_install"]:
+                    add_to_listbox("list-add-symbolic", package, self.ui_distnewly_listbox, self.ui_distnewly_sw)
+
+            if requireds["to_delete"] and requireds["to_delete"] is not None:
+                for package in requireds["to_delete"]:
+                    add_to_listbox("list-remove-symbolic", package, self.ui_distremovable_listbox, self.ui_distremovable_sw)
+
+            if requireds["to_keep"] and requireds["to_keep"] is not None:
+                for package in requireds["to_keep"]:
+                    add_to_listbox("view-grid-symbolic", package, self.ui_distkept_listbox, self.ui_distkept_sw)
+
+            GLib.idle_add(self.ui_distupgradable_listbox.show_all)
+            GLib.idle_add(self.ui_distnewly_listbox.show_all)
+            GLib.idle_add(self.ui_distremovable_listbox.show_all)
+            GLib.idle_add(self.ui_distkept_listbox.show_all)
+
+            if requireds["download_size"] and requireds["download_size"] is not None:
+                GLib.idle_add(self.ui_distdownloadsize_label.set_markup,
+                              "{}".format(self.Package.beauty_size(requireds["download_size"])))
+                GLib.idle_add(self.ui_distdownloadsize_box.set_visible, True)
+
+            if requireds["install_size"] and requireds["install_size"] is not None and requireds["install_size"] > 0:
+                GLib.idle_add(self.ui_distinstallsize_label.set_markup,
+                              "{}".format(self.Package.beauty_size(requireds["install_size"])))
+                GLib.idle_add(self.ui_distinstallsize_box.set_visible, True)
+
+            if requireds["to_upgrade"] and requireds["to_upgrade"] is not None:
+                GLib.idle_add(self.ui_distupgradecount_label.set_markup,
+                              "{}".format(len(requireds["to_upgrade"])))
+                GLib.idle_add(self.ui_distupgradecount_box.set_visible, True)
+
+            if requireds["to_install"] and requireds["to_install"] is not None:
+                GLib.idle_add(self.ui_distnewlycount_label.set_markup, "{}".format(len(requireds["to_install"])))
+                GLib.idle_add(self.ui_distnewlycount_box.set_visible, True)
+
+            if requireds["to_delete"] and requireds["to_delete"] is not None:
+                GLib.idle_add(self.ui_distremovecount_label.set_markup, "{}".format(len(requireds["to_delete"])))
+                GLib.idle_add(self.ui_distremovecount_box.set_visible, True)
+
+            if requireds["to_keep"] and requireds["to_keep"] is not None:
+                GLib.idle_add(self.ui_distkeptcount_label.set_markup, "{}".format(len(requireds["to_keep"])))
+                GLib.idle_add(self.ui_distkeptcount_box.set_visible, True)
+
+
+            root_info = self.get_file_info("/")
+
+            tolerance = 500000000 # 500 MB
+            if (requireds["download_size"] + requireds["install_size"] + tolerance) > int(root_info['free']):
+
+                self.ui_rootfree_label.set_label(f"{self.Package.beauty_size(int(root_info['free']))}")
+                self.ui_roottotal_label.set_label(f"{self.Package.beauty_size(int(root_info['total']))}")
+                self.ui_rootusage_progressbar.set_fraction(root_info["usage_percent"])
+
+                self.ui_distrequireddiskinfo_label.set_markup("{}: <b>{}</b>".format(
+                    _("Total Required Size"),
+                    self.Package.beauty_size(requireds["download_size"] + requireds["install_size"])))
+
+                GLib.idle_add(self.ui_distuptodown_button.set_sensitive, False)
+                GLib.idle_add(self.ui_rootdisk_box.set_visible, True)
+            else:
+                GLib.idle_add(self.ui_distuptodown_button.set_sensitive, True)
+                GLib.idle_add(self.ui_rootdisk_box.set_visible, False)
+
+
+            self.ui_distupgrade_stack.set_visible_child_name("distupdateinfo")
+
+        else:
+            print("{} not exists".format(rc_file_path))
+
+    def get_file_info(self, file):
+        process = subprocess.check_output(
+            f"df '{file}' -B1 -T | awk 'NR==1 {{next}} {{print $1,$2,$3,$4,$5,$7; exit}}'", shell=True)
+        if len(process.decode("utf-8").strip().split(" ")) == 6:
+            keys = ["device", "fstype", "total", "usage", "free", "mountpoint"]
+            obj = dict(zip(keys, process.decode("utf-8").strip().split(" ")))
+            try:
+                obj["usage_percent"] = (int(obj['total']) - int(obj['free'])) / int(obj['total'])
+            except:
+                obj["usage_percent"] = 0
+            try:
+                obj["free_percent"] = int(obj['free']) / int(obj['total'])
+            except:
+                obj["free_percent"] = 0
+        else:
+            obj = {"device": "", "fstype": "", "total": 0, "usage": 0, "free": 0, "mountpoint": "",
+                   "usage_percent": 0, "free_percent": 0}
+
+        print(obj)
+        return obj
+
+
+    def startDistUpgradeProcess(self, params):
+        pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                                                      standard_output=True, standard_error=True)
+        GLib.io_add_watch(GLib.IOChannel(stdout), GLib.IO_IN | GLib.IO_HUP, self.onDistUpgradeStdout)
+        GLib.io_add_watch(GLib.IOChannel(stderr), GLib.IO_IN | GLib.IO_HUP, self.onDistUpgradeStderr)
+        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, self.onDistUpgradeExit)
+
+        return pid
+
+    def onDistUpgradeStdout(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("onDistUpgradeStdout: {}".format(line))
+        return True
+
+    def onDistUpgradeStderr(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("onDistUpgradeStderr: {}".format(line))
+        return True
+
+    def onDistUpgradeExit(self, pid, status):
+        print("onDistUpgradeExit: {}".format(status))
+        self.upgrade_inprogress = False
+        self.ui_distupgrade_lastinfo_box.set_visible(False)
+        self.ui_distupgrade_lastinfo_spinner.stop()
+        self.ui_distupgrade_buttonbox.set_sensitive(True)
+        self.ui_distuptoinstallcancel_button.set_sensitive(True)
 
     def startAptUpdateProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
@@ -1105,6 +1671,98 @@ class MainWindow(object):
                 print("Error while updating cache on fix_vte_on_done")
         self.update_inprogress = False
 
+
+    def distupgrade_vte_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            if event.button.button == 3:
+                widget.popup_for_device(None, None, None, None, None,
+                                        event.button.button, event.time)
+                return True
+        return False
+
+    def distupgrade_vte_menu_action(self, widget, terminal):
+        terminal.copy_clipboard()
+
+    def distupgrade_vte_start_process(self, command):
+
+        if self.distupgrade_vteterm:
+            self.distupgrade_vteterm.get_parent().remove(self.distupgrade_vteterm)
+
+        self.distupgrade_vteterm = Vte.Terminal()
+        self.distupgrade_vteterm.set_scrollback_lines(-1)
+        distupgrade_vte_menu = Gtk.Menu()
+        distupgrade_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        distupgrade_vte_menu.append(distupgrade_vte_menu_items)
+        distupgrade_vte_menu_items.connect("activate", self.distupgrade_vte_menu_action, self.distupgrade_vteterm)
+        distupgrade_vte_menu_items.show()
+        self.distupgrade_vteterm.connect_object("event", self.distupgrade_vte_event, distupgrade_vte_menu)
+        self.ui_distupgradevte_sw.add(self.distupgrade_vteterm)
+        self.distupgrade_vteterm.show_all()
+
+        pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
+        self.distupgrade_vteterm.set_pty(pty)
+        try:
+            self.distupgrade_vteterm.spawn_async(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                None,
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+                -1,
+                None,
+                self.distupgrade_vte_create_spawn_callback,
+                None
+            )
+        except Exception as e:
+            # old version VTE doesn't have spawn_async so use spawn_sync
+            print("{}".format(e))
+            self.distupgrade_vteterm.connect("child-exited", self.distupgrade_vte_on_done)
+            self.distupgrade_vteterm.spawn_sync(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                [],
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+            )
+
+    def distupgrade_vte_create_spawn_callback(self, terminal, pid, error, userdata):
+        self.distupgrade_vteterm.connect("child-exited", self.distupgrade_vte_on_done)
+
+    def distupgrade_vte_on_done(self, terminal, status):
+        print("distupgrade_vte_on_done status: {}".format(status))
+        if status == 32256:  # operation cancelled | Request dismissed
+            self.ui_distupgrade_stack.set_visible_child_name("distupdateinfo")
+        elif status == 0:
+            print("down ok")
+            self.ui_distupdowninfo_label.set_markup("<b>{}</b>".format(_("The download is complete. You can continue.")))
+            self.ui_distupdowninfo_spinner.stop()
+            self.ui_distupdowninfo_spinner.set_visible(False)
+
+            self.ui_distuptoinstall_button.set_visible(True)
+            self.ui_distuptoinstall_button.set_sensitive(True)
+
+            self.ui_distuptodownretry_button.set_visible(False)
+            self.ui_distuptodownretry_button.set_sensitive(False)
+
+            self.on_ui_distuptoinstall_button_clicked(button=None)
+
+        else:
+            self.ui_distupdowninfo_label.set_markup("<b>{}</b>".format(_("The download is not completed. Try again.")))
+            self.ui_distupdowninfo_spinner.stop()
+            self.ui_distupdowninfo_spinner.set_visible(False)
+
+            self.ui_distuptoinstall_button.set_visible(False)
+            self.ui_distuptoinstall_button.set_sensitive(False)
+
+            self.ui_distuptodownretry_button.set_visible(True)
+            self.ui_distuptodownretry_button.set_sensitive(True)
+
+        self.upgrade_inprogress = False
+        self.distup_download_inprogress = False
 
 class Notification(GObject.GObject):
     __gsignals__ = {
