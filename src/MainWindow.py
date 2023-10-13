@@ -983,14 +983,14 @@ class MainWindow(object):
 
     def monitoring(self):
         self.aptlist_directory = "/var/lib/apt/lists"
-        self.dpkg_directory = "/var/lib/dpkg"
+        self.dpkg_status_path = "/var/lib/dpkg/status"
 
         self.apt_dir = Gio.file_new_for_path(self.aptlist_directory)
         self.apt_monitor = self.apt_dir.monitor_directory(0, None)
         self.apt_monitor.connect('changed', self.on_apt_changed)
 
-        self.dpkg_dir = Gio.file_new_for_path(self.dpkg_directory)
-        self.dpkg_monitor = self.dpkg_dir.monitor_directory(0, None)
+        self.dpkg_status_file = Gio.file_new_for_path(self.dpkg_status_path)
+        self.dpkg_monitor = self.dpkg_status_file.monitor_file(0, None)
         self.dpkg_monitor.connect('changed', self.on_apt_changed)
 
     def on_apt_changed(self, file_monitor, file, other_file, event_type):
