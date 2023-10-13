@@ -703,8 +703,6 @@ class MainWindow(object):
             GLib.idle_add(self.ui_controldistup_button.set_sensitive, False)
             GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
 
-
-
     def on_ui_distuptodown_button_clicked(self, button):
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                    "downupgrade", self.dist_new_sources]
@@ -745,16 +743,13 @@ class MainWindow(object):
         self.ui_distupgrade_buttonbox.set_sensitive(False)
         self.ui_distuptoinstallcancel_button.set_sensitive(False)
 
-
         ask_conf = ""
         if self.ui_distupgradenewconf_radiobutton.get_active():
             ask_conf = "--force-confnew"
         elif self.ui_distupgradeoldconf_radiobutton.get_active():
             ask_conf = "--force-confold"
 
-
         print("dpkg_conf: {}".format(ask_conf))
-
 
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                    "distupgradeoffline", self.dist_new_sources, ask_conf]
@@ -834,8 +829,6 @@ class MainWindow(object):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
                 self.ui_main_stack.get_visible_child_name() != "settings" and \
                 self.ui_main_stack.get_visible_child_name() != "distupgrade":
-
-
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         if self.ui_main_stack.get_visible_child_name() == "distupgrade":
@@ -856,6 +849,7 @@ class MainWindow(object):
             self.ui_menusettings_label.set_text(_("Settings"))
 
             self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+
     def on_ui_headerbar_messagebutton_clicked(self, button):
         self.ui_menu_popover.popdown()
 
@@ -1271,7 +1265,6 @@ class MainWindow(object):
         print("onControlDistUpgradeExit: {}".format(status))
         self.control_distup_messages += "ControlDistUpgrade Exit Code: {}".format(status)
 
-
         if status != 0:
             print("onControlDistUpgradeExit exited with error")
             self.ui_controldistuperror_label.set_text("{}".format(self.control_distup_messages))
@@ -1357,7 +1350,8 @@ class MainWindow(object):
 
             if requireds["to_delete"] and requireds["to_delete"] is not None:
                 for package in requireds["to_delete"]:
-                    add_to_listbox("list-remove-symbolic", package, self.ui_distremovable_listbox, self.ui_distremovable_sw)
+                    add_to_listbox("list-remove-symbolic", package, self.ui_distremovable_listbox,
+                                   self.ui_distremovable_sw)
 
             if requireds["to_keep"] and requireds["to_keep"] is not None:
                 for package in requireds["to_keep"]:
@@ -1395,10 +1389,9 @@ class MainWindow(object):
                 GLib.idle_add(self.ui_distkeptcount_label.set_markup, "{}".format(len(requireds["to_keep"])))
                 GLib.idle_add(self.ui_distkeptcount_box.set_visible, True)
 
-
             root_info = self.get_file_info("/")
 
-            tolerance = 500000000 # 500 MB
+            tolerance = 2000000000  # 2 GB
             if (requireds["download_size"] + requireds["install_size"] + tolerance) > int(root_info['free']):
 
                 self.ui_rootfree_label.set_label(f"{self.Package.beauty_size(int(root_info['free']))}")
@@ -1414,7 +1407,6 @@ class MainWindow(object):
             else:
                 GLib.idle_add(self.ui_distuptodown_button.set_sensitive, True)
                 GLib.idle_add(self.ui_rootdisk_box.set_visible, False)
-
 
             self.ui_distupgrade_stack.set_visible_child_name("distupdateinfo")
 
@@ -1441,7 +1433,6 @@ class MainWindow(object):
 
         print(obj)
         return obj
-
 
     def startDistUpgradeProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
@@ -1671,7 +1662,6 @@ class MainWindow(object):
                 print("Error while updating cache on fix_vte_on_done")
         self.update_inprogress = False
 
-
     def distupgrade_vte_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
             if event.button.button == 3:
@@ -1738,7 +1728,8 @@ class MainWindow(object):
             self.ui_distupgrade_stack.set_visible_child_name("distupdateinfo")
         elif status == 0:
             print("down ok")
-            self.ui_distupdowninfo_label.set_markup("<b>{}</b>".format(_("The download is complete. You can continue.")))
+            self.ui_distupdowninfo_label.set_markup(
+                "<b>{}</b>".format(_("The download is complete. You can continue.")))
             self.ui_distupdowninfo_spinner.stop()
             self.ui_distupdowninfo_spinner.set_visible(False)
 
@@ -1763,6 +1754,7 @@ class MainWindow(object):
 
         self.upgrade_inprogress = False
         self.distup_download_inprogress = False
+
 
 class Notification(GObject.GObject):
     __gsignals__ = {

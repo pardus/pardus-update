@@ -13,8 +13,8 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from shutil import rmtree
 from shutil import copy2
+from shutil import rmtree
 
 import apt
 import apt_pkg
@@ -351,7 +351,7 @@ def main():
     def downupgrade(sourceslist):
 
         aptclean()
-        
+
         sfile = open("/tmp/tmp-sources.list", "w")
         sfile.write(sourceslist)
         sfile.flush()
@@ -376,7 +376,6 @@ def main():
         # subprocess.call(["apt", "full-upgrade", "-yqd"],
         #                 env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
-
     def distupgradeoffline(sourceslist, askconf):
 
         # aptlists_folder = "/var/lib/apt/lists/"
@@ -387,7 +386,6 @@ def main():
         #             os.unlink(file_path)
         #     except Exception as e:
         #         print("Failed to delete {}. Reason: {}".format(file_path, e))
-
 
         app_safeupgrade_path = os.path.dirname(os.path.abspath(__file__)) + "/../data/pardus-safeupgrade-template.sh"
         safeupgrade_path = os.path.dirname(os.path.abspath(__file__)) + "/../data/pardus-safeupgrade.sh"
@@ -501,9 +499,6 @@ def main():
 
         subprocess.call(["apt", "full-upgrade", "-fuyq", "--no-download"],
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
-
-
-
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "externalrepo":
