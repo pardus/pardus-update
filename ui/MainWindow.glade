@@ -2972,7 +2972,7 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="spacing">21</property>
                             <child>
                               <object class="GtkButton" id="ui_distuptodowncancel_button">
-                                <property name="label">Cancel</property>
+                                <property name="label" translatable="yes">Cancel</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
@@ -3423,7 +3423,7 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="spacing">21</property>
                             <child>
                               <object class="GtkButton" id="ui_distuptoinstallcancel_button">
-                                <property name="label">Cancel</property>
+                                <property name="label" translatable="yes">Cancel</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
