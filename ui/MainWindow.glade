@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkAboutDialog" id="ui_about_dialog">
@@ -2286,7 +2286,7 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="spacing">13</property>
                             <child>
                               <object class="GtkButton" id="ui_controldistup_button">
-                                <property name="label" translatable="yes">Start Pardus X Upgrade</property>
+                                <property name="label">Start Pardus X Upgrade</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
@@ -3384,7 +3384,7 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="halign">center</property>
                             <property name="margin-start">55</property>
                             <property name="margin-end">55</property>
-                            <property name="label" translatable="yes">The system will reboot and updates will be installed during startup.</property>
+                            <property name="label" translatable="yes">Your system will reboot and updates will be installed during startup.</property>
                             <property name="justify">center</property>
                             <property name="wrap">True</property>
                             <attributes>
@@ -3402,7 +3402,7 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">center</property>
-                            <property name="label" translatable="yes">Please do not turn off the machine while updates are installing at startup.</property>
+                            <property name="label" translatable="yes">Please do not turn off the machine while updates are installing.</property>
                             <property name="justify">center</property>
                             <property name="wrap">True</property>
                             <attributes>
@@ -3513,7 +3513,7 @@ Use with caution. Are you sure you want to continue?</property>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">The last changes are being made.</property>
+                                <property name="label" translatable="yes">The last changes are processing.</property>
                                 <property name="justify">center</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
