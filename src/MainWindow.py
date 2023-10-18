@@ -558,8 +558,8 @@ class MainWindow(object):
         if self.Package.upgradable():
             self.apt_update()
         else:
-            self.control_update_residual_message_section()
             self.ui_main_stack.set_visible_child_name("ok")
+        self.control_update_residual_message_section()
 
     def on_ui_upgradeconf_radiobutton_toggled(self, button):
         self.ui_upgrade_defaults_button.set_visible(
@@ -1177,8 +1177,10 @@ class MainWindow(object):
             if upgradable:
                 self.control_required_changes()
                 if self.ui_main_stack.get_visible_child_name() == "spinner" or \
-                        self.ui_main_stack.get_visible_child_name() == "ok" or \
-                        self.ui_main_stack.get_visible_child_name() == "upgrade":
+                        self.ui_main_stack.get_visible_child_name() == "ok":
+                    self.ui_main_stack.set_visible_child_name("updateinfo")
+                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                     self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
                 if len(upgradable) > 1:
