@@ -588,6 +588,9 @@ Fatih Altun</property>
                         <property name="can-focus">False</property>
                         <property name="valign">start</property>
                         <property name="label" translatable="yes">Package manager cache is updating</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">False</property>
