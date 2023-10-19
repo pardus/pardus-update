@@ -203,7 +203,6 @@ class MainWindow(object):
         self.ui_quit_dialog = self.GtkBuilder.get_object("ui_quit_dialog")
         self.ui_main_stack = self.GtkBuilder.get_object("ui_main_stack")
         self.ui_upgrade_button = self.GtkBuilder.get_object("ui_upgrade_button")
-        self.ui_versionupgrade_button = self.GtkBuilder.get_object("ui_versionupgrade_button")
         self.ui_upgradeoptions_button = self.GtkBuilder.get_object("ui_upgradeoptions_button")
         self.ui_upgrade_buttonbox = self.GtkBuilder.get_object("ui_upgrade_buttonbox")
         self.ui_upgrade_buttonbox.set_homogeneous(False)
@@ -264,6 +263,8 @@ class MainWindow(object):
         self.ui_upgradevte_sw = self.GtkBuilder.get_object("ui_upgradevte_sw")
         self.ui_upgradeinfo_label = self.GtkBuilder.get_object("ui_upgradeinfo_label")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
+        self.ui_upgradeinfo_spinner = self.GtkBuilder.get_object("ui_upgradeinfo_spinner")
+        self.ui_upgradeinfobusy_label = self.GtkBuilder.get_object("ui_upgradeinfobusy_label")
 
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
         self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
@@ -373,6 +374,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_distuptodownretry_button.set_visible, False)
         GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
         GLib.idle_add(self.ui_homedistupgrade_box.set_visible, False)
+        GLib.idle_add(self.ui_upgradeinfobusy_label.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -576,6 +578,10 @@ class MainWindow(object):
         self.ui_upgradevte_sw.set_visible(True)
         self.ui_main_stack.set_visible_child_name("upgrade")
 
+        self.ui_upgradeinfo_spinner.start()
+
+        self.ui_upgradeinfobusy_label.set_visible(False)
+
         self.ui_upgradeinfook_button.set_visible(False)
         self.ui_upgradeinfo_label.set_markup(
             "<b>{}</b>".format(_("Updates are installing. Please wait...")))
@@ -601,9 +607,8 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            self.ui_upgradeinfo_label.set_markup(
-                "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
+            print("upgrade in progress")
+            self.ui_upgradeinfobusy_label.set_visible(True)
 
     def on_ui_autoremovable_button_clicked(self, button):
         self.clean_residuals_clicked = True
@@ -611,6 +616,11 @@ class MainWindow(object):
             self.upgrade_vteterm.reset(True, True)
         self.ui_upgradevte_sw.set_visible(True)
         self.ui_main_stack.set_visible_child_name("upgrade")
+
+        self.ui_upgradeinfo_spinner.start()
+
+        self.ui_upgradeinfobusy_label.set_visible(False)
+
 
         self.ui_upgradeinfook_button.set_visible(False)
         self.ui_upgradeinfo_label.set_markup(
@@ -621,9 +631,8 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            self.ui_upgradeinfo_label.set_markup(
-                "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
+            print("upgrade in progress")
+            self.ui_upgradeinfobusy_label.set_visible(True)
 
     def on_ui_residual_button_clicked(self, button):
         self.clean_residuals_clicked = True
@@ -632,6 +641,11 @@ class MainWindow(object):
 
         self.ui_upgradevte_sw.set_visible(True)
         self.ui_main_stack.set_visible_child_name("upgrade")
+
+        self.ui_upgradeinfo_spinner.start()
+
+        self.ui_upgradeinfobusy_label.set_visible(False)
+
 
         self.ui_upgradeinfook_button.set_visible(False)
         self.ui_upgradeinfo_label.set_markup(
@@ -643,9 +657,8 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            self.ui_upgradeinfo_label.set_markup(
-                "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
+            print("upgrade in progress")
+        self.ui_upgradeinfobusy_label.set_visible(True)
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
@@ -1031,7 +1044,6 @@ class MainWindow(object):
             self.ui_keptcount_box.set_visible(False)
 
             GLib.idle_add(self.ui_upgrade_buttonbox.set_sensitive, False)
-            GLib.idle_add(self.ui_versionupgrade_button.set_visible, False)
 
             upg_thread = threading.Thread(target=self.upgradables_worker_thread, daemon=True)
             upg_thread.start()
@@ -1584,6 +1596,11 @@ class MainWindow(object):
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
             self.update_indicator_updates_labels(self.Package.upgradable())
+
+        self.ui_upgradeinfo_spinner.stop()
+
+        self.ui_upgradeinfobusy_label.set_visible(False)
+
         self.upgrade_inprogress = False
         self.clean_residuals_clicked = False
 
