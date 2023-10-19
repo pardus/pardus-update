@@ -264,7 +264,7 @@ class MainWindow(object):
         self.ui_upgradeinfo_label = self.GtkBuilder.get_object("ui_upgradeinfo_label")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
         self.ui_upgradeinfo_spinner = self.GtkBuilder.get_object("ui_upgradeinfo_spinner")
-        self.ui_upgradeinfobusy_label = self.GtkBuilder.get_object("ui_upgradeinfobusy_label")
+        self.ui_upgradeinfobusy_box = self.GtkBuilder.get_object("ui_upgradeinfobusy_box")
 
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
         self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
@@ -374,7 +374,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_distuptodownretry_button.set_visible, False)
         GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
         GLib.idle_add(self.ui_homedistupgrade_box.set_visible, False)
-        GLib.idle_add(self.ui_upgradeinfobusy_label.set_visible, False)
+        GLib.idle_add(self.ui_upgradeinfobusy_box.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -580,7 +580,7 @@ class MainWindow(object):
 
         self.ui_upgradeinfo_spinner.start()
 
-        self.ui_upgradeinfobusy_label.set_visible(False)
+        self.ui_upgradeinfobusy_box.set_visible(False)
 
         self.ui_upgradeinfook_button.set_visible(False)
         self.ui_upgradeinfo_label.set_markup(
@@ -608,7 +608,7 @@ class MainWindow(object):
             self.upgrade_inprogress = True
         else:
             print("upgrade in progress")
-            self.ui_upgradeinfobusy_label.set_visible(True)
+            self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_autoremovable_button_clicked(self, button):
         self.clean_residuals_clicked = True
@@ -619,7 +619,7 @@ class MainWindow(object):
 
         self.ui_upgradeinfo_spinner.start()
 
-        self.ui_upgradeinfobusy_label.set_visible(False)
+        self.ui_upgradeinfobusy_box.set_visible(False)
 
 
         self.ui_upgradeinfook_button.set_visible(False)
@@ -632,7 +632,7 @@ class MainWindow(object):
             self.upgrade_inprogress = True
         else:
             print("upgrade in progress")
-            self.ui_upgradeinfobusy_label.set_visible(True)
+            self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_residual_button_clicked(self, button):
         self.clean_residuals_clicked = True
@@ -644,7 +644,7 @@ class MainWindow(object):
 
         self.ui_upgradeinfo_spinner.start()
 
-        self.ui_upgradeinfobusy_label.set_visible(False)
+        self.ui_upgradeinfobusy_box.set_visible(False)
 
 
         self.ui_upgradeinfook_button.set_visible(False)
@@ -658,7 +658,7 @@ class MainWindow(object):
             self.upgrade_inprogress = True
         else:
             print("upgrade in progress")
-        self.ui_upgradeinfobusy_label.set_visible(True)
+        self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
@@ -781,6 +781,9 @@ class MainWindow(object):
     def on_ui_distupgradeoptions_button_clicked(self, button):
         self.ui_distupgradeoptions_popover.popup()
         self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
+
+    def on_ui_upgradeinfobusyok_button_clicked(self, button):
+        self.ui_upgradeinfobusy_box.set_visible(False)
 
     def on_ui_homepage_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() == "clean" or \
@@ -1599,7 +1602,7 @@ class MainWindow(object):
 
         self.ui_upgradeinfo_spinner.stop()
 
-        self.ui_upgradeinfobusy_label.set_visible(False)
+        self.ui_upgradeinfobusy_box.set_visible(False)
 
         self.upgrade_inprogress = False
         self.clean_residuals_clicked = False

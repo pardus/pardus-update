@@ -1207,15 +1207,48 @@ Fatih Altun</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">21</property>
                     <child>
-                      <object class="GtkLabel" id="ui_upgradeinfobusy_label">
+                      <object class="GtkBox" id="ui_upgradeinfobusy_box">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">center</property>
-                        <property name="label" translatable="yes">&lt;span color="red"&gt;Package manager is busy, try again after the process is completed.&lt;/span&gt;</property>
-                        <property name="use-markup">True</property>
-                        <property name="justify">center</property>
-                        <property name="wrap">True</property>
-                        <property name="selectable">True</property>
+                        <property name="spacing">13</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="label" translatable="yes">&lt;span color="red"&gt;Package manager is busy, try again after the process is completed.&lt;/span&gt;</property>
+                            <property name="use-markup">True</property>
+                            <property name="justify">center</property>
+                            <property name="wrap">True</property>
+                            <property name="selectable">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="ui_upgradeinfobusyok_button">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="relief">none</property>
+                            <signal name="clicked" handler="on_ui_upgradeinfobusyok_button_clicked" swapped="no"/>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="icon-name">emblem-ok-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
