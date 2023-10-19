@@ -662,7 +662,7 @@ class MainWindow(object):
             self.upgrade_inprogress = True
         else:
             print("upgrade in progress")
-        self.ui_upgradeinfobusy_box.set_visible(True)
+            self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
