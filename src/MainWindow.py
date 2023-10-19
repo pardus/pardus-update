@@ -579,6 +579,7 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("upgrade")
 
         self.ui_upgradeinfo_spinner.start()
+        self.ui_upgradeinfo_spinner.set_visible(True)
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
@@ -619,6 +620,7 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("upgrade")
 
         self.ui_upgradeinfo_spinner.start()
+        self.ui_upgradeinfo_spinner.set_visible(True)
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
@@ -644,6 +646,7 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("upgrade")
 
         self.ui_upgradeinfo_spinner.start()
+        self.ui_upgradeinfo_spinner.set_visible(True)
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
@@ -1602,6 +1605,7 @@ class MainWindow(object):
             self.update_indicator_updates_labels(self.Package.upgradable())
 
         self.ui_upgradeinfo_spinner.stop()
+        self.ui_upgradeinfo_spinner.set_visible(False)
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
