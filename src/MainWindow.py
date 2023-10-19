@@ -583,8 +583,6 @@ class MainWindow(object):
         self.ui_upgradeinfobusy_box.set_visible(False)
 
         self.ui_upgradeinfook_button.set_visible(False)
-        self.ui_upgradeinfo_label.set_markup(
-            "<b>{}</b>".format(_("Updates are installing. Please wait...")))
 
         yq_conf = ""
         if self.ui_upgradewithyq_radiobutton.get_active():
@@ -602,6 +600,9 @@ class MainWindow(object):
 
         print("yq_conf: {}\ndpkg_conf: {}".format(yq_conf, dpkg_conf))
         if not self.upgrade_inprogress:
+            self.ui_upgradeinfo_label.set_markup(
+                "<b>{}</b>".format(_("Updates are installing. Please wait...")))
+
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                        "upgrade", yq_conf, dpkg_conf]
             self.upgrade_vte_start_process(command)
@@ -621,12 +622,12 @@ class MainWindow(object):
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
-
         self.ui_upgradeinfook_button.set_visible(False)
-        self.ui_upgradeinfo_label.set_markup(
-            "<b>{}</b>".format(_("Packages are removing. Please wait...")))
 
         if not self.upgrade_inprogress:
+            self.ui_upgradeinfo_label.set_markup(
+                "<b>{}</b>".format(_("Packages are removing. Please wait...")))
+
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "removeauto"]
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
@@ -646,12 +647,12 @@ class MainWindow(object):
 
         self.ui_upgradeinfobusy_box.set_visible(False)
 
-
         self.ui_upgradeinfook_button.set_visible(False)
-        self.ui_upgradeinfo_label.set_markup(
-            "<b>{}</b>".format(_("Packages are removing. Please wait...")))
 
         if not self.upgrade_inprogress:
+            self.ui_upgradeinfo_label.set_markup(
+                "<b>{}</b>".format(_("Packages are removing. Please wait...")))
+
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                        "removeresidual", " ".join(self.Package.residual())]
             self.upgrade_vte_start_process(command)
