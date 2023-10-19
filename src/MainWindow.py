@@ -262,9 +262,7 @@ class MainWindow(object):
         self.ui_upgradewithoutyq_radiobutton = self.GtkBuilder.get_object("ui_upgradewithoutyq_radiobutton")
 
         self.ui_upgradevte_sw = self.GtkBuilder.get_object("ui_upgradevte_sw")
-        self.ui_upgradeinfo_box = self.GtkBuilder.get_object("ui_upgradeinfo_box")
         self.ui_upgradeinfo_label = self.GtkBuilder.get_object("ui_upgradeinfo_label")
-        self.ui_upgradeinfoback_button = self.GtkBuilder.get_object("ui_upgradeinfoback_button")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
 
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
@@ -551,9 +549,6 @@ class MainWindow(object):
             self.autoupdate_glibid = None
         self.apt_update(force=True)
 
-    def on_ui_upgradeinfoback_button_clicked(self, button):
-        self.ui_main_stack.set_visible_child_name("updateinfo")
-
     def on_ui_upgradeinfook_button_clicked(self, button):
         if self.Package.upgradable():
             self.apt_update()
@@ -577,10 +572,13 @@ class MainWindow(object):
     def on_ui_upgrade_button_clicked(self, button):
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
-        self.ui_upgradeinfo_box.set_visible(False)
+
         self.ui_upgradevte_sw.set_visible(True)
-        self.ui_upgradeinfook_button.set_visible(False)
         self.ui_main_stack.set_visible_child_name("upgrade")
+
+        self.ui_upgradeinfook_button.set_visible(False)
+        self.ui_upgradeinfo_label.set_markup(
+            "<b>{}</b>".format(_("Updates are installing. Please wait...")))
 
         yq_conf = ""
         if self.ui_upgradewithyq_radiobutton.get_active():
@@ -605,17 +603,18 @@ class MainWindow(object):
         else:
             self.ui_upgradeinfo_label.set_markup(
                 "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradeinfo_box.set_visible(True)
-            self.ui_upgradevte_sw.set_visible(False)
+            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
 
     def on_ui_autoremovable_button_clicked(self, button):
         self.clean_residuals_clicked = True
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
-        self.ui_upgradeinfo_box.set_visible(False)
         self.ui_upgradevte_sw.set_visible(True)
-        self.ui_upgradeinfook_button.set_visible(False)
         self.ui_main_stack.set_visible_child_name("upgrade")
+
+        self.ui_upgradeinfook_button.set_visible(False)
+        self.ui_upgradeinfo_label.set_markup(
+            "<b>{}</b>".format(_("Packages are removing. Please wait...")))
 
         if not self.upgrade_inprogress:
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "removeauto"]
@@ -624,17 +623,19 @@ class MainWindow(object):
         else:
             self.ui_upgradeinfo_label.set_markup(
                 "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradeinfo_box.set_visible(True)
-            self.ui_upgradevte_sw.set_visible(False)
+            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
 
     def on_ui_residual_button_clicked(self, button):
         self.clean_residuals_clicked = True
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
-        self.ui_upgradeinfo_box.set_visible(False)
+
         self.ui_upgradevte_sw.set_visible(True)
-        self.ui_upgradeinfook_button.set_visible(False)
         self.ui_main_stack.set_visible_child_name("upgrade")
+
+        self.ui_upgradeinfook_button.set_visible(False)
+        self.ui_upgradeinfo_label.set_markup(
+            "<b>{}</b>".format(_("Packages are removing. Please wait...")))
 
         if not self.upgrade_inprogress:
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
@@ -644,8 +645,7 @@ class MainWindow(object):
         else:
             self.ui_upgradeinfo_label.set_markup(
                 "<span color='red'>{}</span>".format(_("Package manager is busy, try again later.")))
-            self.ui_upgradeinfo_box.set_visible(True)
-            self.ui_upgradevte_sw.set_visible(False)
+            self.ui_upgradevte_sw.set_visible(self.upgrade_inprogress)
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
@@ -1582,8 +1582,6 @@ class MainWindow(object):
         else:
             self.Package.updatecache()
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
-            GLib.idle_add(self.ui_upgradeinfo_box.set_visible, True)
-            GLib.idle_add(self.ui_upgradeinfoback_button.set_visible, False)
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
             self.update_indicator_updates_labels(self.Package.upgradable())
         self.upgrade_inprogress = False

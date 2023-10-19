@@ -1093,21 +1093,6 @@ Fatih Altun</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="ui_upgradeinfoback_button">
-                        <property name="label" translatable="yes">Back</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="halign">center</property>
-                        <signal name="clicked" handler="on_ui_upgradeinfoback_button_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="ui_upgradeinfook_button">
                         <property name="label" translatable="yes">Ok</property>
                         <property name="visible">True</property>
