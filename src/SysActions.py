@@ -469,9 +469,8 @@ def main():
             if os.path.exists(safeupgrade_path) and os.path.exists(service_path) and os.path.exists(sup_path):
 
                 # reboot
-                # os.system('dbus-send --system --print-reply --dest=org.freedesktop.login1 /org/freedesktop/login1 '
-                #           '"org.freedesktop.login1.Manager.Reboot" boolean:true')
-                pass
+                os.system('dbus-send --system --print-reply --dest=org.freedesktop.login1 /org/freedesktop/login1 '
+                          '"org.freedesktop.login1.Manager.Reboot" boolean:true')
             else:
                 print("safeupgrade_path: {}, exists: {}".format(safeupgrade_path, os.path.exists(safeupgrade_path)), file=sys.stderr)
                 print("service_path: {}, exists: {}".format(service_path, os.path.exists(service_path)), file=sys.stderr)
