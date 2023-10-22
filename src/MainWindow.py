@@ -1243,8 +1243,8 @@ class MainWindow(object):
                 self.ui_dpkgconfigureinfo_box.set_visible(False)
                 self.ui_dpkgconfigurefix_button.set_sensitive(True)
                 self.ui_dpkgconfigurefix_label.set_markup("<b>{}</b>".format(
-                    "dpkg interrupt detected. Click the 'Fix' button or\n"
-                    "manually run 'sudo dpkg --configure -a' to fix the problem."))
+                    _("dpkg interrupt detected. Click the 'Fix' button or\n"
+                    "manually run 'sudo dpkg --configure -a' to fix the problem.")))
             else:
                 upgradable = self.Package.upgradable()
                 if upgradable:
