@@ -337,7 +337,7 @@ def main():
         # print("changes_available {}".format(rcu["changes_available"]))
         # print("cache_error {}".format(rcu["cache_error"]))
 
-        print(to_install_list)
+        print(rcu)
 
         changes_file = open(rc_file, "w")
         json.dump(rcu, changes_file, indent=2)
@@ -394,7 +394,7 @@ def main():
         service_path = "/usr/lib/systemd/system/pardus-safeupgrade.service"
         service_symlink_path = "/usr/lib/systemd/system/system-update.target.wants/pardus-safeupgrade.service"
 
-        if os.path.isfile(app_safeupgrade_path):
+        if os.path.isfile(app_safeupgrade_path) and os.path.isfile(app_service_path):
 
             with open(app_safeupgrade_path, "r") as app_safeupgrade_file:
                 contents = app_safeupgrade_file.read()
@@ -407,14 +407,16 @@ def main():
             usp.close()
             os.chmod(safeupgrade_path, 0o0755)
 
-            # # system-update symlink
-            # supdate = Path("/system-update")
-            # if supdate.exists():
-            #     supdate.unlink(missing_ok=True)
-            # supdate.symlink_to("/var/cache/apt/archives/")
+            # service file with new execpath and symlink
+            with open(app_service_path, "r") as app_service_file:
+                scontents = app_service_file.read()
+                new_scontents = scontents.replace("@@execpath@@", os.path.abspath(safeupgrade_path))
 
-            # service file and symlink
-            copy2(app_service_path, service_path)
+            user_service_file = open(service_path, "w")
+            user_service_file.write(new_scontents)
+            user_service_file.flush()
+            user_service_file.close()
+
             service_symlink_file = Path(service_symlink_path)
             if service_symlink_file.exists():
                 service_symlink_file.unlink(missing_ok=True)
@@ -464,10 +466,18 @@ def main():
             syncp = subprocess.Popen(["/usr/bin/sync"])
             syncp.wait()
 
-            # reboot
-            os.system('dbus-send --system --print-reply --dest=org.freedesktop.login1 /org/freedesktop/login1 '
-                      '"org.freedesktop.login1.Manager.Reboot" boolean:true')
+            if os.path.exists(safeupgrade_path) and os.path.exists(service_path) and os.path.exists(sup_path):
 
+                # reboot
+                # os.system('dbus-send --system --print-reply --dest=org.freedesktop.login1 /org/freedesktop/login1 '
+                #           '"org.freedesktop.login1.Manager.Reboot" boolean:true')
+                pass
+            else:
+                print("safeupgrade_path: {}, exists: {}".format(safeupgrade_path, os.path.exists(safeupgrade_path)), file=sys.stderr)
+                print("service_path: {}, exists: {}".format(service_path, os.path.exists(service_path)), file=sys.stderr)
+                print("systemupdate_path: {}, exists: {}".format(sup_path, os.path.exists(sup_path)), file=sys.stderr)
+                if os.path.exists(sup_path):
+                    os.remove(sup_path)
         else:
             print("{} file not exists.".format(app_safeupgrade_path))
 
@@ -521,6 +531,7 @@ def main():
         elif sys.argv[1] == "removeauto":
             removeauto()
         elif sys.argv[1] == "controldistupgrade":
+            aptclean()
             controldistupgrade(sys.argv[2])
         elif sys.argv[1] == "downupgrade":
             downupgrade(sys.argv[2])

@@ -300,6 +300,8 @@ class MainWindow(object):
         self.ui_rootdisk_box = self.GtkBuilder.get_object("ui_rootdisk_box")
         self.ui_distupgradevte_sw = self.GtkBuilder.get_object("ui_distupgradevte_sw")
         self.ui_distuptoinstallcancel_button = self.GtkBuilder.get_object("ui_distuptoinstallcancel_button")
+        self.ui_distupgrade_textview = self.GtkBuilder.get_object("ui_distupgrade_textview")
+        self.ui_distupgradetextview_box = self.GtkBuilder.get_object("ui_distupgradetextview_box")
         self.ui_distupgrade_buttonbox = self.GtkBuilder.get_object("ui_distupgrade_buttonbox")
         self.ui_distupgrade_buttonbox.set_homogeneous(False)
 
@@ -392,6 +394,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_homedistupgrade_box.set_visible, False)
         GLib.idle_add(self.ui_upgradeinfobusy_box.set_visible, False)
         GLib.idle_add(self.ui_dpkgconfigureinfo_box.set_visible, False)
+        GLib.idle_add(self.ui_distupgradetextview_box.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -621,6 +624,8 @@ class MainWindow(object):
             self.ui_upgradeinfo_label.set_markup(
                 "<b>{}</b>".format(_("Updates are installing. Please wait...")))
 
+            self.item_systemstatus.set_label(_("Updating"))
+
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                        "upgrade", yq_conf, dpkg_conf]
             self.upgrade_vte_start_process(command)
@@ -777,6 +782,9 @@ class MainWindow(object):
         self.ui_distupgrade_buttonbox.set_sensitive(False)
         self.ui_distuptoinstallcancel_button.set_sensitive(False)
 
+        start, end = self.ui_distupgrade_textview.get_buffer().get_bounds()
+        self.ui_distupgrade_textview.get_buffer().delete(start, end)
+
         ask_conf = ""
         if self.ui_distupgradenewconf_radiobutton.get_active():
             ask_conf = "--force-confnew"
@@ -792,6 +800,7 @@ class MainWindow(object):
 
         self.ui_distupgrade_lastinfo_box.set_visible(True)
         self.ui_distupgrade_lastinfo_spinner.start()
+        self.ui_distupgradetextview_box.set_visible(True)
 
     def on_ui_distupgradeconf_radiobutton_toggled(self, button):
         self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
@@ -1521,15 +1530,29 @@ class MainWindow(object):
     def onDistUpgradeStdout(self, source, condition):
         if condition == GLib.IO_HUP:
             return False
-        line = source.readline()
+        line = "{}".format(source.readline())
         print("onDistUpgradeStdout: {}".format(line))
+
+        self.ui_distupgrade_textview.get_buffer().insert(self.ui_distupgrade_textview.get_buffer().get_end_iter(), line)
+
+        text_mark_end = self.ui_distupgrade_textview.get_buffer().create_mark(
+            "", self.ui_distupgrade_textview.get_buffer().get_end_iter(), False)
+        self.ui_distupgrade_textview.scroll_to_mark(text_mark_end, 0, False, 0, 0)
+
         return True
 
     def onDistUpgradeStderr(self, source, condition):
         if condition == GLib.IO_HUP:
             return False
-        line = source.readline()
+        line = "{}".format(source.readline())
         print("onDistUpgradeStderr: {}".format(line))
+
+        self.ui_distupgrade_textview.get_buffer().insert(self.ui_distupgrade_textview.get_buffer().get_end_iter(), line)
+
+        text_mark_end = self.ui_distupgrade_textview.get_buffer().create_mark(
+            "", self.ui_distupgrade_textview.get_buffer().get_end_iter(), False)
+        self.ui_distupgrade_textview.scroll_to_mark(text_mark_end, 0, False, 0, 0)
+
         return True
 
     def onDistUpgradeExit(self, pid, status):
@@ -1539,6 +1562,13 @@ class MainWindow(object):
         self.ui_distupgrade_lastinfo_spinner.stop()
         self.ui_distupgrade_buttonbox.set_sensitive(True)
         self.ui_distuptoinstallcancel_button.set_sensitive(True)
+
+        self.ui_distupgrade_textview.get_buffer().insert(
+            self.ui_distupgrade_textview.get_buffer().get_end_iter(), "exit code: {}".format(status))
+
+        text_mark_end = self.ui_distupgrade_textview.get_buffer().create_mark(
+            "", self.ui_distupgrade_textview.get_buffer().get_end_iter(), False)
+        self.ui_distupgrade_textview.scroll_to_mark(text_mark_end, 0, False, 0, 0)
 
     def startAptUpdateProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
@@ -1656,7 +1686,7 @@ class MainWindow(object):
             self.Package.updatecache()
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
             GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
-            self.update_indicator_updates_labels(self.Package.upgradable())
+        self.update_indicator_updates_labels(self.Package.upgradable())
 
         self.ui_upgradeinfo_spinner.stop()
         self.ui_upgradeinfo_spinner.set_visible(False)

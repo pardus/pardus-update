@@ -9,5 +9,5 @@ ConditionPathExists=!/run/ostree-booted
 
 [Service]
 Type=oneshot
-ExecStart=/usr/share/pardus/pardus-update/data/pardus-safeupgrade.sh
+ExecStart=@@execpath@@
 FailureAction=reboot
