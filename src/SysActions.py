@@ -528,6 +528,8 @@ def main():
             distupgrade(sys.argv[2])
         elif sys.argv[1] == "distupgradeoffline":
             distupgradeoffline(sys.argv[2], sys.argv[3])
+        elif sys.argv[1] == "dpkgconfigure":
+            dpkgconfigure()
         else:
             print("unknown argument error")
     else:

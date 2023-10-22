@@ -167,8 +167,12 @@ class MainWindow(object):
         else:
             self.isbroken = True
             print("Error while updating Cache")
+
+        self.dpkg_interrupted = self.Package.control_dpkg_interrupt()
+
         print("package completed")
         print("broken: {}".format(self.isbroken))
+        print("dpkg_interrupted: {}".format(self.dpkg_interrupted))
 
     def apt_update(self, force=False):
         print("in apt_update")
@@ -271,6 +275,15 @@ class MainWindow(object):
         self.ui_fix_spinner = self.GtkBuilder.get_object("ui_fix_spinner")
         self.ui_fixvte_sw = self.GtkBuilder.get_object("ui_fixvte_sw")
 
+        self.ui_dpkgconfigureinfo_box = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_box")
+        self.ui_dpkgconfigureinfo_label = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_label")
+        self.ui_dpkgconfigureinfo_spinner = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_spinner")
+        self.ui_dpkgconfigureok_button = self.GtkBuilder.get_object("ui_dpkgconfigureok_button")
+        self.ui_dpkgconfigurevte_sw = self.GtkBuilder.get_object("ui_dpkgconfigurevte_sw")
+        self.ui_dpkgconfigurefix_box = self.GtkBuilder.get_object("ui_dpkgconfigurefix_box")
+        self.ui_dpkgconfigurefix_label = self.GtkBuilder.get_object("ui_dpkgconfigurefix_label")
+        self.ui_dpkgconfigurefix_button = self.GtkBuilder.get_object("ui_dpkgconfigurefix_button")
+
         self.ui_distup_now_label = self.GtkBuilder.get_object("ui_distup_now_label")
         self.ui_distup_new_label = self.GtkBuilder.get_object("ui_distup_new_label")
 
@@ -337,6 +350,7 @@ class MainWindow(object):
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
         self.fix_vteterm = None
+        self.dpkgconfigure_vteterm = None
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -363,6 +377,8 @@ class MainWindow(object):
 
         self.clean_residuals_clicked = False
 
+        self.dpkgconfiguring = False
+
         self.dist_upgradable = False
 
     def set_initial_hide_widgets(self):
@@ -375,6 +391,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
         GLib.idle_add(self.ui_homedistupgrade_box.set_visible, False)
         GLib.idle_add(self.ui_upgradeinfobusy_box.set_visible, False)
+        GLib.idle_add(self.ui_dpkgconfigureinfo_box.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -982,6 +999,31 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("spinner")
         self.apt_update(force=True)
 
+    def on_ui_dpkgconfigurefix_button_clicked(self, button):
+        self.ui_dpkgconfigurefix_button.set_sensitive(False)
+
+        self.ui_dpkgconfigureinfo_box.set_visible(True)
+
+        self.ui_dpkgconfigureinfo_label.set_markup("<b>{}</b>".format(_("The process is in progress. Please wait...")))
+
+        self.ui_dpkgconfigureinfo_spinner.start()
+        self.ui_dpkgconfigureinfo_spinner.set_visible(True)
+
+        self.ui_dpkgconfigureok_button.set_visible(False)
+
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "dpkgconfigure"]
+
+        if not self.dpkgconfiguring:
+            self.dpkgconfigure_vte_start_process(command)
+            self.dpkgconfiguring = True
+            self.update_inprogress = True
+        else:
+            print("dpkgconfiguring in progress")
+
+    def on_ui_dpkgconfigureok_button_clicked(self, button):
+        self.ui_main_stack.set_visible_child_name("spinner")
+        self.apt_update()
+
     def on_ui_quitdialogyes_button_clicked(self, button):
         self.ui_quit_dialog.hide()
         self.main_window.get_application().quit()
@@ -1192,32 +1234,44 @@ class MainWindow(object):
             self.item_systemstatus.set_label(_("System is Broken"))
             GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
         else:
-            upgradable = self.Package.upgradable()
-            if upgradable:
-                self.control_required_changes()
-                if self.ui_main_stack.get_visible_child_name() == "spinner" or \
-                        self.ui_main_stack.get_visible_child_name() == "ok":
-                    self.ui_main_stack.set_visible_child_name("updateinfo")
-                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
-                    self.ui_main_stack.set_visible_child_name("updateinfo")
-                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                if len(upgradable) > 1:
-                    notification = Notification(summary=_("Software Update"),
-                                                body=_("There are {} software updates available.").format(
-                                                    len(upgradable)),
-                                                icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show()
-                else:
-                    notification = Notification(summary=_("Software Update"),
-                                                body=_("There is {} software update available.").format(
-                                                    len(upgradable)),
-                                                icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show()
+            if self.Package.control_dpkg_interrupt():
+                self.ui_main_stack.set_visible_child_name("dpkgconfigure")
+                self.indicator.set_icon(self.icon_error)
+                self.item_systemstatus.set_sensitive(False)
+                self.item_systemstatus.set_label(_("Interrupt Error"))
+                self.ui_dpkgconfigurefix_box.set_visible(True)
+                self.ui_dpkgconfigureinfo_box.set_visible(False)
+                self.ui_dpkgconfigurefix_button.set_sensitive(True)
+                self.ui_dpkgconfigurefix_label.set_markup("<b>{}</b>".format(
+                    "dpkg interrupt detected. Click the 'Fix' button or\n"
+                    "manually run 'sudo dpkg --configure -a' to fix the problem."))
             else:
-                if self.ui_main_stack.get_visible_child_name() != "distupgrade":
-                    self.ui_main_stack.set_visible_child_name("ok")
-            self.update_indicator_updates_labels(upgradable)
+                upgradable = self.Package.upgradable()
+                if upgradable:
+                    self.control_required_changes()
+                    if self.ui_main_stack.get_visible_child_name() == "spinner" or \
+                            self.ui_main_stack.get_visible_child_name() == "ok":
+                        self.ui_main_stack.set_visible_child_name("updateinfo")
+                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                    if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
+                        self.ui_main_stack.set_visible_child_name("updateinfo")
+                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                    if len(upgradable) > 1:
+                        notification = Notification(summary=_("Software Update"),
+                                                    body=_("There are {} software updates available.").format(
+                                                        len(upgradable)),
+                                                    icon=self.icon_available, appid=self.Application.get_application_id())
+                        notification.show()
+                    else:
+                        notification = Notification(summary=_("Software Update"),
+                                                    body=_("There is {} software update available.").format(
+                                                        len(upgradable)),
+                                                    icon=self.icon_available, appid=self.Application.get_application_id())
+                        notification.show()
+                else:
+                    if self.ui_main_stack.get_visible_child_name() != "distupgrade":
+                        self.ui_main_stack.set_visible_child_name("ok")
+                self.update_indicator_updates_labels(upgradable)
 
     def control_update_residual_message_section(self):
         residual = self.Package.residual()
@@ -1779,6 +1833,87 @@ class MainWindow(object):
 
         self.upgrade_inprogress = False
         self.distup_download_inprogress = False
+
+    def dpkgconfigure_vte_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            if event.button.button == 3:
+                widget.popup_for_device(None, None, None, None, None,
+                                        event.button.button, event.time)
+                return True
+        return False
+
+    def dpkgconfigure_vte_menu_action(self, widget, terminal):
+        terminal.copy_clipboard()
+
+    def dpkgconfigure_vte_start_process(self, command):
+        if self.dpkgconfigure_vteterm:
+            self.dpkgconfigure_vteterm.get_parent().remove(self.dpkgconfigure_vteterm)
+
+        self.dpkgconfigure_vteterm = Vte.Terminal()
+        self.dpkgconfigure_vteterm.set_scrollback_lines(-1)
+        dpkgconfigure_vte_menu = Gtk.Menu()
+        dpkgconfigure_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        dpkgconfigure_vte_menu.append(dpkgconfigure_vte_menu_items)
+        dpkgconfigure_vte_menu_items.connect("activate", self.dpkgconfigure_vte_menu_action, self.dpkgconfigure_vteterm)
+        dpkgconfigure_vte_menu_items.show()
+        self.dpkgconfigure_vteterm.connect_object("event", self.dpkgconfigure_vte_event, dpkgconfigure_vte_menu)
+        self.ui_dpkgconfigurevte_sw.add(self.dpkgconfigure_vteterm)
+        self.dpkgconfigure_vteterm.show_all()
+
+        pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
+        self.dpkgconfigure_vteterm.set_pty(pty)
+        try:
+            self.dpkgconfigure_vteterm.spawn_async(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                None,
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+                -1,
+                None,
+                self.dpkgconfigure_vte_create_spawn_callback,
+                None
+            )
+        except Exception as e:
+            # old version VTE doesn't have spawn_async so use spawn_sync
+            print("{}".format(e))
+            self.dpkgconfigure_vteterm.connect("child-exited", self.dpkgconfigure_vte_on_done)
+            self.dpkgconfigure_vteterm.spawn_sync(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                [],
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+            )
+
+    def dpkgconfigure_vte_create_spawn_callback(self, terminal, pid, error, userdata):
+        self.dpkgconfigure_vteterm.connect("child-exited", self.dpkgconfigure_vte_on_done)
+
+    def dpkgconfigure_vte_on_done(self, terminal, status):
+        print("dpkgconfigure_vte_on_done status: {}".format(status))
+
+        self.dpkgconfiguring = False
+
+        self.ui_dpkgconfigurefix_button.set_sensitive(True)
+
+        self.ui_dpkgconfigureinfo_spinner.set_visible(False)
+        self.ui_dpkgconfigureinfo_spinner.stop()
+
+        if status == 32256:  # operation cancelled | Request dismissed
+            self.ui_dpkgconfigureinfo_label.set_markup("<b>{}</b>".format(_("Error.")))
+        else:
+            self.ui_dpkgconfigureinfo_label.set_markup("<b>{}</b>".format(_("Process completed.")))
+            self.ui_dpkgconfigureok_button.set_visible(True)
+
+            if status == 0:
+                self.ui_dpkgconfigurefix_box.set_visible(False)
+                self.Package.updatecache()
+
+        self.update_inprogress = False
 
 
 class Notification(GObject.GObject):
