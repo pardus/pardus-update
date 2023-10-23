@@ -20,5 +20,8 @@ Breaks: gnome-shell-extension-apt-update-indicator,
 Conflicts: gnome-shell-extension-apt-update-indicator,
            package-update-indicator,
            pk-update-icon
+Replaces: gnome-shell-extension-apt-update-indicator,
+          package-update-indicator,
+          pk-update-icon
 Description: Pardus Update.
  Pardus Update application
