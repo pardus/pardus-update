@@ -1282,6 +1282,9 @@ class MainWindow(object):
                         self.ui_main_stack.get_visible_child_name() == "ok":
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                     self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
+                    self.ui_main_stack.set_visible_child_name("updateinfo")
+                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
                 if len(upgradable) > 1:
                     notification = Notification(summary=_("Software Update"),
                                                 body=_("There are {} software updates available.").format(
