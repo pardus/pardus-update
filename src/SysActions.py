@@ -22,6 +22,17 @@ import distro
 
 
 def main():
+    def control_lock():
+        msg = ""
+        apt_pkg.init_system()
+        try:
+            apt_pkg.pkgsystem_lock()
+        except SystemError as e:
+            msg = "{}".format(e)
+            print("pardus-update: {}".format(msg), file=sys.stderr)
+            return False, msg
+        apt_pkg.pkgsystem_unlock()
+        return True, msg
     def update():
         try:
             cache = apt.Cache()
@@ -41,6 +52,16 @@ def main():
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
     def subupgrade(yq, dpkg_conf):
+
+        lock, msg = control_lock()
+        if not lock:
+            if "pardus-update:" in msg and "E:" in msg and "/var/lib/dpkg/lock-frontend" in msg:
+                print("dpkg lock error", file=sys.stderr)
+                sys.exit(11)
+            elif "pardus-update:" in msg and "E:" in msg and "dpkg --configure -a" in msg:
+                print("dpkg interrupt error", file=sys.stderr)
+                sys.exit(12)
+
         dpkg_conf_list = dpkg_conf.split(" ")
         yq_list = yq.split(" ")
         subprocess.call(["apt", "full-upgrade"] + yq_list + dpkg_conf_list,
@@ -520,8 +541,8 @@ def main():
         elif sys.argv[1] == "fixapt":
             correctsourceslist()
             subupdate()
-            fixbroken()
             dpkgconfigure()
+            fixbroken()
         elif sys.argv[1] == "upgrade":
             subupdate()
             subupgrade(sys.argv[2], sys.argv[3])

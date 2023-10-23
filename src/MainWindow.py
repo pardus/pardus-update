@@ -168,11 +168,8 @@ class MainWindow(object):
             self.isbroken = True
             print("Error while updating Cache")
 
-        self.dpkg_interrupted = self.Package.control_dpkg_interrupt()
-
         print("package completed")
         print("broken: {}".format(self.isbroken))
-        print("dpkg_interrupted: {}".format(self.dpkg_interrupted))
 
     def apt_update(self, force=False):
         print("in apt_update")
@@ -269,6 +266,7 @@ class MainWindow(object):
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
         self.ui_upgradeinfo_spinner = self.GtkBuilder.get_object("ui_upgradeinfo_spinner")
         self.ui_upgradeinfobusy_box = self.GtkBuilder.get_object("ui_upgradeinfobusy_box")
+        self.ui_upgradeinfofixdpkg_button = self.GtkBuilder.get_object("ui_upgradeinfofixdpkg_button")
 
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
         self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
@@ -395,6 +393,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_upgradeinfobusy_box.set_visible, False)
         GLib.idle_add(self.ui_dpkgconfigureinfo_box.set_visible, False)
         GLib.idle_add(self.ui_distupgradetextview_box.set_visible, False)
+        GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -1008,6 +1007,16 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("spinner")
         self.apt_update(force=True)
 
+    def on_ui_upgradeinfofixdpkg_button_clicked(self, button):
+        self.ui_main_stack.set_visible_child_name("dpkgconfigure")
+        self.ui_dpkgconfigurefix_box.set_visible(True)
+        self.ui_dpkgconfigureinfo_box.set_visible(False)
+        self.ui_dpkgconfigurefix_button.set_sensitive(True)
+        self.ui_dpkgconfigurefix_label.set_markup("<b>{}</b>".format(
+            _("dpkg interrupt detected. Click the 'Fix' button or\n"
+              "manually run 'sudo dpkg --configure -a' to fix the problem.")))
+        self.on_ui_dpkgconfigurefix_button_clicked(None)
+
     def on_ui_dpkgconfigurefix_button_clicked(self, button):
         self.ui_dpkgconfigurefix_button.set_sensitive(False)
 
@@ -1249,44 +1258,29 @@ class MainWindow(object):
             self.item_systemstatus.set_label(_("System is Broken"))
             GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
         else:
-            if self.dpkg_interrupted:
-                self.ui_main_stack.set_visible_child_name("dpkgconfigure")
-                self.indicator.set_icon(self.icon_error)
-                self.item_systemstatus.set_sensitive(False)
-                self.item_systemstatus.set_label(_("Interrupt Error"))
-                self.ui_dpkgconfigurefix_box.set_visible(True)
-                self.ui_dpkgconfigureinfo_box.set_visible(False)
-                self.ui_dpkgconfigurefix_button.set_sensitive(True)
-                self.ui_dpkgconfigurefix_label.set_markup("<b>{}</b>".format(
-                    _("dpkg interrupt detected. Click the 'Fix' button or\n"
-                    "manually run 'sudo dpkg --configure -a' to fix the problem.")))
-            else:
-                upgradable = self.Package.upgradable()
-                if upgradable:
-                    self.control_required_changes()
-                    if self.ui_main_stack.get_visible_child_name() == "spinner" or \
-                            self.ui_main_stack.get_visible_child_name() == "ok":
-                        self.ui_main_stack.set_visible_child_name("updateinfo")
-                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                    if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
-                        self.ui_main_stack.set_visible_child_name("updateinfo")
-                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                    if len(upgradable) > 1:
-                        notification = Notification(summary=_("Software Update"),
-                                                    body=_("There are {} software updates available.").format(
-                                                        len(upgradable)),
-                                                    icon=self.icon_available, appid=self.Application.get_application_id())
-                        notification.show()
-                    else:
-                        notification = Notification(summary=_("Software Update"),
-                                                    body=_("There is {} software update available.").format(
-                                                        len(upgradable)),
-                                                    icon=self.icon_available, appid=self.Application.get_application_id())
-                        notification.show()
+            upgradable = self.Package.upgradable()
+            if upgradable:
+                self.control_required_changes()
+                if self.ui_main_stack.get_visible_child_name() == "spinner" or \
+                        self.ui_main_stack.get_visible_child_name() == "ok":
+                    self.ui_main_stack.set_visible_child_name("updateinfo")
+                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                if len(upgradable) > 1:
+                    notification = Notification(summary=_("Software Update"),
+                                                body=_("There are {} software updates available.").format(
+                                                    len(upgradable)),
+                                                icon=self.icon_available, appid=self.Application.get_application_id())
+                    notification.show()
                 else:
-                    if self.ui_main_stack.get_visible_child_name() != "distupgrade":
-                        self.ui_main_stack.set_visible_child_name("ok")
-                self.update_indicator_updates_labels(upgradable)
+                    notification = Notification(summary=_("Software Update"),
+                                                body=_("There is {} software update available.").format(
+                                                    len(upgradable)),
+                                                icon=self.icon_available, appid=self.Application.get_application_id())
+                    notification.show()
+            else:
+                if self.ui_main_stack.get_visible_child_name() != "distupgrade":
+                    self.ui_main_stack.set_visible_child_name("ok")
+            self.update_indicator_updates_labels(upgradable)
 
     def control_update_residual_message_section(self):
         residual = self.Package.residual()
@@ -1687,21 +1681,32 @@ class MainWindow(object):
 
     def upgrade_vte_on_done(self, terminal, status):
         print("upgrade_vte_on_done status: {}".format(status))
+
+        self.ui_upgradeinfo_spinner.stop()
+        self.ui_upgradeinfo_spinner.set_visible(False)
+        self.ui_upgradeinfobusy_box.set_visible(False)
+        GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, False)
+        GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
+
         if status == 32256:  # operation cancelled | Request dismissed
             if self.clean_residuals_clicked:
                 self.ui_main_stack.set_visible_child_name("clean")
             else:
                 self.ui_main_stack.set_visible_child_name("updateinfo")
+        elif status == 2816:  # dpkg lock error
+            self.ui_upgradeinfo_label.set_markup("<span color='red'><b>{}</b></span>".format(
+                _("Only one software management tool is allowed to run at the same time.\n"
+                  "Please close the other application e.g. 'Update Manager', 'aptitude' or 'Synaptic' first.")))
+        elif status == 3072:  # dpkg interrupt error
+            self.ui_upgradeinfo_label.set_markup("<span color='red'><b>{}</b></span>".format(
+                _("dpkg interrupt detected. Click the 'Fix' button or\n"
+                  "manually run 'sudo dpkg --configure -a' to fix the problem.")))
+            GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, True)
         else:
             self.Package.updatecache()
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
-            GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
+
         self.update_indicator_updates_labels(self.Package.upgradable())
-
-        self.ui_upgradeinfo_spinner.stop()
-        self.ui_upgradeinfo_spinner.set_visible(False)
-
-        self.ui_upgradeinfobusy_box.set_visible(False)
 
         self.upgrade_inprogress = False
         self.clean_residuals_clicked = False
@@ -1952,8 +1957,6 @@ class MainWindow(object):
             if status == 0:
                 self.ui_dpkgconfigurefix_box.set_visible(False)
                 self.Package.updatecache()
-
-        self.dpkg_interrupted = self.Package.control_dpkg_interrupt()
 
         self.update_inprogress = False
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkAboutDialog" id="ui_about_dialog">
@@ -1068,16 +1068,46 @@ Fatih Altun</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="ui_upgradeinfook_button">
-                        <property name="label" translatable="yes">Ok</property>
+                      <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                        <property name="can-focus">False</property>
                         <property name="halign">center</property>
-                        <signal name="clicked" handler="on_ui_upgradeinfook_button_clicked" swapped="no"/>
-                        <style>
-                          <class name="suggested-action"/>
-                        </style>
+                        <property name="spacing">34</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkButton" id="ui_upgradeinfook_button">
+                            <property name="label" translatable="yes">Ok</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <signal name="clicked" handler="on_ui_upgradeinfook_button_clicked" swapped="no"/>
+                            <style>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="ui_upgradeinfofixdpkg_button">
+                            <property name="label" translatable="yes">Fix</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <signal name="clicked" handler="on_ui_upgradeinfofixdpkg_button_clicked" swapped="no"/>
+                            <style>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
