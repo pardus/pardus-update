@@ -196,7 +196,24 @@ class MainWindow(object):
     def control_args(self):
         if "page" in self.Application.args.keys():
             page = self.Application.args["page"]
-            self.ui_main_stack.set_visible_child_name(page)
+
+            if self.upgrade_inprogress:
+                self.ui_main_stack.set_visible_child_name("upgrade")
+            else:
+                if page == "updateinfo":
+                    if self.Package.upgradable():
+                        self.ui_main_stack.set_visible_child_name(page)
+                    else:
+                        self.ui_main_stack.set_visible_child_name("ok")
+
+            self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menusettings_label.set_text(_("Settings"))
+            self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+            self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
+            self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+            self.main_window.set_visible(True)
+            self.main_window.present()
+            self.item_sh_app.set_label(_("Hide App"))
 
     def define_components(self):
         self.main_window = self.GtkBuilder.get_object("ui_main_window")
