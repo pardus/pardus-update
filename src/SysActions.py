@@ -55,10 +55,10 @@ def main():
 
         lock, msg = control_lock()
         if not lock:
-            if "pardus-update:" in msg and "E:" in msg and "/var/lib/dpkg/lock-frontend" in msg:
+            if "E:" in msg and "/var/lib/dpkg/lock-frontend" in msg:
                 print("dpkg lock error", file=sys.stderr)
                 sys.exit(11)
-            elif "pardus-update:" in msg and "E:" in msg and "dpkg --configure -a" in msg:
+            elif "E:" in msg and "dpkg --configure -a" in msg:
                 print("dpkg interrupt error", file=sys.stderr)
                 sys.exit(12)
 
