@@ -1078,7 +1078,10 @@ class MainWindow(object):
         print("STARTING control_upgradables from monitoring")
         if self.autoupdate_monitoring_glibid:
             GLib.source_remove(self.autoupdate_monitoring_glibid)
-        self.package()
+        if self.Package.updatecache():
+            self.isbroken = False
+        else:
+            self.isbroken = True
         self.set_upgradable_page_and_notify()
         self.control_update_residual_message_section()
 
@@ -1243,7 +1246,7 @@ class MainWindow(object):
             self.item_systemstatus.set_label(_("System is Broken"))
             GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
         else:
-            if self.Package.control_dpkg_interrupt():
+            if self.dpkg_interrupted:
                 self.ui_main_stack.set_visible_child_name("dpkgconfigure")
                 self.indicator.set_icon(self.icon_error)
                 self.item_systemstatus.set_sensitive(False)
@@ -1942,6 +1945,8 @@ class MainWindow(object):
             if status == 0:
                 self.ui_dpkgconfigurefix_box.set_visible(False)
                 self.Package.updatecache()
+
+        self.dpkg_interrupted = self.Package.control_dpkg_interrupt()
 
         self.update_inprogress = False
 
