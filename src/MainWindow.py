@@ -1085,12 +1085,15 @@ class MainWindow(object):
         self.set_upgradable_page_and_notify()
         self.control_update_residual_message_section()
 
+    def clear_upgrade_listboxes(self):
+        self.ui_upgradable_listbox.foreach(lambda child: self.ui_upgradable_listbox.remove(child))
+        self.ui_newly_listbox.foreach(lambda child: self.ui_newly_listbox.remove(child))
+        self.ui_removable_listbox.foreach(lambda child: self.ui_removable_listbox.remove(child))
+        self.ui_kept_listbox.foreach(lambda child: self.ui_kept_listbox.remove(child))
+
     def control_required_changes(self):
         def start_thread():
-            self.ui_upgradable_listbox.foreach(lambda child: self.ui_upgradable_listbox.remove(child))
-            self.ui_newly_listbox.foreach(lambda child: self.ui_newly_listbox.remove(child))
-            self.ui_removable_listbox.foreach(lambda child: self.ui_removable_listbox.remove(child))
-            self.ui_kept_listbox.foreach(lambda child: self.ui_kept_listbox.remove(child))
+            GLib.idle_add(self.clear_upgrade_listboxes)
 
             self.ui_upgradable_sw.set_visible(False)
             self.ui_newly_sw.set_visible(False)
@@ -1315,6 +1318,12 @@ class MainWindow(object):
             self.item_systemstatus.set_label(updates)
             self.indicator.set_icon(self.icon_normal)
 
+    def clear_distupgrade_listboxes(self):
+        self.ui_distupgradable_listbox.foreach(lambda child: self.ui_distupgradable_listbox.remove(child))
+        self.ui_distnewly_listbox.foreach(lambda child: self.ui_distnewly_listbox.remove(child))
+        self.ui_distremovable_listbox.foreach(lambda child: self.ui_distremovable_listbox.remove(child))
+        self.ui_distkept_listbox.foreach(lambda child: self.ui_distkept_listbox.remove(child))
+
     def startControlDistUpgradeProcess(self, params):
         pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
                                                       standard_output=True, standard_error=True)
@@ -1366,10 +1375,8 @@ class MainWindow(object):
         if os.path.isfile(rc_file_path):
             requireds = json.load(rc_file)
 
-            self.ui_distupgradable_listbox.foreach(lambda child: self.ui_distupgradable_listbox.remove(child))
-            self.ui_distnewly_listbox.foreach(lambda child: self.ui_distnewly_listbox.remove(child))
-            self.ui_distremovable_listbox.foreach(lambda child: self.ui_distremovable_listbox.remove(child))
-            self.ui_distkept_listbox.foreach(lambda child: self.ui_distkept_listbox.remove(child))
+            GLib.idle_add(self.clear_distupgrade_listboxes)
+
             self.ui_distupgradable_sw.set_visible(False)
             self.ui_distnewly_sw.set_visible(False)
             self.ui_distremovable_sw.set_visible(False)
