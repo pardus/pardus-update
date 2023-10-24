@@ -1,3 +1,57 @@
+pardus-update (0.2.0) unstable; urgency=medium
+
+  [ Fatih Altun ]
+  * Update .gitignore
+  * Update pardus-update-uptodate icon
+  * Add systemd offline dist upgrade
+  * Reformat Code
+  * Update dpkg monitoring as only status file
+  * Fix typo
+  * Update pot file
+  * Update Turkish translations
+  * Fix typo
+  * Fix residual package controls
+  * Update normal upgrade info labels and visible values
+  * Add spinner to normal upgrade info and Update busy control
+  * Add ok button to upgrade busy control
+  * Fix normal upgrade info label set text
+  * Add visible state to normal upgrade spinner
+  * Fix indent
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+  [ Fatih Altun ]
+  * Add bold weight to info label
+  * Add breaks for package-update-indicator, pk-update-icon
+  * Add breaks for gnome-shell-extension-apt-update-indicator
+  * Update pot file
+  * Update Turkish translations
+  * Add conflicts too
+  * Add dpkg interrupt control and fix
+  * Fix typo
+  * Update pot file
+  * Update Turkish translations
+  * Update distupgrade file controls and Add textview to last page
+  * Fix typo
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+  [ Fatih Altun ]
+  * Add replaces too
+  * Update dpkg interrupt control
+  * Add GLib idle to clear upgrade listboxes
+  * Update dpkg interrupt control and Add dpkg lock control
+  * Update pot file
+  * Update Turkish translations
+  * Fix page args control
+  * Fix typo
+  * Fix set updateinfo page on upgrade ok clicked
+  * Add apt keep list for dist upgrade
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 24 Oct 2023 15:42:42 +0300
+
 pardus-update (0.1.4) unstable; urgency=medium
 
   [ Hugo Carvalho ]
