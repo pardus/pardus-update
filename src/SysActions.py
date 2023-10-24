@@ -22,6 +22,9 @@ import distro
 
 
 def main():
+
+    keep_list = ["firmware-b43-installer", "firmware-b43legacy-installer", "ttf-mscorefonts-installer"]
+
     def control_lock():
         msg = ""
         apt_pkg.init_system()
@@ -249,6 +252,13 @@ def main():
             update_cache_error_msg = "{}".format(error)
             rcu["cache_error_msg"] = update_cache_error_msg
 
+        for kp in keep_list:
+            try:
+                cache[kp].mark_keep()
+            except Exception as e:
+                print("{} not found".format(kp))
+                print("{}".format(e))
+
         changes = cache.get_changes()
         print(changes)
         if changes:
@@ -391,6 +401,13 @@ def main():
             cache.upgrade(True)
         except Exception as error:
             print("cache.upgrade Error: {}".format(error))
+
+        for kp in keep_list:
+            try:
+                cache[kp].mark_keep()
+            except Exception as e:
+                print("{} not found".format(kp))
+                print("{}".format(e))
 
         cache.fetch_archives()
 
