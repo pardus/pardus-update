@@ -73,13 +73,13 @@ class MainWindow(object):
         self.monitoring()
 
         self.about_dialog.set_program_name(_("Pardus Update"))
-        if self.aboutdialog.get_titlebar() is None:
+        if self.about_dialog.get_titlebar() is None:
             about_headerbar = Gtk.HeaderBar.new()
             about_headerbar.set_show_close_button(True)
             about_headerbar.set_title(_("About Pardus Update"))
             about_headerbar.pack_start(Gtk.Image.new_from_icon_name("pardus-update", Gtk.IconSize.LARGE_TOOLBAR))
             about_headerbar.show_all()
-            self.aboutdialog.set_titlebar(about_headerbar)
+            self.about_dialog.set_titlebar(about_headerbar)
         # Set version
         # If not getted from __version__ file then accept version in MainWindow.glade file
         try:
