@@ -1515,7 +1515,7 @@ class MainWindow(object):
 
                 self.ui_distrequireddiskinfo_label.set_markup("{}: <b>{}</b>".format(
                     _("Total Required Size"),
-                    self.Package.beauty_size(requireds["download_size"] + requireds["install_size"])))
+                    self.Package.beauty_size(requireds["download_size"] + requireds["install_size"] + tolerance)))
 
                 GLib.idle_add(self.ui_distuptodown_button.set_sensitive, False)
                 GLib.idle_add(self.ui_rootdisk_box.set_visible, True)
