@@ -11,9 +11,10 @@
     <property name="version">0.1.0</property>
     <property name="comments" translatable="yes">Pardus Update Application</property>
     <property name="website">https://github.com/pardus/pardus-update</property>
-    <property name="authors">Büşra Çağlıyan
-Fatih Altun</property>
-    <property name="translator-credits">Fatih Altun</property>
+    <property name="authors">Büşra Çağlıyan &lt;busra.cagliyan@pardus.org.tr&gt;
+Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
+    <property name="translator-credits" translatable="yes" comments="Name Surname &lt;example@examplemail.com&gt;">translator-credits</property>
+    <property name="artists">Yusuf Düzgün &lt;yusuf.duzgun@pardus.org.tr&gt;</property>
     <property name="logo-icon-name">pardus-update</property>
     <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
