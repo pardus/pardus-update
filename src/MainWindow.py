@@ -2036,8 +2036,9 @@ class Notification(GObject.GObject):
         self.notification.add_action('update', _('Update'), self.update_callback)
         self.notification.connect('closed', self.on_closed)
 
-    def show(self):
-        self.notification.show()
+    def show(self, user_show_state):
+        if user_show_state:
+            self.notification.show()
 
     def update_callback(self, widget, action):
         # subprocess.Popen(["/home/fatih/Desktop/pardus-update/src/Main.py", "--page", "updateinfo"])
