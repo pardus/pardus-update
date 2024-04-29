@@ -18,6 +18,7 @@ class UserSettings(object):
         self.default_interval = 86400  # daily
         self.default_lastupdate = 0
         self.default_autostart = True
+        self.default_notifications = True
 
         self.configdir = self.userhome + "/.config/pardus/pardus-update/"
         self.configfile = "settings.ini"
@@ -30,12 +31,14 @@ class UserSettings(object):
         self.config_interval = self.default_interval
         self.config_lastupdate = self.default_lastupdate
         self.config_autostart = self.default_autostart
+        self.config_notifications = self.default_notifications
 
     def createDefaultConfig(self, force=False):
         self.config['Update'] = {"interval": self.default_interval,
                                  "lastupdate": self.default_lastupdate}
 
-        self.config['Main'] = {"autostart": self.default_autostart}
+        self.config['Main'] = {"autostart": self.default_autostart,
+                               "notifications": self.default_notifications}
 
         if not Path.is_file(Path(self.configdir + self.configfile)) or force:
             if self.createDir(self.configdir):
@@ -51,6 +54,7 @@ class UserSettings(object):
                 self.config_interval = 30
             self.config_lastupdate = self.config.getint('Update', 'lastupdate')
             self.config_autostart = self.config.getboolean('Main', 'autostart')
+            self.config_notifications = self.config.getboolean('Main', 'notifications')
 
         except Exception as e:
             print("{}".format(e))
@@ -59,17 +63,18 @@ class UserSettings(object):
             self.config_interval = self.default_interval
             self.config_lastupdate = self.default_lastupdate
             self.config_autostart = self.default_autostart
+            self.config_notifications = self.default_notifications
             try:
                 self.createDefaultConfig(force=True)
             except Exception as e:
                 print("self.createDefaultConfig(force=True) : {}".format(e))
 
-    def writeConfig(self, interval, lastupdate, autostart):
+    def writeConfig(self, interval, lastupdate, autostart, notifications):
         if interval < 30 and interval != -1:
             print("interval must be greeter than 30 seconds")
             interval = 30
         self.config['Update'] = {"interval": interval, "lastupdate": lastupdate}
-        self.config['Main'] = {"autostart": autostart}
+        self.config['Main'] = {"autostart": autostart, "notifications": notifications}
         if self.createDir(self.configdir):
             with open(self.configdir + self.configfile, "w") as cf:
                 self.config.write(cf)

@@ -241,6 +241,7 @@ class MainWindow(object):
         self.ui_updatefreq_stack = self.GtkBuilder.get_object("ui_updatefreq_stack")
         self.ui_settingslastupdate_label = self.GtkBuilder.get_object("ui_settingslastupdate_label")
         self.ui_autostart_switch = self.GtkBuilder.get_object("ui_autostart_switch")
+        self.ui_notifications_switch = self.GtkBuilder.get_object("ui_notifications_switch")
 
         self.ui_autoremovable_box = self.GtkBuilder.get_object("ui_autoremovable_box")
         self.ui_residual_box = self.GtkBuilder.get_object("ui_residual_box")
@@ -456,8 +457,10 @@ class MainWindow(object):
         self.UserSettings.readConfig()
 
         print("{} {}".format("config_interval", self.UserSettings.config_interval))
-        print("{} {}".format("config_lastupdate", self.UserSettings.config_lastupdate))
+        print("{} {} ({})".format("config_lastupdate", self.UserSettings.config_lastupdate,
+                                datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
         print("{} {}".format("config_autostart", self.UserSettings.config_autostart))
+        print("{} {}".format("config_notifications", self.UserSettings.config_notifications))
 
     def init_ui(self):
         self.ui_main_stack.set_visible_child_name("spinner")
@@ -571,6 +574,7 @@ class MainWindow(object):
             datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
 
         self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
+        self.ui_notifications_switch.set_state(self.UserSettings.config_notifications)
 
         self.main_window.set_visible(True)
         self.main_window.present()
@@ -902,6 +906,7 @@ class MainWindow(object):
                 datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
 
             self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
+            self.ui_notifications_switch.set_state(self.UserSettings.config_notifications)
 
         self.ui_menu_popover.popdown()
 
@@ -980,7 +985,7 @@ class MainWindow(object):
         user_interval = self.UserSettings.config_interval
         if seconds != user_interval:
             self.UserSettings.writeConfig(seconds, self.UserSettings.config_lastupdate,
-                                          self.UserSettings.config_autostart)
+                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
             self.user_settings()
 
             # update autoupdate timer
@@ -1009,7 +1014,7 @@ class MainWindow(object):
         user_interval = self.UserSettings.config_interval
         if seconds != user_interval:
             self.UserSettings.writeConfig(seconds, self.UserSettings.config_lastupdate,
-                                          self.UserSettings.config_autostart)
+                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
             self.user_settings()
 
             # update autoupdate timer
@@ -1022,8 +1027,17 @@ class MainWindow(object):
 
         user_autostart = self.UserSettings.config_autostart
         if state != user_autostart:
-            self.UserSettings.writeConfig(self.UserSettings.config_interval, self.UserSettings.config_lastupdate, state)
+            self.UserSettings.writeConfig(self.UserSettings.config_interval, self.UserSettings.config_lastupdate, state,
+                                          self.UserSettings.config_notifications)
             self.user_settings()
+
+    def on_ui_notifications_switch_state_set(self, switch, state):
+        user_notifications = self.UserSettings.config_notifications
+        if state != user_notifications:
+            self.UserSettings.writeConfig(self.UserSettings.config_interval, self.UserSettings.config_lastupdate,
+                                          self.UserSettings.config_autostart, state)
+            self.user_settings()
+
 
     def on_ui_fix_button_clicked(self, button):
         self.ui_fix_stack.set_visible_child_name("info")
@@ -1314,13 +1328,13 @@ class MainWindow(object):
                                                 body=_("There are {} software updates available.").format(
                                                     len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show()
+                    notification.show(self.UserSettings.config_notifications)
                 else:
                     notification = Notification(summary=_("Software Update"),
                                                 body=_("There is {} software update available.").format(
                                                     len(upgradable)),
                                                 icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show()
+                    notification.show(self.UserSettings.config_notifications)
             else:
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
                     self.ui_main_stack.set_visible_child_name("ok")
@@ -1652,7 +1666,7 @@ class MainWindow(object):
                 timestamp = 0
 
             self.UserSettings.writeConfig(self.UserSettings.config_interval, timestamp,
-                                          self.UserSettings.config_autostart)
+                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
             self.user_settings()
             self.update_lastcheck_labels()
             self.create_autoupdate_glibid()
