@@ -46,6 +46,8 @@ data_files = [
                    "src/Package.py",
                    "src/RepoDistControl.py",
                    "src/SysActions.py",
+                   "src/SystemSettings.py",
+                   "src/SystemSettingsWrite.py",
                    "src/UserSettings.py",
                    "src/__version__"]),
                  ("/usr/share/pardus/pardus-update/data",

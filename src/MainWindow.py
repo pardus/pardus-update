@@ -29,6 +29,7 @@ except:
     from gi.repository import AyatanaAppIndicator3 as appindicator
 
 from UserSettings import UserSettings
+from SystemSettings import SystemSettings
 from Package import Package
 from RepoDistControl import RepoDistControl
 
@@ -67,7 +68,11 @@ class MainWindow(object):
         self.control_display()
 
         self.user_settings()
-        self.UserSettings.set_autostart(self.UserSettings.config_autostart)
+        self.system_settings()
+        autostart = self.UserSettings.config_autostart
+        if self.SystemSettings.config_autostart is not None:
+            autostart = self.SystemSettings.config_autostart
+        self.UserSettings.set_autostart(autostart)
         self.init_indicator()
         self.init_ui()
         self.monitoring()
@@ -173,24 +178,33 @@ class MainWindow(object):
         print("broken: {}".format(self.isbroken))
 
     def apt_update(self, force=False):
+        """
+        auto update control function
+        """
         print("in apt_update")
+
+        interval = self.UserSettings.config_interval
+        if self.SystemSettings.config_update_interval is not None:
+            interval = self.SystemSettings.config_update_interval
+
+        lastupdate = self.UserSettings.config_lastupdate
+        if self.SystemSettings.config_update_lastupdate is not None:
+            lastupdate = self.SystemSettings.config_update_lastupdate
+
         if force:
             self.start_aptupdate()
             return
-        if self.UserSettings.config_interval == -1:  # never auto update
+        if interval == -1:  # never auto update
             self.set_upgradable_page_and_notify()
             return
-        if self.UserSettings.config_lastupdate + self.UserSettings.config_interval - 10 <= int(
-                datetime.now().timestamp()):
+        if lastupdate + interval - 10 <= int(datetime.now().timestamp()):
             print("started timed update check")
-            print("lu:{} inv:{} now:{}".format(self.UserSettings.config_lastupdate,
-                                               self.UserSettings.config_interval, int(datetime.now().timestamp())))
+            print("lu:{} inv:{} now:{}".format(lastupdate, interval, int(datetime.now().timestamp())))
             self.start_aptupdate()
             return
         else:
             print("not started timed update check")
-            print("lu:{} inv:{} now:{}".format(self.UserSettings.config_lastupdate,
-                                               self.UserSettings.config_interval, int(datetime.now().timestamp())))
+            print("lu:{} inv:{} now:{}".format(lastupdate, interval, int(datetime.now().timestamp())))
             self.set_upgradable_page_and_notify()
             return
 
@@ -462,6 +476,37 @@ class MainWindow(object):
         print("{} {}".format("config_autostart", self.UserSettings.config_autostart))
         print("{} {}".format("config_notifications", self.UserSettings.config_notifications))
 
+    def system_settings(self):
+        self.SystemSettings = SystemSettings()
+        self.SystemSettings.readConfig()
+
+        try:
+            if self.SystemSettings.config_update_interval is not None:
+                print("system: {} {}".format("config_interval", self.SystemSettings.config_update_interval))
+            if self.SystemSettings.config_update_lastupdate is not None:
+                print("system: {} {}".format("config_lastupdate", self.SystemSettings.config_update_lastupdate))
+            if self.SystemSettings.config_autostart is not None:
+                print("system: {} {}".format("config_autostart", self.SystemSettings.config_autostart))
+            if self.SystemSettings.config_notifications is not None:
+                print("system: {} {}".format("config_notifications", self.SystemSettings.config_notifications))
+
+            if self.SystemSettings.config_upgrade_enabled is not None:
+                print("system: {} {}".format("config_upgrade_enabled",
+                                             self.SystemSettings.config_upgrade_enabled))
+            if self.SystemSettings.config_upgrade_interval is not None:
+                print("system: {} {}".format("config_upgrade_interval",
+                                             self.SystemSettings.config_upgrade_interval))
+            if self.SystemSettings.config_upgrade_lastupgrade is not None:
+                print("system: {} {}".format("config_upgrade_lastupgrade",
+                                             self.SystemSettings.config_upgrade_lastupgrade))
+            if self.SystemSettings.config_upgrade_fix is not None:
+                print("system: {} {}".format("config_upgrade_fix", self.SystemSettings.config_upgrade_fix))
+            if self.SystemSettings.config_upgrade_sources is not None:
+                print("system: {} {}".format("config_upgrade_sources",
+                                             self.SystemSettings.config_upgrade_sources))
+        except Exception as e:
+            print("system_settings exception: {}".format(e))
+
     def init_ui(self):
         self.ui_main_stack.set_visible_child_name("spinner")
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -561,20 +606,7 @@ class MainWindow(object):
         self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
         self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
 
-        interval = self.interval_to_combo(self.UserSettings.config_interval)
-
-        if interval is not None:
-            self.ui_updatefreq_stack.set_visible_child_name("combo")
-            self.ui_updatefreq_combobox.set_active(interval)
-        else:
-            self.ui_updatefreq_stack.set_visible_child_name("spin")
-            self.ui_updatefreq_spin.set_value(self.UserSettings.config_interval)
-
-        self.ui_settingslastupdate_label.set_markup("{}".format(
-            datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
-
-        self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
-        self.ui_notifications_switch.set_state(self.UserSettings.config_notifications)
+        self.set_settings_widgets()
 
         self.main_window.set_visible(True)
         self.main_window.present()
@@ -893,22 +925,40 @@ class MainWindow(object):
 
             self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
 
-            interval = self.interval_to_combo(self.UserSettings.config_interval)
-
-            if interval is not None:
-                self.ui_updatefreq_stack.set_visible_child_name("combo")
-                self.ui_updatefreq_combobox.set_active(interval)
-            else:
-                self.ui_updatefreq_stack.set_visible_child_name("spin")
-                self.ui_updatefreq_spin.set_value(self.UserSettings.config_interval)
-
-            self.ui_settingslastupdate_label.set_markup("{}".format(
-                datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
-
-            self.ui_autostart_switch.set_state(self.UserSettings.config_autostart)
-            self.ui_notifications_switch.set_state(self.UserSettings.config_notifications)
+            self.set_settings_widgets()
 
         self.ui_menu_popover.popdown()
+
+    def set_settings_widgets(self):
+        interval = self.UserSettings.config_interval
+        interval_combo = self.interval_to_combo(interval)
+        if self.SystemSettings.config_update_interval is not None:
+            interval = self.SystemSettings.config_update_interval
+            interval_combo = self.interval_to_combo(interval)
+            self.ui_updatefreq_combobox.set_sensitive(False)
+            self.ui_updatefreq_spin.set_sensitive(False)
+
+        if interval_combo is not None:
+            self.ui_updatefreq_stack.set_visible_child_name("combo")
+            self.ui_updatefreq_combobox.set_active(interval_combo)
+        else:
+            self.ui_updatefreq_stack.set_visible_child_name("spin")
+            self.ui_updatefreq_spin.set_value(interval)
+
+        self.ui_settingslastupdate_label.set_markup("{}".format(
+            datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
+
+        autostart = self.UserSettings.config_autostart
+        if self.SystemSettings.config_autostart is not None:
+            autostart = self.SystemSettings.config_autostart
+            self.ui_autostart_switch.set_sensitive(False)
+        self.ui_autostart_switch.set_state(autostart)
+
+        notifications = self.UserSettings.config_notifications
+        if self.SystemSettings.config_notifications is not None:
+            notifications = self.SystemSettings.config_notifications
+            self.ui_notifications_switch.set_sensitive(False)
+        self.ui_notifications_switch.set_state(notifications)
 
     def on_ui_menudistupgrade_button_clicked(self, button):
         self.ui_menu_popover.popdown()
@@ -972,6 +1022,9 @@ class MainWindow(object):
         return combo
 
     def on_ui_updatefreq_combobox_changed(self, combo_box):
+        if self.SystemSettings.config_update_interval is not None:
+            return
+
         seconds = 86400
         if combo_box.get_active() == 0:  # Hourly
             seconds = 3600
@@ -1010,6 +1063,8 @@ class MainWindow(object):
                 self.create_autoupdate_glibid()
 
     def on_ui_updatefreq_spin_value_changed(self, spin_button):
+        if self.SystemSettings.config_update_interval is not None:
+            return
         seconds = int(spin_button.get_value())
         user_interval = self.UserSettings.config_interval
         if seconds != user_interval:
@@ -1023,6 +1078,9 @@ class MainWindow(object):
             self.create_autoupdate_glibid()
 
     def on_ui_autostart_switch_state_set(self, switch, state):
+        if self.SystemSettings.config_autostart is not None:
+            return
+
         self.UserSettings.set_autostart(state)
 
         user_autostart = self.UserSettings.config_autostart
@@ -1032,12 +1090,14 @@ class MainWindow(object):
             self.user_settings()
 
     def on_ui_notifications_switch_state_set(self, switch, state):
+        if self.SystemSettings.config_notifications is not None:
+            return
+
         user_notifications = self.UserSettings.config_notifications
         if state != user_notifications:
             self.UserSettings.writeConfig(self.UserSettings.config_interval, self.UserSettings.config_lastupdate,
                                           self.UserSettings.config_autostart, state)
             self.user_settings()
-
 
     def on_ui_fix_button_clicked(self, button):
         self.ui_fix_stack.set_visible_child_name("info")
@@ -1301,8 +1361,11 @@ class MainWindow(object):
                                                       datetime.fromtimestamp(self.UserSettings.config_lastupdate)))
 
     def create_autoupdate_glibid(self):
-        if self.UserSettings.config_interval != -1:
-            self.autoupdate_glibid = GLib.timeout_add_seconds(self.UserSettings.config_interval, self.apt_update)
+        interval = self.UserSettings.config_interval
+        if self.SystemSettings.config_update_interval is not None:
+            interval = self.SystemSettings.config_update_interval
+        if interval != -1:
+            self.autoupdate_glibid = GLib.timeout_add_seconds(interval, self.apt_update)
 
     def set_upgradable_page_and_notify(self):
 
@@ -1323,18 +1386,16 @@ class MainWindow(object):
                 if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
                     self.ui_main_stack.set_visible_child_name("updateinfo")
                     self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                if len(upgradable) > 1:
-                    notification = Notification(summary=_("Software Update"),
-                                                body=_("There are {} software updates available.").format(
-                                                    len(upgradable)),
-                                                icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show(self.UserSettings.config_notifications)
-                else:
-                    notification = Notification(summary=_("Software Update"),
-                                                body=_("There is {} software update available.").format(
-                                                    len(upgradable)),
-                                                icon=self.icon_available, appid=self.Application.get_application_id())
-                    notification.show(self.UserSettings.config_notifications)
+
+                notification = Notification(summary=_("Software Update"),
+                                            body=_("There are {} software updates available.").format(len(upgradable))
+                                            if len(upgradable) >= 1 else
+                                            _("There is {} software update available.").format(len(upgradable)),
+                                            icon=self.icon_available, appid=self.Application.get_application_id())
+                notification_state = self.UserSettings.config_notifications
+                if self.SystemSettings.config_notifications is not None:
+                    notification_state = self.SystemSettings.config_notifications
+                notification.show(notification_state)
             else:
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
                     self.ui_main_stack.set_visible_child_name("ok")
@@ -1674,6 +1735,12 @@ class MainWindow(object):
             self.control_update_residual_message_section()
         else:
             self.indicator.set_icon(self.icon_error)
+
+        if self.SystemSettings.config_update_interval is not None:
+            print("SystemSettings.config_update_interval writed")
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SystemSettingsWrite.py",
+                       "write", "lastupdate", "{}".format(timestamp)]
+            subprocess.run(command)
 
         self.update_inprogress = False
 
