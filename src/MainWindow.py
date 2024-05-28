@@ -1733,14 +1733,14 @@ class MainWindow(object):
             self.create_autoupdate_glibid()
             self.set_upgradable_page_and_notify()
             self.control_update_residual_message_section()
+
+            if self.SystemSettings.config_update_interval is not None:
+                print("SystemSettings.config_update_interval writed")
+                command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SystemSettingsWrite.py",
+                           "write", "lastupdate", "{}".format(timestamp)]
+                subprocess.run(command)
         else:
             self.indicator.set_icon(self.icon_error)
-
-        if self.SystemSettings.config_update_interval is not None:
-            print("SystemSettings.config_update_interval writed")
-            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SystemSettingsWrite.py",
-                       "write", "lastupdate", "{}".format(timestamp)]
-            subprocess.run(command)
 
         self.update_inprogress = False
 
