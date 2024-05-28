@@ -613,7 +613,7 @@ class MainWindow(object):
         self.item_sh_app.set_label(_("Hide App"))
 
     def on_menu_updatespage_app(self, *args):
-        if self.upgrade_inprogress:
+        if self.upgrade_inprogress or self.clean_residuals_clicked:
             self.ui_main_stack.set_visible_child_name("upgrade")
         else:
             if self.isbroken:
