@@ -20,6 +20,7 @@ class Application(Gtk.Application):
         super().__init__(*args, application_id="tr.org.pardus.update",
                          flags=Gio.ApplicationFlags(8), **kwargs)
         self.window = None
+        GLib.set_prgname("tr.org.pardus.update")
 
         self.add_main_option(
             "tray",
