@@ -465,6 +465,13 @@ class MainWindow(object):
 
         print("window w:{} h:{} | monitor w:{} h:{} s:{}".format(width, height, w, h, s))
 
+    def update_vte_color(self, vte):
+        style_context = self.main_window.get_style_context()
+        background_color= style_context.get_background_color(Gtk.StateFlags.NORMAL);
+        foreground_color= style_context.get_color(Gtk.StateFlags.NORMAL);
+        vte.set_color_background(background_color)
+        vte.set_color_foreground(foreground_color)
+
     def user_settings(self):
         self.UserSettings = UserSettings()
         self.UserSettings.createDefaultConfig()
@@ -1761,6 +1768,7 @@ class MainWindow(object):
             self.upgrade_vteterm.get_parent().remove(self.upgrade_vteterm)
 
         self.upgrade_vteterm = Vte.Terminal()
+        self.update_vte_color(self.upgrade_vteterm)
         self.upgrade_vteterm.set_scrollback_lines(-1)
         upgrade_vte_menu = Gtk.Menu()
         upgrade_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
@@ -1852,6 +1860,7 @@ class MainWindow(object):
             self.fix_vteterm.get_parent().remove(self.fix_vteterm)
 
         self.fix_vteterm = Vte.Terminal()
+        self.update_vte_color(self.fix_vteterm)
         self.fix_vteterm.set_scrollback_lines(-1)
         fix_vte_menu = Gtk.Menu()
         fix_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
