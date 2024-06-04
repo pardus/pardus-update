@@ -1453,7 +1453,7 @@ class MainWindow(object):
                 notification_state = self.UserSettings.config_notifications
                 if self.SystemSettings.config_notifications is not None:
                     notification_state = self.SystemSettings.config_notifications
-                notification.show(notification_state)
+                GLib.idle_add(notification.show, notification_state)
             else:
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
                     self.ui_main_stack.set_visible_child_name("ok")
@@ -1512,7 +1512,7 @@ class MainWindow(object):
             notification_state = self.UserSettings.config_notifications
             if self.SystemSettings.config_notifications is not None:
                 notification_state = self.SystemSettings.config_notifications
-            notification.show(notification_state)
+            GLib.idle_add(notification.show, notification_state)
 
         else:
             print("auto_apt_upgrade: update_inprogress: {}, upgrade_inprogress: {}".format(self.update_inprogress,
@@ -2218,7 +2218,7 @@ class MainWindow(object):
         notification_state = self.UserSettings.config_notifications
         if self.SystemSettings.config_notifications is not None:
             notification_state = self.SystemSettings.config_notifications
-        notification.show(notification_state)
+        GLib.idle_add(notification.show, notification_state)
 
         self.auto_upgrade_inprogress = False
 
