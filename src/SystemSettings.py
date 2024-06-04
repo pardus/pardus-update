@@ -45,16 +45,14 @@ class SystemSettings(object):
                 self.config_autostart = self.config.getboolean('Main', 'autostart')
             if self.config.has_option("Main", "notifications"):
                 self.config_notifications = self.config.getboolean('Main', 'notifications')
+
             if self.config.has_option("Upgrade", "enabled"):
                 self.config_upgrade_enabled = self.config.getboolean('Upgrade', 'enabled')
             if self.config.has_option("Upgrade", "interval"):
                 self.config_upgrade_interval = self.config.getint('Upgrade', 'interval')
             if self.config.has_option("Upgrade", "lastupgrade"):
                 self.config_upgrade_lastupgrade = self.config.getint('Upgrade', 'lastupgrade')
-            if self.config.has_option("Upgrade", "fix"):
-                self.config_upgrade_fix = self.config.getboolean('Upgrade', 'fix')
-            if self.config.has_option("Upgrade", "sources"):
-                self.config_upgrade_sources = self.config.get('Upgrade', 'sources')
+
         except Exception as e:
             print("{}".format(e))
             print("system config read error !")

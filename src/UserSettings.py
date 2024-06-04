@@ -15,8 +15,9 @@ class UserSettings(object):
     def __init__(self):
         self.userhome = str(Path.home())
 
-        self.default_interval = 86400  # daily
-        self.default_lastupdate = 0
+        self.default_update_interval = 86400  # daily
+        self.default_update_lastupdate = 0
+
         self.default_autostart = True
         self.default_notifications = True
 
@@ -28,14 +29,14 @@ class UserSettings(object):
 
         self.config = ConfigParser(strict=False)
 
-        self.config_interval = self.default_interval
-        self.config_lastupdate = self.default_lastupdate
+        self.config_update_interval = self.default_update_interval
+        self.config_update_lastupdate = self.default_update_lastupdate
         self.config_autostart = self.default_autostart
         self.config_notifications = self.default_notifications
 
     def createDefaultConfig(self, force=False):
-        self.config['Update'] = {"interval": self.default_interval,
-                                 "lastupdate": self.default_lastupdate}
+        self.config['Update'] = {"interval": self.default_update_interval,
+                                 "lastupdate": self.default_update_lastupdate}
 
         self.config['Main'] = {"autostart": self.default_autostart,
                                "notifications": self.default_notifications}
@@ -48,11 +49,11 @@ class UserSettings(object):
     def readConfig(self):
         try:
             self.config.read(self.configdir + self.configfile)
-            self.config_interval = self.config.getint('Update', 'interval')
-            if self.config_interval < 30 and self.config_interval != -1:
+            self.config_update_interval = self.config.getint('Update', 'interval')
+            if self.config_update_interval < 30 and self.config_update_interval != -1:
                 print("interval must be greeter than 30 seconds")
-                self.config_interval = 30
-            self.config_lastupdate = self.config.getint('Update', 'lastupdate')
+                self.config_update_interval = 30
+            self.config_update_lastupdate = self.config.getint('Update', 'lastupdate')
             self.config_autostart = self.config.getboolean('Main', 'autostart')
             self.config_notifications = self.config.getboolean('Main', 'notifications')
 
@@ -60,8 +61,8 @@ class UserSettings(object):
             print("{}".format(e))
             print("user config read error ! Trying create defaults")
             # if not read; try to create defaults
-            self.config_interval = self.default_interval
-            self.config_lastupdate = self.default_lastupdate
+            self.config_update_interval = self.default_update_interval
+            self.config_update_lastupdate = self.default_update_lastupdate
             self.config_autostart = self.default_autostart
             self.config_notifications = self.default_notifications
             try:
