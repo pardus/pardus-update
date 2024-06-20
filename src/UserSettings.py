@@ -13,7 +13,7 @@ from pathlib import Path
 
 class UserSettings(object):
     def __init__(self):
-        self.userhome = str(Path.home())
+        self.xdg_config_dir = os.environ.get("XDG_CONFIG_HOME", str(Path.home()) + "/.config")
 
         self.default_update_interval = 86400  # daily
         self.default_update_lastupdate = 0
@@ -21,10 +21,10 @@ class UserSettings(object):
         self.default_autostart = True
         self.default_notifications = True
 
-        self.configdir = self.userhome + "/.config/pardus/pardus-update/"
+        self.configdir = self.xdg_config_dir + "/pardus/pardus-update/"
         self.configfile = "settings.ini"
 
-        self.autostartdir = self.userhome + "/.config/autostart/"
+        self.autostartdir = self.xdg_config_dir + "/autostart/"
         self.autostartfile = "tr.org.pardus.update-autostart.desktop"
 
         self.config = ConfigParser(strict=False)
