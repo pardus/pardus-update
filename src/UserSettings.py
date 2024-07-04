@@ -10,21 +10,24 @@ import os
 from configparser import ConfigParser
 from pathlib import Path
 
+import gi
+
+gi.require_version("GLib", "2.0")
+from gi.repository import GLib
+
 
 class UserSettings(object):
     def __init__(self):
-        self.userhome = str(Path.home())
-
         self.default_update_interval = 86400  # daily
         self.default_update_lastupdate = 0
 
         self.default_autostart = True
         self.default_notifications = True
 
-        self.configdir = self.userhome + "/.config/pardus/pardus-update/"
+        self.configdir = "{}/pardus/pardus-update/".format(GLib.get_user_config_dir())
         self.configfile = "settings.ini"
 
-        self.autostartdir = self.userhome + "/.config/autostart/"
+        self.autostartdir = "{}/autostart/".format(GLib.get_user_config_dir())
         self.autostartfile = "tr.org.pardus.update-autostart.desktop"
 
         self.config = ConfigParser(strict=False)
