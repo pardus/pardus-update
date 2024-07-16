@@ -1,3 +1,60 @@
+pardus-update (0.3.0) unstable; urgency=medium
+
+  [ bariscodefx ]
+  * ported xfce about dialog fix from pardus-software
+  * oops, fixed wrong variable name
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+  * Add Portuguese translations
+
+  [ Fatih Altun ]
+  * Add missing tolerance to required size label on ui too
+  * Update indicator sys_status sensitive as always true for pardus gnome 23
+  * Add window present to show app
+  * Fix translators structure, fixes #5
+  * Update pot file
+  * Update Turkish translations
+  * Add pt to update translations script
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+  [ Fatih Altun ]
+  * Update transient of about window
+  * Fix quit app func
+  * Add notification enable-disable switch to settings
+  * Add missing notification show state
+  * Add close button to notification
+  * Update copyright to 2024
+  * Add system based configuration for settings
+  * Add residuals control to system is up-to-date menu
+  * Fix if control of aptupdate process
+
+  [ Ali Riza KESKIN ]
+  * fix kde wayland wrong icon issue
+
+  [ sulincix ]
+  * vte terminal background sync with gtk window background
+
+  [ Fatih Altun ]
+  * Add system conf based auto upgrade
+  * Add GLib idle to notification show
+
+  [ vilez ]
+  * feat: better support for XDG Base Directory
+
+  [ Fatih Altun ]
+  * Use GLib instead of getenv
+  * Fix typo
+  * Update pot file
+  * Update Turkish translations
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 16 Jul 2024 12:40:06 +0300
+
 pardus-update (0.2.0) unstable; urgency=medium
 
   [ Fatih Altun ]
