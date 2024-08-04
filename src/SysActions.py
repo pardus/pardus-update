@@ -54,8 +54,7 @@ def main():
         subprocess.call(["apt", "update"],
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
-    def subupgrade(yq, dpkg_conf):
-
+    def subupgrade(yq, dpkg_conf, keeps=None):
         lock, msg = control_lock()
         if not lock:
             if "E:" in msg and "/var/lib/dpkg/lock-frontend" in msg:
@@ -65,10 +64,20 @@ def main():
                 print("dpkg interrupt error", file=sys.stderr)
                 sys.exit(12)
 
+        if keeps:
+            keep_list = keeps.split(" ")
+            for kp in keep_list:
+                subprocess.call(["apt-mark", "hold", kp])
+
         dpkg_conf_list = dpkg_conf.split(" ")
         yq_list = yq.split(" ")
         subprocess.call(["apt", "full-upgrade"] + yq_list + dpkg_conf_list,
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+
+        if keeps:
+            keep_list = keeps.split(" ")
+            for kp in keep_list:
+                subprocess.call(["apt-mark", "unhold", kp])
 
     def fixbroken():
         subprocess.call(["apt", "install", "--fix-broken", "-yq"],
@@ -562,7 +571,7 @@ def main():
             fixbroken()
         elif sys.argv[1] == "upgrade":
             subupdate()
-            subupgrade(sys.argv[2], sys.argv[3])
+            subupgrade(sys.argv[2], sys.argv[3], sys.argv[4])
         elif sys.argv[1] == "removeresidual":
             removeresidual(sys.argv[2])
         elif sys.argv[1] == "removeauto":

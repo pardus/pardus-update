@@ -19,6 +19,7 @@ class SystemSettings(object):
 
         self.config_update_interval = None
         self.config_update_lastupdate = None
+        self.config_update_selectable = None
 
         self.config_autostart = None
         self.config_notifications = None
@@ -40,6 +41,9 @@ class SystemSettings(object):
                     self.config_update_interval = 30
             if self.config.has_option("Update", "lastupdate"):
                 self.config_update_lastupdate = self.config.getint('Update', 'lastupdate')
+
+            if self.config.has_option("Update", "selectable"):
+                self.config_update_selectable = self.config.getboolean('Update', 'selectable')
 
             if self.config.has_option("Main", "autostart"):
                 self.config_autostart = self.config.getboolean('Main', 'autostart')

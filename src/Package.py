@@ -68,6 +68,34 @@ class Package(object):
                 break
         return False
 
+    def get_depends(self, packagename):
+        dependencies = []
+        try:
+            package = self.cache[packagename]
+            for dependency in package.candidate.dependencies:
+                for dep in dependency:
+                    dependencies.append(dep.name)
+        except Exception as e:
+            print("Error in get_depends: {}".format(e))
+        return dependencies
+
+    def get_rdepends(self, packagename, only_upgradable=False):
+        rdependencies = []
+        try:
+            for pkg in self.cache:
+                if only_upgradable:
+                    if pkg.marked_upgrade or pkg.marked_install:
+                        for dep in pkg.candidate.dependencies:
+                            if packagename in [d.name for d in dep]:
+                                rdependencies.append(pkg.name)
+                else:
+                    for dep in pkg.candidate.dependencies:
+                        if packagename in [d.name for d in dep]:
+                            rdependencies.append(pkg.name)
+        except Exception as e:
+            print("Error in get_depends: {}".format(e))
+        return rdependencies
+
     def description(self, packagename, israw):
         try:
             package = self.cache[packagename]
@@ -223,7 +251,7 @@ class Package(object):
             section = package.versions[0].section.lower()
         return section
 
-    def required_changes_upgrade(self, sleep=True):
+    def required_changes_upgrade(self, sleep=True, keep_list=None):
         if sleep:
             time.sleep(0.25)
         self.cache.clear()
@@ -231,9 +259,11 @@ class Package(object):
         to_install = []
         to_delete = []
         to_keep = []
+        user_keep_list_depends = []
         changes_available = None
         rcu = {"download_size": None, "freed_size": None, "install_size": None, "to_upgrade": None, "to_install": None,
-               "to_delete": None, "to_keep": None, "changes_available": None, "cache_error": True}
+               "to_delete": None, "to_keep": None, "changes_available": None, "cache_error": True,
+               "user_keep_list_depends": None}
 
         try:
             self.cache.upgrade(True)
@@ -243,6 +273,26 @@ class Package(object):
             print("cache.upgrade Error: {}".format(error))
             self.update_cache_error_msg = "{}".format(error)
             return rcu
+
+        if keep_list:
+            for kp in keep_list:
+                try:
+                    self.cache[kp].mark_keep()
+                    keep_depends = self.get_depends(kp) + self.get_rdepends(kp, True)
+                    print("keep_depends: {}".format(keep_depends))
+                    for kd in keep_depends:
+                        try:
+                            if self.cache[kd].marked_upgrade or self.cache[kd].marked_install:
+                                self.cache[kd].mark_keep()
+                                user_keep_list_depends.append(kd)
+                                print("keeping from depends: {}".format(kd))
+                        except:
+                            continue
+                    print("keeping: {}".format(kp))
+                except Exception as e:
+                    print("{} not found".format(kp))
+                    print("{}".format(e))
+
 
         # to_keep = self.cache.keep_count
         changes = self.cache.get_changes()
@@ -288,6 +338,7 @@ class Package(object):
         rcu["to_keep"] = to_keep
         rcu["changes_available"] = changes_available
         rcu["cache_error"] = cache_error
+        rcu["user_keep_list_depends"] = user_keep_list_depends
 
         # print("freed_size {}".format(rcu["freed_size"]))
         # print("download_size {}".format(rcu["download_size"]))
@@ -298,6 +349,7 @@ class Package(object):
         print("to_keep {}".format(rcu["to_keep"]))
         print("changes_available {}".format(rcu["changes_available"]))
         print("cache_error {}".format(rcu["cache_error"]))
+        print("user_keep_list_depends {}".format(rcu["user_keep_list_depends"]))
         return rcu
 
     def required_changes(self, packagenames, sleep=True):

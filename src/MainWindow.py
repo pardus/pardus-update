@@ -69,10 +69,17 @@ class MainWindow(object):
 
         self.user_settings()
         self.system_settings()
+
         autostart = self.UserSettings.config_autostart
         if self.SystemSettings.config_autostart is not None:
             autostart = self.SystemSettings.config_autostart
         self.UserSettings.set_autostart(autostart)
+
+        update_selectable = self.UserSettings.config_update_selectable
+        if self.SystemSettings.config_update_selectable is not None:
+            update_selectable = self.SystemSettings.config_update_selectable
+        self.user_keep_list = self.UserSettings.get_user_keeps_from_file() if update_selectable else []
+
         self.init_indicator()
         self.init_ui()
         self.monitoring()
@@ -294,7 +301,9 @@ class MainWindow(object):
         self.ui_updatefreq_stack = self.GtkBuilder.get_object("ui_updatefreq_stack")
         self.ui_settingslastupdate_label = self.GtkBuilder.get_object("ui_settingslastupdate_label")
         self.ui_autostart_switch = self.GtkBuilder.get_object("ui_autostart_switch")
+        self.ui_selectable_updates_switch = self.GtkBuilder.get_object("ui_selectable_updates_switch")
         self.ui_notifications_switch = self.GtkBuilder.get_object("ui_notifications_switch")
+        self.ui_update_selectable_info_popover = self.GtkBuilder.get_object("ui_update_selectable_info_popover")
 
         self.ui_autoremovable_box = self.GtkBuilder.get_object("ui_autoremovable_box")
         self.ui_residual_box = self.GtkBuilder.get_object("ui_residual_box")
@@ -456,6 +465,9 @@ class MainWindow(object):
         self.dist_upgradable = False
 
         self.autoupgrade_enabled = False
+
+        self.user_keep_list = []
+        self.user_keep_list_depends = []
 
         try:
             self.user_distro_id = distro.id()
@@ -757,7 +769,7 @@ class MainWindow(object):
             self.item_systemstatus.set_label(_("Updating"))
 
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
-                       "upgrade", yq_conf, dpkg_conf]
+                       "upgrade", yq_conf, dpkg_conf, " ".join(self.user_keep_list)]
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
@@ -1006,6 +1018,12 @@ class MainWindow(object):
         self.ui_settingslastupdate_label.set_markup("{}".format(
             datetime.fromtimestamp(self.UserSettings.config_update_lastupdate)))
 
+        update_selectable = self.UserSettings.config_update_selectable
+        if self.SystemSettings.config_update_selectable is not None:
+            update_selectable = self.SystemSettings.config_update_selectable
+            self.ui_selectable_updates_switch.set_sensitive(False)
+        self.ui_selectable_updates_switch.set_state(update_selectable)
+
         autostart = self.UserSettings.config_autostart
         if self.SystemSettings.config_autostart is not None:
             autostart = self.SystemSettings.config_autostart
@@ -1096,7 +1114,8 @@ class MainWindow(object):
         user_interval = self.UserSettings.config_update_interval
         if seconds != user_interval:
             self.UserSettings.writeConfig(seconds, self.UserSettings.config_update_lastupdate,
-                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
+                                          self.UserSettings.config_update_selectable, self.UserSettings.config_autostart,
+                                          self.UserSettings.config_notifications)
             self.user_settings()
 
             # update autoupdate timer
@@ -1127,13 +1146,29 @@ class MainWindow(object):
         user_interval = self.UserSettings.config_update_interval
         if seconds != user_interval:
             self.UserSettings.writeConfig(seconds, self.UserSettings.config_update_lastupdate,
-                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
+                                          self.UserSettings.config_update_selectable, self.UserSettings.config_autostart,
+                                          self.UserSettings.config_notifications)
             self.user_settings()
 
             # update autoupdate timer
             if self.autoupdate_glibid:
                 GLib.source_remove(self.autoupdate_glibid)
             self.create_autoupdate_glibid()
+
+    def on_ui_selectable_updates_switch_state_set(self, switch, state):
+        if self.SystemSettings.config_update_selectable is not None:
+            return
+
+        user_selectable = self.UserSettings.config_update_selectable
+        if state != user_selectable:
+            self.UserSettings.writeConfig(self.UserSettings.config_update_interval,
+                                          self.UserSettings.config_update_lastupdate, state,
+                                          self.UserSettings.config_autostart,
+                                          self.UserSettings.config_notifications)
+            self.user_settings()
+            if not state:
+                self.user_keep_list.clear()
+            self.control_required_changes()
 
     def on_ui_autostart_switch_state_set(self, switch, state):
         if self.SystemSettings.config_autostart is not None:
@@ -1143,7 +1178,9 @@ class MainWindow(object):
 
         user_autostart = self.UserSettings.config_autostart
         if state != user_autostart:
-            self.UserSettings.writeConfig(self.UserSettings.config_update_interval, self.UserSettings.config_update_lastupdate, state,
+            self.UserSettings.writeConfig(self.UserSettings.config_update_interval,
+                                          self.UserSettings.config_update_lastupdate,
+                                          self.UserSettings.config_update_selectable, state,
                                           self.UserSettings.config_notifications)
             self.user_settings()
 
@@ -1153,7 +1190,9 @@ class MainWindow(object):
 
         user_notifications = self.UserSettings.config_notifications
         if state != user_notifications:
-            self.UserSettings.writeConfig(self.UserSettings.config_update_interval, self.UserSettings.config_update_lastupdate,
+            self.UserSettings.writeConfig(self.UserSettings.config_update_interval,
+                                          self.UserSettings.config_update_lastupdate,
+                                          self.UserSettings.config_update_selectable,
                                           self.UserSettings.config_autostart, state)
             self.user_settings()
 
@@ -1274,6 +1313,8 @@ class MainWindow(object):
         self.ui_kept_listbox.foreach(lambda child: self.ui_kept_listbox.remove(child))
 
     def control_required_changes(self):
+        self.UserSettings.set_user_keeps_file(self.user_keep_list)
+        print("user_keep_list: {}".format(self.user_keep_list))
         def start_thread():
             GLib.idle_add(self.clear_upgrade_listboxes)
 
@@ -1300,11 +1341,20 @@ class MainWindow(object):
         rcu = self.rcu_worker()
         GLib.idle_add(self.on_upgradables_worker_done, rcu)
 
-    def rcu_worker(self):
-        return self.Package.required_changes_upgrade()
+    def rcu_worker(self, keep_list=None):
+        return self.Package.required_changes_upgrade(keep_list=self.user_keep_list)
 
     def on_upgradables_worker_done(self, requireds):
-        def add_to_listbox(iconname, package, listbox, pagename):
+        update_selectable_state = self.UserSettings.config_update_selectable
+        if self.SystemSettings.config_update_selectable is not None:
+            update_selectable_state = self.SystemSettings.config_update_selectable
+        def add_to_listbox(iconname, package, listbox, pagename, check_active=True, check_sensitive=True):
+            if update_selectable_state:
+                checkbutton = Gtk.CheckButton.new()
+                checkbutton.set_active(check_active)
+                checkbutton.set_sensitive(check_sensitive)
+                checkbutton.name = package
+                checkbutton.connect("toggled", self.on_checkbutton_toggled)
             image = Gtk.Image.new_from_icon_name(iconname, Gtk.IconSize.BUTTON)
             name = Gtk.Label.new()
             name.set_markup("<b>{}</b>".format(GLib.markup_escape_text(package, -1)))
@@ -1345,6 +1395,10 @@ class MainWindow(object):
             box.set_margin_bottom(5)
             box.set_margin_start(5)
             box.set_margin_end(5)
+
+            if update_selectable_state:
+                box.pack_start(checkbutton, False, True, 5)
+
             box.pack_start(image, False, True, 5)
             box.pack_start(box1, False, True, 5)
             GLib.idle_add(listbox.insert, box, GLib.PRIORITY_DEFAULT_IDLE)
@@ -1357,15 +1411,21 @@ class MainWindow(object):
 
         if requireds["to_install"] and requireds["to_install"] is not None:
             for package in requireds["to_install"]:
-                add_to_listbox("list-add-symbolic", package, self.ui_newly_listbox, self.ui_newly_sw)
+                add_to_listbox("list-add-symbolic", package, self.ui_newly_listbox, self.ui_newly_sw,
+                               check_sensitive=False)
 
         if requireds["to_delete"] and requireds["to_delete"] is not None:
             for package in requireds["to_delete"]:
-                add_to_listbox("list-remove-symbolic", package, self.ui_removable_listbox, self.ui_removable_sw)
+                add_to_listbox("list-remove-symbolic", package, self.ui_removable_listbox, self.ui_removable_sw,
+                               check_sensitive=False)
 
         if requireds["to_keep"] and requireds["to_keep"] is not None:
             for package in requireds["to_keep"]:
-                add_to_listbox("view-grid-symbolic", package, self.ui_kept_listbox, self.ui_kept_sw)
+                sensitive = True
+                if update_selectable_state:
+                    sensitive = package in self.user_keep_list
+                add_to_listbox("view-grid-symbolic", package, self.ui_kept_listbox, self.ui_kept_sw,
+                               check_active=False, check_sensitive=sensitive)
 
         GLib.idle_add(self.ui_upgradable_listbox.show_all)
         GLib.idle_add(self.ui_newly_listbox.show_all)
@@ -1398,7 +1458,34 @@ class MainWindow(object):
             GLib.idle_add(self.ui_keptcount_label.set_markup, "{}".format(len(requireds["to_keep"])))
             GLib.idle_add(self.ui_keptcount_box.set_visible, True)
 
+            if update_selectable_state and self.user_keep_list:
+                button = Gtk.Button.new()
+                button.set_label(_("Clear All Selections"))
+                button.props.halign = Gtk.Align.CENTER
+                button.props.valign = Gtk.Align.CENTER
+                button.connect("clicked", self.on_clear_update_selectables)
+                GLib.idle_add(self.ui_kept_listbox.insert, button, 0)
+                GLib.idle_add(self.ui_kept_listbox.show_all)
+
         print("on_upgradables_worker_done")
+
+    def on_clear_update_selectables(self, button):
+        self.user_keep_list.clear()
+        self.control_required_changes()
+
+    def on_checkbutton_toggled(self, toggle_button):
+        print("{} {}".format(toggle_button.name, toggle_button.get_active()))
+        if toggle_button.get_active():
+            if toggle_button.name in self.user_keep_list:
+                self.user_keep_list.remove(toggle_button.name)
+        else:
+            if toggle_button.name not in self.user_keep_list:
+                self.user_keep_list.append(toggle_button.name)
+
+        self.control_required_changes()
+
+    def on_ui_update_selectable_info_button_clicked(self, button):
+        self.ui_update_selectable_info_popover.popup()
 
     def start_aptupdate(self):
         if not self.upgrade_inprogress and not self.update_inprogress:
@@ -1817,6 +1904,7 @@ class MainWindow(object):
                 timestamp = 0
 
             self.UserSettings.writeConfig(self.UserSettings.config_update_interval, timestamp,
+                                          self.UserSettings.config_update_selectable,
                                           self.UserSettings.config_autostart, self.UserSettings.config_notifications)
             self.user_settings()
             self.update_lastcheck_labels()
