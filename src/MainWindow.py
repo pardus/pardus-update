@@ -1401,7 +1401,7 @@ class MainWindow(object):
 
             box.pack_start(image, False, True, 5)
             box.pack_start(box1, False, True, 5)
-            GLib.idle_add(listbox.insert, box, GLib.PRIORITY_DEFAULT_IDLE)
+            GLib.idle_add(listbox.insert, box, -1)
             GLib.idle_add(self.ui_upgrade_buttonbox.set_sensitive, True)
             GLib.idle_add(pagename.set_visible, True)
 
@@ -1721,7 +1721,7 @@ class MainWindow(object):
                 box.set_margin_end(5)
                 box.pack_start(image, False, True, 5)
                 box.pack_start(box1, False, True, 5)
-                GLib.idle_add(listbox.insert, box, GLib.PRIORITY_DEFAULT_IDLE)
+                GLib.idle_add(listbox.insert, box, -1)
                 GLib.idle_add(pagename.set_visible, True)
 
             if requireds["to_upgrade"] and requireds["to_upgrade"] is not None:
