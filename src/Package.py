@@ -74,6 +74,15 @@ class Package(object):
             package = self.cache[packagename]
             for dependency in package.candidate.dependencies:
                 for dep in dependency:
+                    if dep.relation in ["=", ">=", ">"]:
+                        dep_require_version = dep.version
+                        dep_installed_version = dep.installed_target_versions[0].version if dep.installed_target_versions else ""
+                        if dep_require_version != "" and dep_installed_version != "":
+                            compare = apt_pkg.version_compare(dep_installed_version, dep_require_version)
+                            # print(dep.name, "u:", dep_installed_version, "r:", dep_require_version, "c", compare)
+                            if compare >= 0:
+                                print("skipping keep depend", dep.name)
+                                continue
                     dependencies.append(dep.name)
         except Exception as e:
             print("Error in get_depends: {}".format(e))
@@ -85,13 +94,33 @@ class Package(object):
             for pkg in self.cache:
                 if only_upgradable:
                     if pkg.marked_upgrade or pkg.marked_install:
-                        for dep in pkg.candidate.dependencies:
-                            if packagename in [d.name for d in dep]:
-                                rdependencies.append(pkg.name)
+                        for depend in pkg.candidate.dependencies:
+                            for dep in depend:
+                                if packagename == dep.name:
+                                    if dep.relation in ["=", ">=", ">"]:
+                                        dep_require_version = dep.version
+                                        pkg_installed_version = pkg.installed.version if pkg.is_installed else ""
+                                        if dep_require_version != "" and pkg_installed_version != "":
+                                            compare = apt_pkg.version_compare(pkg_installed_version, dep_require_version)
+                                            # print(pkg.name, "u:", pkg_installed_version, "r:", dep_require_version, "c", compare)
+                                            if compare >= 0:
+                                                print("skipping keep rdepend", pkg.name)
+                                                continue
+                                    rdependencies.append(pkg.name)
                 else:
-                    for dep in pkg.candidate.dependencies:
-                        if packagename in [d.name for d in dep]:
-                            rdependencies.append(pkg.name)
+                    for depend in pkg.candidate.dependencies:
+                        for dep in depend:
+                            if packagename == dep.name:
+                                if dep.relation in ["=", ">=", ">"]:
+                                    dep_require_version = dep.version
+                                    pkg_installed_version = pkg.installed.version if pkg.is_installed else ""
+                                    if dep_require_version != "" and pkg_installed_version != "":
+                                        compare = apt_pkg.version_compare(pkg_installed_version, dep_require_version)
+                                        # print(pkg.name, "u:", pkg_installed_version, "r:", dep_require_version, "c", compare)
+                                        if compare >= 0:
+                                            print("skipping keep rdepend", pkg.name)
+                                            continue
+                                rdependencies.append(pkg.name)
         except Exception as e:
             print("Error in get_depends: {}".format(e))
         return rdependencies
