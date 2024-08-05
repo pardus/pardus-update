@@ -95,7 +95,7 @@ class Package(object):
             for pkg in self.cache:
                 if only_upgradable:
                     if pkg.marked_upgrade or pkg.marked_install:
-                        for depend in pkg.candidate.dependencies:
+                        for depend in pkg.candidate.get_dependencies("Depends"):
                             for dep in depend:
                                 if packagename == dep.name:
                                     if dep.relation in ["=", ">=", ">"]:
@@ -108,7 +108,7 @@ class Package(object):
                                             if compare >= 0:
                                                 print("skip rdepend", pkg.name)
                                                 continue
-                                        rdependencies.append(pkg.name)
+                                    rdependencies.append(pkg.name)
                 else:
                     for depend in pkg.candidate.dependencies:
                         for dep in depend:
@@ -122,7 +122,7 @@ class Package(object):
                                         if compare >= 0:
                                             print("skipping keep rdepend", pkg.name)
                                             continue
-                                    rdependencies.append(pkg.name)
+                                rdependencies.append(pkg.name)
         except Exception as e:
             print("Error in get_depends: {}".format(e))
         return rdependencies
