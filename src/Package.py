@@ -79,9 +79,10 @@ class Package(object):
                         dep_installed_version = dep.installed_target_versions[0].version if dep.installed_target_versions else ""
                         if dep_require_version != "" and dep_installed_version != "":
                             compare = apt_pkg.version_compare(dep_installed_version, dep_require_version)
-                            # print(dep.name, "u:", dep_installed_version, "r:", dep_require_version, "c", compare)
+                            print("depend:{} | u:{} | r:{} | c:{}".format(
+                                dep.name, dep_installed_version, dep_require_version, compare))
                             if compare >= 0:
-                                print("skipping keep depend", dep.name)
+                                print("skip depend", dep.name)
                                 continue
                     dependencies.append(dep.name)
         except Exception as e:
@@ -102,11 +103,12 @@ class Package(object):
                                         pkg_installed_version = pkg.installed.version if pkg.is_installed else ""
                                         if dep_require_version != "" and pkg_installed_version != "":
                                             compare = apt_pkg.version_compare(pkg_installed_version, dep_require_version)
-                                            # print(pkg.name, "u:", pkg_installed_version, "r:", dep_require_version, "c", compare)
+                                            print("rdepend:{} | u:{} | r:{} | c:{}".format(
+                                                pkg.name, pkg_installed_version, dep_require_version, compare))
                                             if compare >= 0:
-                                                print("skipping keep rdepend", pkg.name)
+                                                print("skip rdepend", pkg.name)
                                                 continue
-                                    rdependencies.append(pkg.name)
+                                        rdependencies.append(pkg.name)
                 else:
                     for depend in pkg.candidate.dependencies:
                         for dep in depend:
@@ -120,7 +122,7 @@ class Package(object):
                                         if compare >= 0:
                                             print("skipping keep rdepend", pkg.name)
                                             continue
-                                rdependencies.append(pkg.name)
+                                    rdependencies.append(pkg.name)
         except Exception as e:
             print("Error in get_depends: {}".format(e))
         return rdependencies
@@ -307,8 +309,12 @@ class Package(object):
             for kp in keep_list:
                 try:
                     self.cache[kp].mark_keep()
-                    keep_depends = self.get_depends(kp) + self.get_rdepends(kp, True)
-                    print("keep_depends: {}".format(keep_depends))
+                    print("keeping: {}".format(kp))
+                    depends = self.get_depends(kp)
+                    rdepends = self.get_rdepends(kp, True)
+                    keep_depends = depends + rdepends
+                    print("keep_depends_list: {}".format(depends))
+                    print("keep_rdepends_list: {}".format(rdepends))
                     for kd in keep_depends:
                         try:
                             if self.cache[kd].marked_upgrade or self.cache[kd].marked_install:
@@ -317,7 +323,6 @@ class Package(object):
                                 print("keeping from depends: {}".format(kd))
                         except:
                             continue
-                    print("keeping: {}".format(kp))
                 except Exception as e:
                     print("{} not found".format(kp))
                     print("{}".format(e))
