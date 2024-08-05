@@ -543,6 +543,7 @@ class MainWindow(object):
         print("{} {}".format("config_update_interval", self.UserSettings.config_update_interval))
         print("{} {} ({})".format("config_update_lastupdate", self.UserSettings.config_update_lastupdate,
                                   datetime.fromtimestamp(self.UserSettings.config_update_lastupdate)))
+        print("{} {}".format("config_update_selectable", self.UserSettings.config_update_selectable))
         print("{} {}".format("config_autostart", self.UserSettings.config_autostart))
         print("{} {}".format("config_notifications", self.UserSettings.config_notifications))
 
@@ -555,6 +556,8 @@ class MainWindow(object):
                 print("system: {} {}".format("config_update_interval", self.SystemSettings.config_update_interval))
             if self.SystemSettings.config_update_lastupdate is not None:
                 print("system: {} {}".format("config_update_lastupdate", self.SystemSettings.config_update_lastupdate))
+            if self.SystemSettings.config_update_selectable is not None:
+                print("system: {} {}".format("config_update_selectable", self.SystemSettings.config_update_selectable))
             if self.SystemSettings.config_autostart is not None:
                 print("system: {} {}".format("config_autostart", self.SystemSettings.config_autostart))
             if self.SystemSettings.config_notifications is not None:
