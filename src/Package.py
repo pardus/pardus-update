@@ -110,7 +110,7 @@ class Package(object):
                                                 continue
                                     rdependencies.append(pkg.name)
                 else:
-                    for depend in pkg.candidate.dependencies:
+                    for depend in pkg.candidate.get_dependencies("Depends"):
                         for dep in depend:
                             if packagename == dep.name:
                                 if dep.relation in ["=", ">=", ">"]:
@@ -118,9 +118,10 @@ class Package(object):
                                     pkg_installed_version = pkg.installed.version if pkg.is_installed else ""
                                     if dep_require_version != "" and pkg_installed_version != "":
                                         compare = apt_pkg.version_compare(pkg_installed_version, dep_require_version)
-                                        # print(pkg.name, "u:", pkg_installed_version, "r:", dep_require_version, "c", compare)
+                                        print("rdepend:{} | u:{} | r:{} | c:{}".format(
+                                            pkg.name, pkg_installed_version, dep_require_version, compare))
                                         if compare >= 0:
-                                            print("skipping keep rdepend", pkg.name)
+                                            print("skip rdepend", pkg.name)
                                             continue
                                 rdependencies.append(pkg.name)
         except Exception as e:
