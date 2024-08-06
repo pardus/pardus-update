@@ -1,6 +1,6 @@
 # Pardus Update
 
-Pardus Update is a simple update application.
+Pardus Update is a simple update application for debian based operating systems.
 
 It is currently a work in progress. Maintenance is done by <a href="https://www.pardus.org.tr/">Pardus</a> team.
 
