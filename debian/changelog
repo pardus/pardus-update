@@ -1,3 +1,24 @@
+pardus-update (0.4.0) unstable; urgency=medium
+
+  [ Fatih Altun ]
+  * Add selectable feature to updates
+  * Fix listbox insert parameter
+  * Update pot file
+  * Update Turkish translations
+  * Update depends, rdepends controls for selectable updates
+  * Add missing config prints
+  * Fix typo and update some keep prints
+  * Update get keep rdepends func
+  * Update get rdepends other param too
+  * Add README.md
+  * Add app screenshots
+  * Update README.md
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 06 Aug 2024 14:18:48 +0300
+
 pardus-update (0.3.0) unstable; urgency=medium
 
   [ bariscodefx ]
