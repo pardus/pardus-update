@@ -32,6 +32,7 @@ from UserSettings import UserSettings
 from SystemSettings import SystemSettings
 from Package import Package
 from RepoDistControl import RepoDistControl
+from Utils import Utils
 
 import locale
 from locale import gettext as _
@@ -66,7 +67,9 @@ class MainWindow(object):
         self.define_variables()
         self.main_window.set_application(application)
         self.control_display()
+        self.css()
 
+        self.utils()
         self.user_settings()
         self.system_settings()
 
@@ -174,6 +177,16 @@ class MainWindow(object):
         else:
             error_message = response["message"]
             print(error_message)
+
+    def utils(self):
+        self.Utils = Utils()
+
+    def css(self):
+        cssProvider = Gtk.CssProvider()
+        cssProvider.load_from_path(os.path.dirname(os.path.abspath(__file__)) + "/../data/style.css")
+        screen = Gdk.Screen.get_default()
+        styleContext = Gtk.StyleContext()
+        styleContext.add_provider_for_screen(screen, cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
     def package(self):
         self.Package = Package()
@@ -428,10 +441,27 @@ class MainWindow(object):
         self.ui_roottotal_label = self.GtkBuilder.get_object("ui_roottotal_label")
         self.ui_distrequireddiskinfo_label = self.GtkBuilder.get_object("ui_distrequireddiskinfo_label")
 
+        self.ui_settingsapt_stack = self.GtkBuilder.get_object("ui_settingsapt_stack")
+        self.ui_settings_apt_clear_box = self.GtkBuilder.get_object("ui_settings_apt_clear_box")
+        self.ui_settings_vte_box = self.GtkBuilder.get_object("ui_settings_vte_box")
+        self.ui_aptclean_size_label = self.GtkBuilder.get_object("ui_aptclean_size_label")
+        self.ui_aptautoremove_size_label = self.GtkBuilder.get_object("ui_aptautoremove_size_label")
+        self.ui_aptlists_size_label = self.GtkBuilder.get_object("ui_aptlists_size_label")
+        self.ui_settingsvte_sw = self.GtkBuilder.get_object("ui_settingsvte_sw")
+        self.ui_settings_aptclear_ok_button = self.GtkBuilder.get_object("ui_settings_aptclear_ok_button")
+        self.ui_apt_clean_checkbutton = self.GtkBuilder.get_object("ui_apt_clean_checkbutton")
+        self.ui_apt_autoremove_checkbutton = self.GtkBuilder.get_object("ui_apt_autoremove_checkbutton")
+        self.ui_apt_listsclean_checkbutton = self.GtkBuilder.get_object("ui_apt_listsclean_checkbutton")
+        self.ui_settings_aptclear_popover = self.GtkBuilder.get_object("ui_settings_aptclear_popover")
+        self.ui_settings_aptclear_textview = self.GtkBuilder.get_object("ui_settings_aptclear_textview")
+
+        self.ui_sources_listbox = self.GtkBuilder.get_object("ui_sources_listbox")
+
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
         self.fix_vteterm = None
         self.dpkgconfigure_vteterm = None
+        self.settings_vteterm = None
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -502,6 +532,9 @@ class MainWindow(object):
         GLib.idle_add(self.ui_dpkgconfigureinfo_box.set_visible, False)
         GLib.idle_add(self.ui_distupgradetextview_box.set_visible, False)
         GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, False)
+        GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
+        GLib.idle_add(self.ui_settings_apt_clear_box.set_visible, False)
+        GLib.idle_add(self.ui_settings_vte_box.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -830,6 +863,130 @@ class MainWindow(object):
         else:
             print("upgrade in progress")
             self.ui_upgradeinfobusy_box.set_visible(True)
+
+    def on_ui_clear_apt_button_clicked(self, button):
+        self.ui_settings_apt_clear_box.set_visible(True)
+        self.ui_settingsapt_stack.set_visible_child_name("apt")
+
+        apt_clean_path = "/var/cache/apt/archives"
+        apt_lists_path = "/var/lib/apt/lists"
+
+        self.aptclear_autoremove_list = self.Package.autoremovable()
+        self.aptclear_clean_list = self.Utils.get_path_files(apt_clean_path)
+        self.aptclear_lists_list = self.Utils.get_path_files(apt_lists_path)
+
+        if self.aptclear_autoremove_list:
+            ret = self.Package.required_changes_autoremove(self.aptclear_autoremove_list)
+            apt_autoremove_size = self.Package.beauty_size(ret["freed_size"])
+        else:
+            apt_autoremove_size = self.Package.beauty_size(0)
+
+        self.ui_aptclean_size_label.set_markup("{}".format(
+            self.Package.beauty_size(self.Utils.get_path_size(apt_clean_path))))
+
+        self.ui_aptlists_size_label.set_markup("{}".format(
+            self.Package.beauty_size(self.Utils.get_path_size(apt_lists_path))))
+
+        self.ui_aptautoremove_size_label.set_markup("{}".format(apt_autoremove_size))
+
+    def on_ui_settingsaptcancel_button_clicked(self, button):
+        self.ui_settingsapt_stack.set_visible_child_name("main")
+
+        self.ui_settings_apt_clear_box.set_visible(False)
+        self.ui_settings_vte_box.set_visible(False)
+
+    def on_ui_settingsaptclear_button_clicked(self, button):
+        aptclean = "1" if self.ui_apt_clean_checkbutton.get_active() else "0"
+        aptautoremove = "1" if self.ui_apt_autoremove_checkbutton.get_active() else "0"
+        aptlistsclean = "1" if self.ui_apt_listsclean_checkbutton.get_active() else "0"
+
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                   "aptclear", aptclean, aptautoremove, aptlistsclean]
+        self.settings_vte_start_process(command)
+
+        self.ui_settings_vte_box.set_visible(True)
+        self.ui_settingsapt_stack.set_visible_child_name("vte")
+
+    def on_ui_settings_aptclear_ok_button_clicked(self, button):
+        self.ui_settingsapt_stack.set_visible_child_name("main")
+
+        self.ui_settings_apt_clear_box.set_visible(False)
+        self.ui_settings_vte_box.set_visible(False)
+
+    def on_ui_settings_aptclear_info_button_clicked(self, button):
+        def clear_textview():
+            start, end = self.ui_settings_aptclear_textview.get_buffer().get_bounds()
+            self.ui_settings_aptclear_textview.get_buffer().delete(start, end)
+
+        self.ui_settings_aptclear_popover.set_relative_to(button)
+        self.ui_settings_aptclear_popover.popup()
+
+        clear_textview()
+
+        if button.get_name() == "clean":
+            self.ui_settings_aptclear_textview.get_buffer().insert(
+                self.ui_settings_aptclear_textview.get_buffer().get_end_iter(),
+                "\n".join(self.aptclear_clean_list))
+        elif button.get_name() == "autoremove":
+            self.ui_settings_aptclear_textview.get_buffer().insert(
+                self.ui_settings_aptclear_textview.get_buffer().get_end_iter(),
+                "\n".join(self.aptclear_autoremove_list))
+        elif button.get_name() == "lists":
+            self.ui_settings_aptclear_textview.get_buffer().insert(
+                self.ui_settings_aptclear_textview.get_buffer().get_end_iter(),
+                "\n".join(self.aptclear_lists_list))
+
+    def on_ui_fix_sources_button_clicked(self, button):
+        GLib.idle_add(self.clear_sources_listbox)
+
+        self.ui_settingsapt_stack.set_visible_child_name("sources")
+        repos = self.Package.get_sources()
+
+        for source in repos.values():
+            # print(source)
+            for sub in source:
+                print(sub)
+                repo_name = Gtk.Label.new()
+                repo_name.set_markup("{} {} {} {}".format(sub["type"], sub["uri"], sub["dist"], " ".join(sub["comps"])))
+                repo_name.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+                # repo_name.set_tooltip_text("{} {} {}".format(sub["type"], sub["uri"], " ".join(sub["comps"])))
+
+                switch_button = Gtk.Switch.new()
+                switch_button.set_active(not sub["disabled"])
+                switch_button.connect("state_set", self.on_source_switch_state_set)
+                switch_button.name = {"line": sub["line"], "path": sub["file"]}
+
+                box1 = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 13)
+                box1.set_margin_top(5)
+                box1.set_margin_bottom(5)
+                box1.set_margin_start(5)
+                box1.set_margin_end(5)
+                box1.pack_start(repo_name, False, True, 0)
+                box1.pack_end(switch_button, False, True, 0)
+                box1.props.valign = Gtk.Align.CENTER
+
+                box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 3)
+                box.set_margin_top(5)
+                box.set_margin_bottom(5)
+                box.set_margin_start(5)
+                box.set_margin_end(5)
+
+                box.pack_start(box1, False, True, 0)
+
+                GLib.idle_add(self.ui_sources_listbox.insert, box, -1)
+
+
+        GLib.idle_add(self.ui_sources_listbox.show_all)
+
+    def clear_sources_listbox(self,):
+        self.ui_sources_listbox.foreach(lambda child: self.ui_sources_listbox.remove(child))
+
+    def on_source_switch_state_set(self, switch, state):
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                   "setsourcestate", "1" if state else "0", switch.name["line"], switch.name["path"]]
+        self.settings_vte_start_process(command)
+        self.ui_settings_vte_box.set_visible(True)
+        self.ui_settingsapt_stack.set_visible_child_name("vte")
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
@@ -2321,6 +2478,79 @@ class MainWindow(object):
         GLib.idle_add(notification.show, notification_state)
 
         self.auto_upgrade_inprogress = False
+
+    def settings_vte_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            if event.button.button == 3:
+                widget.popup_for_device(None, None, None, None, None,
+                                        event.button.button, event.time)
+                return True
+        return False
+
+    def settings_vte_menu_action(self, widget, terminal):
+        terminal.copy_clipboard()
+
+    def settings_vte_start_process(self, command):
+        if self.settings_vteterm:
+            self.settings_vteterm.get_parent().remove(self.settings_vteterm)
+
+        self.settings_vteterm = Vte.Terminal()
+        self.update_vte_color(self.settings_vteterm)
+        self.settings_vteterm.set_scrollback_lines(-1)
+        settings_vte_menu = Gtk.Menu()
+        settings_vte_menu_items = Gtk.MenuItem(label=_("Copy selected text"))
+        settings_vte_menu.append(settings_vte_menu_items)
+        settings_vte_menu_items.connect("activate", self.settings_vte_menu_action, self.settings_vteterm)
+        settings_vte_menu_items.show()
+        self.settings_vteterm.connect_object("event", self.settings_vte_event, settings_vte_menu)
+        self.ui_settingsvte_sw.add(self.settings_vteterm)
+        self.settings_vteterm.show_all()
+
+        pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
+        self.settings_vteterm.set_pty(pty)
+        try:
+            self.settings_vteterm.spawn_async(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                None,
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+                -1,
+                None,
+                self.settings_vte_create_spawn_callback,
+                None
+            )
+        except Exception as e:
+            # old version VTE doesn't have spawn_async so use spawn_sync
+            print("{}".format(e))
+            self.settings_vteterm.connect("child-exited", self.settings_vte_on_done)
+            self.settings_vteterm.spawn_sync(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                command,
+                [],
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None,
+            )
+
+    def settings_vte_create_spawn_callback(self, terminal, pid, error, userdata):
+        self.settings_vteterm.connect("child-exited", self.settings_vte_on_done)
+
+    def settings_vte_on_done(self, terminal, status):
+        print("settings_vte_on_done status: {}".format(status))
+        self.ui_settings_aptclear_ok_button.set_visible(True)
+        if status == 0:
+            self.Package = Package()
+            if self.Package.updatecache():
+                self.isbroken = False
+                self.indicator.set_icon(self.icon_normal)
+            else:
+                self.isbroken = True
+                print("Error while updating cache on settings_vte_on_done")
+        self.update_inprogress = False
 
 
 class Notification(GObject.GObject):

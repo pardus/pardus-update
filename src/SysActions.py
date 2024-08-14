@@ -18,6 +18,7 @@ from shutil import rmtree
 
 import apt
 import apt_pkg
+from aptsources import sourceslist as aptsourceslist
 import distro
 
 
@@ -556,6 +557,30 @@ def main():
         subprocess.call(["apt", "full-upgrade", "-fuyq", "--no-download"],
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
+    def aptclear(clean, autoremove, aptlists):
+        print(clean)
+        print(autoremove)
+        print(aptlists)
+        if clean == "1":
+            aptclean()
+            print("apt cache files cleared", file=sys.stdout)
+        if autoremove == "1":
+            removeauto()
+        if aptlists == "1":
+            rmtree("/var/lib/apt/lists/", ignore_errors=True)
+            subupdate()
+
+    def set_source_state(state, line, file_path):
+        print(state)
+        print(line)
+        print(file_path)
+        sources = aptsourceslist.SourcesList()
+        for source in sources.list:
+            if source.line.strip() == line and source.file == file_path:
+                source.set_enabled(state == "1")
+                break
+        sources.save()
+
     if len(sys.argv) > 1:
         if sys.argv[1] == "externalrepo":
             externalrepo(sys.argv[2], sys.argv[3], sys.argv[4])
@@ -587,6 +612,10 @@ def main():
             distupgradeoffline(sys.argv[2], sys.argv[3])
         elif sys.argv[1] == "dpkgconfigure":
             dpkgconfigure()
+        elif sys.argv[1] == "aptclear":
+            aptclear(sys.argv[2], sys.argv[3], sys.argv[4])
+        elif sys.argv[1] == "setsourcestate":
+            set_source_state(sys.argv[2], sys.argv[3], sys.argv[4])
         else:
             print("unknown argument error")
     else:

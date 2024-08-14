@@ -14,6 +14,7 @@ import time
 
 import apt
 import apt_pkg
+from aptsources import sourceslist as aptsourceslist
 from gi.repository import Gio, GLib
 
 
@@ -387,27 +388,16 @@ class Package(object):
         print("user_keep_list_depends {}".format(rcu["user_keep_list_depends"]))
         return rcu
 
-    def required_changes(self, packagenames, sleep=True):
-        if sleep:
-            time.sleep(0.25)
+    def required_changes_autoremove(self, packages):
         self.cache.clear()
         to_install = []
         to_delete = []
         broken = []
-        inst_recommends = True
         package_broken = None
-        packagenames = packagenames.split(" ")
         ret = {"download_size": None, "freed_size": None, "install_size": None, "to_install": None, "to_delete": None,
                "broken": None, "package_broken": None}
 
-        if "--no-install-recommends" in packagenames:
-            inst_recommends = False
-            packagenames.remove("--no-install-recommends")
-        if "--no-install-suggests" in packagenames:
-            # inst_recommends = False
-            packagenames.remove("--no-install-suggests")
-
-        for packagename in packagenames:
+        for packagename in packages:
             try:
                 package = self.cache[packagename]
             except Exception as e:
@@ -417,10 +407,8 @@ class Package(object):
                 if package.is_installed:
                     package.mark_delete(True, True)
                 else:
-                    if inst_recommends:
-                        package.mark_install(True, True)
-                    else:
-                        package.mark_install(True, False)
+                    package.mark_install(True, True)
+
             except:
                 if packagename not in broken:
                     broken.append(packagename)
@@ -605,6 +593,25 @@ class Package(object):
         except Exception as e:
             print("Package upgradable Error: {}".format(e))
         return upgradable
+
+    def get_sources(self):
+        repos = {}
+        sources = aptsourceslist.SourcesList()
+        for source in sources.list:
+            if source.invalid:
+                continue
+            repo = {}
+            repo['file'] = source.file
+            repo['comps'] = getattr(source, 'comps', [])
+            repo['disabled'] = source.disabled
+            repo['dist'] = source.dist
+            repo['type'] = source.type
+            repo['uri'] = source.uri
+            repo['line'] = source.line.strip()
+            repo['architectures'] = getattr(source, 'architectures', [])
+            repos.setdefault(source.uri, []).append(repo)
+
+        return repos
 
     def versionCompare(self, version1, version2):
         if version2 == "None" or version2 == "" or version2 is None:
