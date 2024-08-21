@@ -1,2 +1,4 @@
 ui/MainWindow.glade
 src/MainWindow.py
+src/Utils.py
+src/SysActions.py
