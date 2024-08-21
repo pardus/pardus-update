@@ -1371,9 +1371,69 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
               <object class="GtkBox" id="ui_settings_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">21</property>
+                <property name="margin-top">8</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">21</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="spacing">89</property>
+                    <child>
+                      <object class="GtkButton" id="ui_homepage_button">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_ui_homepage_button_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="icon-name">user-home-symbolic</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Home Page</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="suggested-action"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -1672,66 +1732,6 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="spacing">89</property>
-                    <child>
-                      <object class="GtkButton" id="ui_homepage_button">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <signal name="clicked" handler="on_ui_homepage_button_clicked" swapped="no"/>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <object class="GtkImage">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="icon-name">user-home-symbolic</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Home Page</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                        </child>
-                        <style>
-                          <class name="suggested-action"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -1744,46 +1744,6 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="spacing">5</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="icon-name">package-x-generic-symbolic</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Package Manager Operations</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
@@ -2380,13 +2340,13 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
                           <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <property name="min-content-width">100</property>
                             <property name="min-content-height">115</property>
                             <child>
                               <object class="GtkViewport">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="shadow-type">none</property>
                                 <child>
                                   <object class="GtkListBox" id="ui_sources_listbox">
                                     <property name="visible">True</property>
@@ -2426,6 +2386,20 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
+                            <child>
+                              <object class="GtkButton" id="ui_settings_default_sources_button">
+                                <property name="label" translatable="yes">Use Default Sources List</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_ui_settings_default_sources_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -2438,6 +2412,199 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
                       <packing>
                         <property name="name">sources</property>
                         <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="ui_settings_defaultsources_box">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">13</property>
+                        <child>
+                          <object class="GtkLabel" id="ui_settings_sourceslist_info_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">This operation will remove sources.list entries and create defaults.</property>
+                            <property name="justify">center</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">13</property>
+                            <child>
+                              <object class="GtkCheckButton" id="ui_settings_fix_slistd_checkbox">
+                                <property name="label" translatable="yes">Fix "sources.list.d" entries too.</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">If not selected, adds these entries to the comment line.</property>
+                                <property name="active">True</property>
+                                <property name="draw-indicator">True</property>
+                                <signal name="toggled" handler="on_ui_settings_fix_slistd_checkbox_toggled" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox" id="ui_settings_fix_slistd_sub_box">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-start">34</property>
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">5</property>
+                                <child>
+                                  <object class="GtkRadioButton" id="ui_settings_remove_slistd_radiobutton">
+                                    <property name="label" translatable="yes">Remove sources.list.d entries</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="active">True</property>
+                                    <property name="draw-indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioButton" id="ui_settings_cout_slistd_radiobutton">
+                                    <property name="label" translatable="yes">Comment out sources.list.d entries</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="active">True</property>
+                                    <property name="draw-indicator">True</property>
+                                    <property name="group">ui_settings_remove_slistd_radiobutton</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="ui_settings_dpkgconfigure_checkbox">
+                                <property name="label" translatable="yes">Run "dpkg --configure -a" command</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">It attempts to fix unfinished package manager operations.</property>
+                                <property name="active">True</property>
+                                <property name="draw-indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="ui_settings_fixbroken_checkbox">
+                                <property name="label" translatable="yes">Run "apt install --fix-broken" command</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">It attempts to fix a system that has broken dependencies.</property>
+                                <property name="active">True</property>
+                                <property name="draw-indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Use with caution. Are you sure you want to continue?</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="spacing">21</property>
+                            <property name="homogeneous">True</property>
+                            <child>
+                              <object class="GtkButton" id="ui_settings_default_sources_cancel_button">
+                                <property name="label" translatable="yes">Cancel</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_ui_settings_default_sources_cancel_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="ui_settings_default_sources_accept_button">
+                                <property name="label" translatable="yes">Yes</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_ui_settings_default_sources_accept_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="name">defaultsources</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                   </object>

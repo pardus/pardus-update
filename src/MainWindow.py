@@ -32,7 +32,7 @@ from UserSettings import UserSettings
 from SystemSettings import SystemSettings
 from Package import Package
 from RepoDistControl import RepoDistControl
-from Utils import Utils
+from Utils import Utils, ErrorDialog
 
 import locale
 from locale import gettext as _
@@ -173,6 +173,10 @@ class MainWindow(object):
 
                     self.ui_controldistup_button.set_label(_("Start {} Upgrade").format(self.dist_new_version))
                     self.ui_homecontroldistup_label.set_label(_("Start {} Upgrade").format(self.dist_new_version))
+
+                for data in datas:
+                    if data["version"] == self.user_distro_version:
+                        self.user_default_sources_list = data["sources"]
 
         else:
             error_message = response["message"]
@@ -456,6 +460,14 @@ class MainWindow(object):
         self.ui_settings_aptclear_textview = self.GtkBuilder.get_object("ui_settings_aptclear_textview")
 
         self.ui_sources_listbox = self.GtkBuilder.get_object("ui_sources_listbox")
+        self.ui_settings_default_sources_button = self.GtkBuilder.get_object("ui_settings_default_sources_button")
+        self.ui_settings_sourceslist_info_label = self.GtkBuilder.get_object("ui_settings_sourceslist_info_label")
+        self.ui_settings_fix_slistd_checkbox = self.GtkBuilder.get_object("ui_settings_fix_slistd_checkbox")
+        self.ui_settings_fixbroken_checkbox = self.GtkBuilder.get_object("ui_settings_fixbroken_checkbox")
+        self.ui_settings_dpkgconfigure_checkbox = self.GtkBuilder.get_object("ui_settings_dpkgconfigure_checkbox")
+        self.ui_settings_remove_slistd_radiobutton = self.GtkBuilder.get_object("ui_settings_remove_slistd_radiobutton")
+        self.ui_settings_cout_slistd_radiobutton = self.GtkBuilder.get_object("ui_settings_cout_slistd_radiobutton")
+        self.ui_settings_fix_slistd_sub_box = self.GtkBuilder.get_object("ui_settings_fix_slistd_sub_box")
 
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
@@ -499,6 +511,10 @@ class MainWindow(object):
         self.user_keep_list = []
         self.user_keep_list_depends = []
 
+        self.source_switch_clicked = False
+
+        self.user_default_sources_list = None
+
         try:
             self.user_distro_id = distro.id()
             self.user_distro_version = int(distro.major_version())
@@ -535,6 +551,7 @@ class MainWindow(object):
         GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
         GLib.idle_add(self.ui_settings_apt_clear_box.set_visible, False)
         GLib.idle_add(self.ui_settings_vte_box.set_visible, False)
+        GLib.idle_add(self.ui_settings_default_sources_button.set_visible, False)
 
     def control_display(self):
         width = 575
@@ -896,16 +913,26 @@ class MainWindow(object):
         self.ui_settings_vte_box.set_visible(False)
 
     def on_ui_settingsaptclear_button_clicked(self, button):
-        aptclean = "1" if self.ui_apt_clean_checkbutton.get_active() else "0"
-        aptautoremove = "1" if self.ui_apt_autoremove_checkbutton.get_active() else "0"
-        aptlistsclean = "1" if self.ui_apt_listsclean_checkbutton.get_active() else "0"
+        if not self.update_inprogress and not self.upgrade_inprogress and not self.auto_upgrade_inprogress:
 
-        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
-                   "aptclear", aptclean, aptautoremove, aptlistsclean]
-        self.settings_vte_start_process(command)
+            GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
 
-        self.ui_settings_vte_box.set_visible(True)
-        self.ui_settingsapt_stack.set_visible_child_name("vte")
+            aptclean = "1" if self.ui_apt_clean_checkbutton.get_active() else "0"
+            aptautoremove = "1" if self.ui_apt_autoremove_checkbutton.get_active() else "0"
+            aptlistsclean = "1" if self.ui_apt_listsclean_checkbutton.get_active() else "0"
+
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                       "aptclear", aptclean, aptautoremove, aptlistsclean]
+            self.settings_vte_start_process(command)
+
+            self.ui_settings_vte_box.set_visible(True)
+            self.ui_settingsapt_stack.set_visible_child_name("vte")
+
+            self.update_inprogress = True
+
+        else:
+            ErrorDialog(_("Error"), _("Package manager is busy, try again after the process is completed."))
+
 
     def on_ui_settings_aptclear_ok_button_clicked(self, button):
         self.ui_settingsapt_stack.set_visible_child_name("main")
@@ -939,6 +966,10 @@ class MainWindow(object):
     def on_ui_fix_sources_button_clicked(self, button):
         GLib.idle_add(self.clear_sources_listbox)
 
+        GLib.idle_add(self.ui_settings_default_sources_button.set_visible, self.user_default_sources_list is not None)
+        GLib.idle_add(self.ui_settings_sourceslist_info_label.set_tooltip_text, "{}\n\n{}".format(
+            _("The default sources list is as follows."), self.user_default_sources_list))
+
         self.ui_settingsapt_stack.set_visible_child_name("sources")
         repos = self.Package.get_sources()
 
@@ -956,13 +987,9 @@ class MainWindow(object):
                 switch_button.connect("state_set", self.on_source_switch_state_set)
                 switch_button.name = {"line": sub["line"], "path": sub["file"]}
 
-                box1 = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 13)
-                box1.set_margin_top(5)
-                box1.set_margin_bottom(5)
-                box1.set_margin_start(5)
-                box1.set_margin_end(5)
+                box1 = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 21)
                 box1.pack_start(repo_name, False, True, 0)
-                box1.pack_end(switch_button, False, True, 0)
+                box1.pack_end(switch_button, False, True, 8)
                 box1.props.valign = Gtk.Align.CENTER
 
                 box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 3)
@@ -982,11 +1009,52 @@ class MainWindow(object):
         self.ui_sources_listbox.foreach(lambda child: self.ui_sources_listbox.remove(child))
 
     def on_source_switch_state_set(self, switch, state):
-        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
-                   "setsourcestate", "1" if state else "0", switch.name["line"], switch.name["path"]]
-        self.settings_vte_start_process(command)
-        self.ui_settings_vte_box.set_visible(True)
-        self.ui_settingsapt_stack.set_visible_child_name("vte")
+        if not self.update_inprogress and not self.upgrade_inprogress and not self.auto_upgrade_inprogress:
+
+            self.source_switch_clicked = True
+
+            GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
+
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
+                       "setsourcestate", "1" if state else "0", switch.name["line"], switch.name["path"]]
+            self.settings_vte_start_process(command)
+            self.ui_settings_vte_box.set_visible(True)
+            self.ui_settingsapt_stack.set_visible_child_name("vte")
+
+            self.update_inprogress = True
+
+        else:
+            ErrorDialog(_("Error"), _("Package manager is busy, try again after the process is completed."))
+
+    def on_ui_settings_default_sources_button_clicked(self, button):
+        self.ui_settingsapt_stack.set_visible_child_name("defaultsources")
+
+    def on_ui_settings_default_sources_accept_button_clicked(self, button):
+        if not self.update_inprogress and not self.upgrade_inprogress and not self.auto_upgrade_inprogress:
+
+            GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
+
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "fixsources",
+                       self.user_default_sources_list,
+                       "1" if self.ui_settings_fix_slistd_checkbox.get_active() else "0",
+                       "1" if self.ui_settings_remove_slistd_radiobutton.get_active() else "0",
+                       "1" if self.ui_settings_dpkgconfigure_checkbox.get_active() else "0",
+                       "1" if self.ui_settings_fixbroken_checkbox.get_active() else "0"]
+            self.settings_vte_start_process(command)
+            self.ui_settings_vte_box.set_visible(True)
+            self.ui_settingsapt_stack.set_visible_child_name("vte")
+
+            self.update_inprogress = True
+
+        else:
+            ErrorDialog(_("Error"), _("Package manager is busy, try again after the process is completed."))
+
+
+    def on_ui_settings_default_sources_cancel_button_clicked(self, button):
+        self.ui_settingsapt_stack.set_visible_child_name("sources")
+
+    def on_ui_settings_fix_slistd_checkbox_toggled(self, toggle_button):
+        self.ui_settings_fix_slistd_sub_box.set_visible(toggle_button.get_active())
 
     def on_ui_controldistup_button_clicked(self, button):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
@@ -2550,7 +2618,11 @@ class MainWindow(object):
             else:
                 self.isbroken = True
                 print("Error while updating cache on settings_vte_on_done")
+
+            if self.source_switch_clicked:
+                self.on_ui_fix_sources_button_clicked(button=None)
         self.update_inprogress = False
+        self.source_switch_clicked = False
 
 
 class Notification(GObject.GObject):
