@@ -144,7 +144,7 @@ class MainWindow(object):
                     self.user_distro_codename == "yirmiuc" or self.user_distro_codename == "yirmibes" or \
                     self.user_distro_codename == "yirmiyedi" or self.user_distro_codename == "yirmidokuz":
                 return "pardus"
-            elif self.user_distro_codename == "etap":
+            elif self.user_distro_codename == "etap-yirmiuc" or self.user_distro_codename == "etap-yirmibes":
                 return "etap"
             else:
                 return "none-{}".format(self.user_distro_codename)
