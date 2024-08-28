@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-04 19:22+0300\n"
+"POT-Creation-Date: 2024-08-28 15:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ui/MainWindow.glade:13 ui/MainWindow.glade:3905 src/MainWindow.py:87
-#: src/MainWindow.py:595 src/MainWindow.py:1602 src/MainWindow.py:2311
+#: ui/MainWindow.glade:13 ui/MainWindow.glade:4833 src/MainWindow.py:90
+#: src/MainWindow.py:648 src/MainWindow.py:1830 src/MainWindow.py:2539
 msgid "Pardus Update"
 msgstr ""
 
@@ -26,7 +26,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ui/MainWindow.glade:54 ui/MainWindow.glade:1812
+#: ui/MainWindow.glade:54 ui/MainWindow.glade:2585 ui/MainWindow.glade:2739
 msgid "Yes"
 msgstr ""
 
@@ -36,162 +36,247 @@ msgid ""
 "application?"
 msgstr ""
 
-#: ui/MainWindow.glade:108
+#: ui/MainWindow.glade:159
 msgid "Pardus Update Application"
 msgstr ""
 
 #. Name Surname <example@examplemail.com>
-#: ui/MainWindow.glade:112
+#: ui/MainWindow.glade:163
 msgid "translator-credits"
 msgstr ""
 
-#: ui/MainWindow.glade:177 ui/MainWindow.glade:4237
+#: ui/MainWindow.glade:228 ui/MainWindow.glade:5165
 msgid "Package configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:196 ui/MainWindow.glade:4256
+#: ui/MainWindow.glade:247 ui/MainWindow.glade:5184
 msgid "Use new configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:212 ui/MainWindow.glade:4272
+#: ui/MainWindow.glade:263 ui/MainWindow.glade:5200
 msgid "Use old configuration files"
 msgstr ""
 
-#: ui/MainWindow.glade:263 ui/MainWindow.glade:4400
+#: ui/MainWindow.glade:314 ui/MainWindow.glade:5328
 msgid "Restore Defaults"
 msgstr ""
 
-#: ui/MainWindow.glade:374
+#: ui/MainWindow.glade:424
 msgid "Package manager cache is updating"
 msgstr ""
 
-#: ui/MainWindow.glade:466 ui/MainWindow.glade:2626
+#: ui/MainWindow.glade:516 ui/MainWindow.glade:3553
 msgid "Upgraded"
 msgstr ""
 
-#: ui/MainWindow.glade:492 ui/MainWindow.glade:2652
+#: ui/MainWindow.glade:542 ui/MainWindow.glade:3579
 msgid "Newly Installed"
 msgstr ""
 
-#: ui/MainWindow.glade:519 ui/MainWindow.glade:2679
+#: ui/MainWindow.glade:569 ui/MainWindow.glade:3606
 msgid "To Remove"
 msgstr ""
 
-#: ui/MainWindow.glade:546 ui/MainWindow.glade:2706
+#: ui/MainWindow.glade:596 ui/MainWindow.glade:3633
 msgid "Not Upgraded"
 msgstr ""
 
-#: ui/MainWindow.glade:594 ui/MainWindow.glade:2754
+#: ui/MainWindow.glade:644 ui/MainWindow.glade:3681
 msgid "Download size:"
 msgstr ""
 
-#: ui/MainWindow.glade:649 ui/MainWindow.glade:2810
+#: ui/MainWindow.glade:699 ui/MainWindow.glade:3737
 msgid "Required disk size:"
 msgstr ""
 
-#: ui/MainWindow.glade:704 ui/MainWindow.glade:2866
+#: ui/MainWindow.glade:754 ui/MainWindow.glade:3793
 msgid "Upgraded:"
 msgstr ""
 
-#: ui/MainWindow.glade:759 ui/MainWindow.glade:2922
+#: ui/MainWindow.glade:809 ui/MainWindow.glade:3849
 msgid "Newly installed:"
 msgstr ""
 
-#: ui/MainWindow.glade:814 ui/MainWindow.glade:2978
+#: ui/MainWindow.glade:864 ui/MainWindow.glade:3905
 msgid "To remove:"
 msgstr ""
 
-#: ui/MainWindow.glade:869 ui/MainWindow.glade:3034
+#: ui/MainWindow.glade:919 ui/MainWindow.glade:3961
 msgid "Not upgraded:"
 msgstr ""
 
-#: ui/MainWindow.glade:917
+#: ui/MainWindow.glade:967
 msgid "Upgrade"
 msgstr ""
 
-#: ui/MainWindow.glade:1006
+#: ui/MainWindow.glade:1057
 msgid ""
 "<span color=\"red\">Package manager is busy, try again after the process is "
 "completed.</span>"
 msgstr ""
 
-#: ui/MainWindow.glade:1082 ui/MainWindow.glade:3821
+#: ui/MainWindow.glade:1133 ui/MainWindow.glade:4749
 msgid "Ok"
 msgstr ""
 
-#: ui/MainWindow.glade:1099 ui/MainWindow.glade:3751
+#: ui/MainWindow.glade:1150 ui/MainWindow.glade:4679
 msgid "Fix"
 msgstr ""
 
-#: ui/MainWindow.glade:1165
+#: ui/MainWindow.glade:1216
 msgid "Your system is up to date."
 msgstr ""
 
-#: ui/MainWindow.glade:1206 src/MainWindow.py:599
+#: ui/MainWindow.glade:1257 src/MainWindow.py:652
 msgid "Check Updates"
 msgstr ""
 
-#: ui/MainWindow.glade:1252
+#: ui/MainWindow.glade:1303
 msgid "Pardus new version is available."
 msgstr ""
 
-#: ui/MainWindow.glade:1346
-msgid "Update Check Frequency:"
-msgstr ""
-
-#: ui/MainWindow.glade:1364
-msgid "Hourly"
-msgstr ""
-
-#: ui/MainWindow.glade:1365
-msgid "Daily"
-msgstr ""
-
-#: ui/MainWindow.glade:1366
-msgid "Weekly"
-msgstr ""
-
-#: ui/MainWindow.glade:1367
-msgid "Never"
-msgstr ""
-
-#: ui/MainWindow.glade:1384 ui/MainWindow.glade:1401
-msgid "seconds"
-msgstr ""
-
-#: ui/MainWindow.glade:1440
-msgid "Last Update Check Date:"
-msgstr ""
-
-#: ui/MainWindow.glade:1478
-msgid "Selectable Updates:"
-msgstr ""
-
-#: ui/MainWindow.glade:1552
-msgid "Notifications:"
-msgstr ""
-
-#: ui/MainWindow.glade:1592
-msgid "Launch at Startup:"
-msgstr ""
-
-#: ui/MainWindow.glade:1661 ui/MainWindow.glade:2257 ui/MainWindow.glade:2540
-#: src/MainWindow.py:673 src/MainWindow.py:837 src/MainWindow.py:989
-#: src/MainWindow.py:1057
+#: ui/MainWindow.glade:1410 ui/MainWindow.glade:3037 ui/MainWindow.glade:3467
+#: src/MainWindow.py:726 src/MainWindow.py:1065 src/MainWindow.py:1217
+#: src/MainWindow.py:1285
 msgid "Home Page"
 msgstr ""
 
-#: ui/MainWindow.glade:1707
+#: ui/MainWindow.glade:1456
+msgid "Update Check Frequency:"
+msgstr ""
+
+#: ui/MainWindow.glade:1474
+msgid "Hourly"
+msgstr ""
+
+#: ui/MainWindow.glade:1475
+msgid "Daily"
+msgstr ""
+
+#: ui/MainWindow.glade:1476
+msgid "Weekly"
+msgstr ""
+
+#: ui/MainWindow.glade:1477
+msgid "Never"
+msgstr ""
+
+#: ui/MainWindow.glade:1494 ui/MainWindow.glade:1511
+msgid "seconds"
+msgstr ""
+
+#: ui/MainWindow.glade:1550
+msgid "Last Update Check Date:"
+msgstr ""
+
+#: ui/MainWindow.glade:1588
+msgid "Selectable Updates:"
+msgstr ""
+
+#: ui/MainWindow.glade:1662
+msgid "Notifications:"
+msgstr ""
+
+#: ui/MainWindow.glade:1702
+msgid "Launch at Startup:"
+msgstr ""
+
+#: ui/MainWindow.glade:1790
+msgid "Package Manager Cache"
+msgstr ""
+
+#: ui/MainWindow.glade:1839
+msgid "APT Sources List"
+msgstr ""
+
+#: ui/MainWindow.glade:1899
+msgid "Cached deb packages"
+msgstr ""
+
+#: ui/MainWindow.glade:1921 ui/MainWindow.glade:2040 ui/MainWindow.glade:2159
+msgid "size"
+msgstr ""
+
+#: ui/MainWindow.glade:2018
+msgid "Autoremovable packages"
+msgstr ""
+
+#: ui/MainWindow.glade:2137
+msgid "Base repository files"
+msgstr ""
+
+#: ui/MainWindow.glade:2250 ui/MainWindow.glade:2571 ui/MainWindow.glade:2722
+#: ui/MainWindow.glade:4009 ui/MainWindow.glade:4460
+msgid "Cancel"
+msgstr ""
+
+#: ui/MainWindow.glade:2264
+msgid "Clear"
+msgstr ""
+
+#: ui/MainWindow.glade:2311
+msgid "Process Completed"
+msgstr ""
+
+#: ui/MainWindow.glade:2377
+msgid "Back"
+msgstr ""
+
+#: ui/MainWindow.glade:2391
+msgid "Use Default Sources List"
+msgstr ""
+
+#: ui/MainWindow.glade:2427
+msgid "This operation will remove sources.list entries and create defaults."
+msgstr ""
+
+#: ui/MainWindow.glade:2448
+msgid "Fix \"sources.list.d\" entries too."
+msgstr ""
+
+#: ui/MainWindow.glade:2452
+msgid "If not selected, adds these entries to the comment line."
+msgstr ""
+
+#: ui/MainWindow.glade:2472
+msgid "Remove sources.list.d entries"
+msgstr ""
+
+#: ui/MainWindow.glade:2487
+msgid "Comment out sources.list.d entries"
+msgstr ""
+
+#: ui/MainWindow.glade:2510
+msgid "Run \"dpkg --configure -a\" command"
+msgstr ""
+
+#: ui/MainWindow.glade:2514
+msgid "It attempts to fix unfinished package manager operations."
+msgstr ""
+
+#: ui/MainWindow.glade:2526
+msgid "Run \"apt install --fix-broken\" command"
+msgstr ""
+
+#: ui/MainWindow.glade:2530
+msgid "It attempts to fix a system that has broken dependencies."
+msgstr ""
+
+#: ui/MainWindow.glade:2551
+msgid "Use with caution. Are you sure you want to continue?"
+msgstr ""
+
+#: ui/MainWindow.glade:2634
 msgid ""
 "Your system sources list that used by package manager seems broken or your "
 "system has broken dependencies."
 msgstr ""
 
-#: ui/MainWindow.glade:1730
+#: ui/MainWindow.glade:2657
 msgid "Try Fix"
 msgstr ""
 
-#: ui/MainWindow.glade:1772
+#: ui/MainWindow.glade:2699
 msgid ""
 "This operation;\n"
 "will remove all sources.list and sources.list.d entries and create "
@@ -203,285 +288,333 @@ msgid ""
 "Use with caution. Are you sure you want to continue?"
 msgstr ""
 
-#: ui/MainWindow.glade:1795 ui/MainWindow.glade:3082 ui/MainWindow.glade:3533
-msgid "Cancel"
-msgstr ""
-
-#: ui/MainWindow.glade:1861
+#: ui/MainWindow.glade:2788
 msgid "Operation completed."
 msgstr ""
 
-#: ui/MainWindow.glade:1901
+#: ui/MainWindow.glade:2828
 msgid "Go to Home Page"
 msgstr ""
 
-#: ui/MainWindow.glade:1932
+#: ui/MainWindow.glade:2859
 msgid "You can check the terminal output below."
 msgstr ""
 
-#: ui/MainWindow.glade:1961
+#: ui/MainWindow.glade:2888
 msgid "The error in the package manager could not be fixed."
 msgstr ""
 
-#: ui/MainWindow.glade:1979
+#: ui/MainWindow.glade:2906
 msgid ""
 "You can follow the instructions by looking at the terminal output below."
 msgstr ""
 
-#: ui/MainWindow.glade:1991
+#: ui/MainWindow.glade:2918
 msgid "You can ask for help about your problem through Pardus help channels."
 msgstr ""
 
-#: ui/MainWindow.glade:2099
+#: ui/MainWindow.glade:3074
 msgid "List of automatically removable all unused packages"
 msgstr ""
 
-#: ui/MainWindow.glade:2100
+#: ui/MainWindow.glade:3075
 msgid "Autoremovable Packages"
 msgstr ""
 
-#: ui/MainWindow.glade:2136 ui/MainWindow.glade:2202
+#: ui/MainWindow.glade:3111 ui/MainWindow.glade:3177
 msgid "Remove"
 msgstr ""
 
-#: ui/MainWindow.glade:2165
+#: ui/MainWindow.glade:3140
 msgid "List of unnecessary packages with residual config files"
 msgstr ""
 
-#: ui/MainWindow.glade:2166
+#: ui/MainWindow.glade:3141
 msgid "Residual Packages"
 msgstr ""
 
-#: ui/MainWindow.glade:2312
+#: ui/MainWindow.glade:3239
 msgid "Your Current Version:"
 msgstr ""
 
-#: ui/MainWindow.glade:2356
+#: ui/MainWindow.glade:3283
 msgid "Upgradable Version:"
 msgstr ""
 
-#: ui/MainWindow.glade:2439
+#: ui/MainWindow.glade:3366
 msgid "Your system is not up to date. Firstly, install the available updates."
 msgstr ""
 
-#: ui/MainWindow.glade:2454
+#: ui/MainWindow.glade:3381
 msgid "Go to Updates"
 msgstr ""
 
-#: ui/MainWindow.glade:3217
+#: ui/MainWindow.glade:4144
 msgid "Root"
 msgstr ""
 
-#: ui/MainWindow.glade:3293
+#: ui/MainWindow.glade:4220
 msgid "is free of"
 msgstr ""
 
-#: ui/MainWindow.glade:3333 ui/MainWindow.glade:3450
+#: ui/MainWindow.glade:4260 ui/MainWindow.glade:4377
 msgid "Retry"
 msgstr ""
 
-#: ui/MainWindow.glade:3403 src/MainWindow.py:898
+#: ui/MainWindow.glade:4330 src/MainWindow.py:1126
 msgid "Packages are downloading, please wait."
 msgstr ""
 
-#: ui/MainWindow.glade:3431
+#: ui/MainWindow.glade:4358
 msgid "Continue"
 msgstr ""
 
-#: ui/MainWindow.glade:3494
+#: ui/MainWindow.glade:4421
 msgid "Your system will reboot and updates will be installed during startup."
 msgstr ""
 
-#: ui/MainWindow.glade:3512
+#: ui/MainWindow.glade:4439
 msgid "Please do not turn off the machine while updates are installing."
 msgstr ""
 
-#: ui/MainWindow.glade:3559
+#: ui/MainWindow.glade:4486
 msgid "Reboot"
 msgstr ""
 
-#: ui/MainWindow.glade:3623
+#: ui/MainWindow.glade:4550
 msgid "The last changes are processing."
 msgstr ""
 
-#: ui/MainWindow.glade:3639
+#: ui/MainWindow.glade:4566
 msgid "Your system will reboot. Please wait..."
 msgstr ""
 
-#: ui/MainWindow.glade:3987 src/MainWindow.py:271 src/MainWindow.py:619
-#: src/MainWindow.py:697 src/MainWindow.py:840 src/MainWindow.py:965
-#: src/MainWindow.py:985 src/MainWindow.py:1062 src/MainWindow.py:1082
+#: ui/MainWindow.glade:4915 src/MainWindow.py:288 src/MainWindow.py:672
+#: src/MainWindow.py:750 src/MainWindow.py:1068 src/MainWindow.py:1193
+#: src/MainWindow.py:1213 src/MainWindow.py:1290 src/MainWindow.py:1310
 msgid "Settings"
 msgstr ""
 
-#: ui/MainWindow.glade:4043 src/MainWindow.py:273 src/MainWindow.py:677
-#: src/MainWindow.py:699 src/MainWindow.py:708 src/MainWindow.py:967
-#: src/MainWindow.py:994 src/MainWindow.py:1049 src/MainWindow.py:1085
+#: ui/MainWindow.glade:4971 src/MainWindow.py:290 src/MainWindow.py:730
+#: src/MainWindow.py:752 src/MainWindow.py:761 src/MainWindow.py:1195
+#: src/MainWindow.py:1222 src/MainWindow.py:1277 src/MainWindow.py:1313
 msgid "Version Upgrade"
 msgstr ""
 
-#: ui/MainWindow.glade:4099
+#: ui/MainWindow.glade:5027
 msgid "About"
 msgstr ""
 
-#: ui/MainWindow.glade:4167
+#: ui/MainWindow.glade:5095
 msgid "Caution"
 msgstr ""
 
-#: ui/MainWindow.glade:4189
+#: ui/MainWindow.glade:5117
 msgid ""
 "This feature is still in the testing phase. Before starting the update, it "
 "is recommended that you check one last time by selecting the \"Ask me before "
 "proceeding\" option in the update settings."
 msgstr ""
 
-#: ui/MainWindow.glade:4288
+#: ui/MainWindow.glade:5216
 msgid "Ask me what to do"
 msgstr ""
 
-#: ui/MainWindow.glade:4314
+#: ui/MainWindow.glade:5242
 msgid "Interaction"
 msgstr ""
 
-#: ui/MainWindow.glade:4333
+#: ui/MainWindow.glade:5261
 msgid "Start process (with -yq option)"
 msgstr ""
 
-#: ui/MainWindow.glade:4349
+#: ui/MainWindow.glade:5277
 msgid "Ask me before starting the process (without -yq)"
 msgstr ""
 
-#: src/MainWindow.py:91
+#: src/MainWindow.py:94
 msgid "About Pardus Update"
 msgstr ""
 
-#: src/MainWindow.py:171 src/MainWindow.py:172
+#: src/MainWindow.py:174 src/MainWindow.py:175
 msgid "Start {} Upgrade"
 msgstr ""
 
-#: src/MainWindow.py:277 src/MainWindow.py:645 src/MainWindow.py:662
-#: src/MainWindow.py:683 src/MainWindow.py:703
+#: src/MainWindow.py:294 src/MainWindow.py:698 src/MainWindow.py:715
+#: src/MainWindow.py:736 src/MainWindow.py:756
 msgid "Hide App"
 msgstr ""
 
-#: src/MainWindow.py:610
+#: src/MainWindow.py:663
 msgid "Quit"
 msgstr ""
 
-#: src/MainWindow.py:615 src/MainWindow.py:1505
+#: src/MainWindow.py:668 src/MainWindow.py:1733
 msgid "Last Check"
 msgstr ""
 
-#: src/MainWindow.py:623 src/MainWindow.py:1575
+#: src/MainWindow.py:676 src/MainWindow.py:1803
 msgid "System is Up to Date"
 msgstr ""
 
-#: src/MainWindow.py:647 src/MainWindow.py:659 src/MainWindow.py:1264
+#: src/MainWindow.py:700 src/MainWindow.py:712 src/MainWindow.py:1492
 msgid "Show App"
 msgstr ""
 
-#: src/MainWindow.py:767
+#: src/MainWindow.py:820
 msgid "Updates are installing. Please wait..."
 msgstr ""
 
-#: src/MainWindow.py:769
+#: src/MainWindow.py:822
 msgid "Updating"
 msgstr ""
 
-#: src/MainWindow.py:795 src/MainWindow.py:821
+#: src/MainWindow.py:848 src/MainWindow.py:874
 msgid "Packages are removing. Please wait..."
 msgstr ""
 
-#: src/MainWindow.py:1224 src/MainWindow.py:2007
+#: src/MainWindow.py:934 src/MainWindow.py:1027 src/MainWindow.py:1050
+msgid "Error"
+msgstr ""
+
+#: src/MainWindow.py:934 src/MainWindow.py:1027 src/MainWindow.py:1050
+msgid "Package manager is busy, try again after the process is completed."
+msgstr ""
+
+#: src/MainWindow.py:971
+msgid "The default sources list is as follows."
+msgstr ""
+
+#: src/MainWindow.py:1452 src/MainWindow.py:2235
 msgid ""
 "dpkg interrupt detected. Click the 'Fix' button or\n"
 "manually run 'sudo dpkg --configure -a' to fix the problem."
 msgstr ""
 
-#: src/MainWindow.py:1233
+#: src/MainWindow.py:1461
 msgid "The process is in progress. Please wait..."
 msgstr ""
 
-#: src/MainWindow.py:1463
+#: src/MainWindow.py:1691
 msgid "Clear All Selections"
 msgstr ""
 
-#: src/MainWindow.py:1528
+#: src/MainWindow.py:1756
 msgid "System is Broken"
 msgstr ""
 
-#: src/MainWindow.py:1542
+#: src/MainWindow.py:1770
 msgid "Software Update"
 msgstr ""
 
-#: src/MainWindow.py:1543
+#: src/MainWindow.py:1771
 msgid "There are {} software updates available."
 msgstr ""
 
-#: src/MainWindow.py:1545
+#: src/MainWindow.py:1773
 msgid "There is {} software update available."
 msgstr ""
 
-#: src/MainWindow.py:1564
+#: src/MainWindow.py:1792
 msgid "You have removable residual packages."
 msgstr ""
 
-#: src/MainWindow.py:1578
+#: src/MainWindow.py:1806
 msgid "{} Updates Pending"
 msgstr ""
 
-#: src/MainWindow.py:1580
+#: src/MainWindow.py:1808
 msgid "{} Update Pending"
 msgstr ""
 
-#: src/MainWindow.py:1603
+#: src/MainWindow.py:1831
 msgid "Automatic upgrade started in the background."
 msgstr ""
 
-#: src/MainWindow.py:1647
+#: src/MainWindow.py:1875
 msgid "Upgrade to {}"
 msgstr ""
 
-#: src/MainWindow.py:1786
+#: src/MainWindow.py:2014
 msgid "Total Required Size"
 msgstr ""
 
-#: src/MainWindow.py:1946 src/MainWindow.py:2038 src/MainWindow.py:2114
-#: src/MainWindow.py:2206
+#: src/MainWindow.py:2174 src/MainWindow.py:2266 src/MainWindow.py:2342
+#: src/MainWindow.py:2434 src/MainWindow.py:2569
 msgid "Copy selected text"
 msgstr ""
 
-#: src/MainWindow.py:2003
+#: src/MainWindow.py:2231
 msgid ""
 "Only one software management tool is allowed to run at the same time.\n"
 "Please close the other application e.g. 'Update Manager', 'aptitude' or "
 "'Synaptic' first."
 msgstr ""
 
-#: src/MainWindow.py:2012 src/MainWindow.py:2260
+#: src/MainWindow.py:2240 src/MainWindow.py:2488
 msgid "Process completed."
 msgstr ""
 
-#: src/MainWindow.py:2162
+#: src/MainWindow.py:2390
 msgid "The download is complete. You can continue."
 msgstr ""
 
-#: src/MainWindow.py:2175
+#: src/MainWindow.py:2403
 msgid "The download is not completed. Try again."
 msgstr ""
 
-#: src/MainWindow.py:2258
+#: src/MainWindow.py:2486
 msgid "Error."
 msgstr ""
 
-#: src/MainWindow.py:2312
+#: src/MainWindow.py:2540
 msgid "Automatic upgrade completed."
 msgstr ""
 
-#: src/MainWindow.py:2338
+#: src/MainWindow.py:2643
 msgid "Update"
 msgstr ""
 
-#: src/MainWindow.py:2339
+#: src/MainWindow.py:2644
 msgid "Close"
+msgstr ""
+
+#: src/Utils.py:137
+msgid "OK"
+msgstr ""
+
+#: src/SysActions.py:627 src/SysActions.py:669
+msgid "Package Manager Cache is updating, please wait..."
+msgstr ""
+
+#: src/SysActions.py:632
+msgid "New Sources List"
+msgstr ""
+
+#: src/SysActions.py:633
+msgid "Fix sources.list.d"
+msgstr ""
+
+#: src/SysActions.py:635
+msgid "Sources List Dir Remove"
+msgstr ""
+
+#: src/SysActions.py:636
+msgid "DPKG Configure State"
+msgstr ""
+
+#: src/SysActions.py:637
+msgid "Fix Broken State"
+msgstr ""
+
+#: src/SysActions.py:658
+msgid "sources.list.d fix skipped per user request."
+msgstr ""
+
+#: src/SysActions.py:676
+msgid "dpkgconfigure skipped per user request."
+msgstr ""
+
+#: src/SysActions.py:681
+msgid "fixbroken skipped per user request."
 msgstr ""
