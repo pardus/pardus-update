@@ -354,7 +354,6 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
             <property name="can-focus">False</property>
             <property name="margin-start">13</property>
             <property name="margin-end">13</property>
-            <property name="margin-top">13</property>
             <property name="transition-duration">250</property>
             <property name="transition-type">crossfade</property>
             <child>
@@ -1021,6 +1020,7 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
               <object class="GtkBox" id="ui_upgrade_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">21</property>
                 <child>
@@ -1371,7 +1371,7 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
               <object class="GtkBox" id="ui_settings_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">8</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">21</property>
                 <child>
@@ -2624,6 +2624,7 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
               <object class="GtkBox" id="ui_fix_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">21</property>
                 <child>
@@ -3001,10 +3002,58 @@ Use with caution. Are you sure you want to continue?</property>
               <object class="GtkBox" id="ui_clean_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">34</property>
-                <property name="margin-bottom">34</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">55</property>
+                <property name="spacing">21</property>
+                <child>
+                  <object class="GtkButton" id="ui_homepage_button1">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <signal name="clicked" handler="on_ui_homepage_button_clicked" swapped="no"/>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="spacing">5</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="icon-name">user-home-symbolic</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Home Page</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="suggested-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -3148,55 +3197,6 @@ Use with caution. Are you sure you want to continue?</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="ui_homepage_button1">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <signal name="clicked" handler="on_ui_homepage_button_clicked" swapped="no"/>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="spacing">5</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="icon-name">user-home-symbolic</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Home Page</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                    </child>
-                    <style>
-                      <class name="suggested-action"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -3210,6 +3210,7 @@ Use with caution. Are you sure you want to continue?</property>
               <object class="GtkBox" id="ui_distupgrade_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">21</property>
                 <child>
@@ -4650,6 +4651,7 @@ Use with caution. Are you sure you want to continue?</property>
               <object class="GtkBox" id="ui_dpkgconfigure_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">13</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">13</property>
                 <child>
