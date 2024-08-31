@@ -888,6 +888,7 @@ class MainWindow(object):
         apt_clean_path = "/var/cache/apt/archives"
         apt_lists_path = "/var/lib/apt/lists"
 
+        self.Package.updatecache()
         self.aptclear_autoremove_list = self.Package.autoremovable()
         self.aptclear_clean_list = self.Utils.get_path_files(apt_clean_path)
         self.aptclear_lists_list = self.Utils.get_path_files(apt_lists_path)
