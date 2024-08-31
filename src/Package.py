@@ -388,13 +388,15 @@ class Package(object):
         print("user_keep_list_depends {}".format(rcu["user_keep_list_depends"]))
         return rcu
 
-    def required_changes_autoremove(self, packages):
+    def required_changes_autoremove(self, packages, sleep=True):
+        if sleep:
+            time.sleep(0.25)
         self.cache.clear()
         to_install = []
         to_delete = []
         broken = []
         package_broken = None
-        ret = {"download_size": None, "freed_size": None, "install_size": None, "to_install": None, "to_delete": None,
+        ret = {"download_size": 0, "freed_size": 0, "install_size": 0, "to_install": None, "to_delete": None,
                "broken": None, "package_broken": None}
 
         for packagename in packages:

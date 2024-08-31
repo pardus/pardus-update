@@ -882,30 +882,36 @@ class MainWindow(object):
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_clear_apt_button_clicked(self, button):
-        self.ui_settings_apt_clear_box.set_visible(True)
-        self.ui_settingsapt_stack.set_visible_child_name("apt")
+        GLib.idle_add(self.ui_settingsapt_stack.set_visible_child_name, "spinner")
+        threading.Thread(target=self.clear_apt_worker_thread, daemon=True).start()
+
+    def clear_apt_worker_thread(self):
+        ret = self.clear_apt_worker()
+        GLib.idle_add(self.clear_apt_worker_done, ret)
+
+    def clear_apt_worker(self):
+        self.Package.updatecache()
+        self.aptclear_autoremove_list = self.Package.autoremovable()
+        return self.Package.required_changes_autoremove(self.aptclear_autoremove_list)
+
+    def clear_apt_worker_done(self, ret):
+        GLib.idle_add(self.ui_settings_apt_clear_box.set_visible, True)
+        GLib.idle_add(self.ui_settingsapt_stack.set_visible_child_name, "apt")
 
         apt_clean_path = "/var/cache/apt/archives"
         apt_lists_path = "/var/lib/apt/lists"
 
-        self.Package.updatecache()
-        self.aptclear_autoremove_list = self.Package.autoremovable()
         self.aptclear_clean_list = self.Utils.get_path_files(apt_clean_path)
         self.aptclear_lists_list = self.Utils.get_path_files(apt_lists_path)
 
-        if self.aptclear_autoremove_list:
-            ret = self.Package.required_changes_autoremove(self.aptclear_autoremove_list)
-            apt_autoremove_size = self.Package.beauty_size(ret["freed_size"])
-        else:
-            apt_autoremove_size = self.Package.beauty_size(0)
+        GLib.idle_add(self.ui_aptclean_size_label.set_markup,
+                      "{}".format(self.Package.beauty_size(self.Utils.get_path_size(apt_clean_path))))
 
-        self.ui_aptclean_size_label.set_markup("{}".format(
-            self.Package.beauty_size(self.Utils.get_path_size(apt_clean_path))))
+        GLib.idle_add(self.ui_aptlists_size_label.set_markup,
+                      "{}".format(self.Package.beauty_size(self.Utils.get_path_size(apt_lists_path))))
 
-        self.ui_aptlists_size_label.set_markup("{}".format(
-            self.Package.beauty_size(self.Utils.get_path_size(apt_lists_path))))
-
-        self.ui_aptautoremove_size_label.set_markup("{}".format(apt_autoremove_size))
+        GLib.idle_add(self.ui_aptautoremove_size_label.set_markup,
+                      "{}".format(self.Package.beauty_size(ret["freed_size"])))
 
     def on_ui_settingsaptcancel_button_clicked(self, button):
         self.ui_settingsapt_stack.set_visible_child_name("main")
