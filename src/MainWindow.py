@@ -2143,9 +2143,9 @@ class MainWindow(object):
                                           self.UserSettings.config_autostart, self.UserSettings.config_notifications)
             self.user_settings()
             self.update_lastcheck_labels()
+            self.control_update_residual_message_section()
             self.create_autoupdate_glibid()
             self.set_upgradable_page_and_notify()
-            self.control_update_residual_message_section()
 
             if self.SystemSettings.config_update_interval is not None:
                 print("SystemSettings.config_update_lastupdate writed")
