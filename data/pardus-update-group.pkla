@@ -1,0 +1,6 @@
+[Pardus Software]
+Identity=unix-group:pardus-update
+Action=tr.org.pardus.pkexec.pardus-update-sysaction
+ResultAny=yes
+ResultInactive=yes
+ResultActive=yes

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+getent group pardus-update &> /dev/null || addgroup --system pardus-update || true
+
+exit 0

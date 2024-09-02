@@ -5,6 +5,7 @@ Created on Sat Feb  5 19:05:13 2022
 
 @author: fatihaltun
 """
+import grp
 import json
 import os
 import subprocess
@@ -468,6 +469,9 @@ class MainWindow(object):
         self.ui_settings_remove_slistd_radiobutton = self.GtkBuilder.get_object("ui_settings_remove_slistd_radiobutton")
         self.ui_settings_cout_slistd_radiobutton = self.GtkBuilder.get_object("ui_settings_cout_slistd_radiobutton")
         self.ui_settings_fix_slistd_sub_box = self.GtkBuilder.get_object("ui_settings_fix_slistd_sub_box")
+
+        self.ui_passwordless_button = self.GtkBuilder.get_object("ui_passwordless_button")
+        self.ui_passwordless_button_label = self.GtkBuilder.get_object("ui_passwordless_button_label")
 
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
@@ -1270,6 +1274,36 @@ class MainWindow(object):
             notifications = self.SystemSettings.config_notifications
             self.ui_notifications_switch.set_sensitive(False)
         self.ui_notifications_switch.set_state(notifications)
+
+        self.control_groups()
+
+    def control_groups(self):
+        try:
+            self.user_groups = [g.gr_name for g in grp.getgrall() if self.UserSettings.user_name in g.gr_mem]
+        except Exception as e:
+            print("control_groups: {}".format(e))
+            self.user_groups = []
+
+        if self.user_groups:
+            self.ui_passwordless_button.set_visible(True)
+            if "pardus-update" in self.user_groups:
+                self.ui_passwordless_button_label.set_label(_("Disable Passwordless Usage"))
+            else:
+                self.ui_passwordless_button_label.set_label(_("Enable Passwordless Usage"))
+            self.ui_passwordless_button.set_sensitive(True)
+        else:
+            self.ui_passwordless_button.set_visible(False)
+
+    def on_ui_passwordless_button_clicked(self, button):
+        self.grouperrormessage = ""
+        self.ui_passwordless_button.set_sensitive(False)
+        if "pardus-update" in self.user_groups:
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/Group.py", "del",
+                       self.UserSettings.user_name]
+        else:
+            command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/Group.py", "add",
+                       self.UserSettings.user_name]
+        self.start_group_process(command)
 
     def on_ui_menudistupgrade_button_clicked(self, button):
         self.ui_menu_popover.popdown()
@@ -2630,6 +2664,39 @@ class MainWindow(object):
                 self.on_ui_fix_sources_button_clicked(button=None)
         self.update_inprogress = False
         self.source_switch_clicked = False
+
+    def start_group_process(self, params):
+        pid, stdin, stdout, stderr = GLib.spawn_async(params, flags=GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                                                      standard_output=True, standard_error=True)
+        GLib.io_add_watch(GLib.IOChannel(stdout), GLib.IO_IN | GLib.IO_HUP, self.on_group_process_stdout)
+        GLib.io_add_watch(GLib.IOChannel(stderr), GLib.IO_IN | GLib.IO_HUP, self.on_group_process_stderr)
+        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, self.on_group_process_exit)
+
+        return pid
+
+    def on_group_process_stdout(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("on_group_process_stdout - line: {}".format(line))
+        return True
+
+    def on_group_process_stderr(self, source, condition):
+        if condition == GLib.IO_HUP:
+            return False
+        line = source.readline()
+        print("on_group_process_stderr - line: {}".format(line))
+        self.grouperrormessage = line
+        return True
+
+    def on_group_process_exit(self, pid, status):
+        print("on_group_process_exit - status: {}".format(status))
+        self.control_groups()
+        if status == 32256:  # operation cancelled | Request dismissed
+            print("operation cancelled | Request dismissed")
+        else:
+            if self.grouperrormessage != "":
+                ErrorDialog(_("Error"), "{}".format(self.grouperrormessage))
 
 
 class Notification(GObject.GObject):

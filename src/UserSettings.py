@@ -25,6 +25,8 @@ class UserSettings(object):
         self.default_autostart = True
         self.default_notifications = True
 
+        self.user_name = GLib.get_user_name()
+
         self.configdir = "{}/pardus/pardus-update/".format(GLib.get_user_config_dir())
         self.configfile = "settings.ini"
 

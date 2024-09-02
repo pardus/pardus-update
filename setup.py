@@ -42,6 +42,7 @@ data_files = [
                  ("/usr/share/pardus/pardus-update/src",
                   ["src/AutoAptUpdate.py",
                    "src/AutoAptUpgrade.py",
+                   "src/Group.py",
                    "src/Main.py",
                    "src/MainWindow.py",
                    "src/Package.py",
@@ -73,7 +74,9 @@ data_files = [
                    "data/pardus-update-error-symbolic.svg",
                    "data/pardus-update-inprogress-symbolic.svg",
                    "data/pardus-update-symbolic.svg",
-                   "data/pardus-update-uptodate.svg"])
+                   "data/pardus-update-uptodate.svg"]),
+                 ("/var/lib/polkit-1/localauthority/50-local.d/",
+                  ["data/pardus-update-group.pkla"])
              ] + create_mo_files()
 
 setup(
