@@ -1,3 +1,32 @@
+pardus-update (0.5.0) unstable; urgency=medium
+
+  [ Fatih Altun ]
+  * Add package manager operations to settings
+  * Add ErrorDialog to Utils
+  * Update sources list operations on settings page
+  * Update translatable files
+  * Update some space values
+  * Add etap-yirmiuc codename controls
+  * Add etap-yirmibes sources
+  * Add pardus yirmibes static sources
+  * Update pot file
+  * Update Turkish translations
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+  [ Fatih Altun ]
+  * Fix autoremovable control on settings page
+  * Add spinner page to apt settings stack
+  * Add thread to clear apt button
+  * Fix residual package control order
+  * Add passwordless usage setting
+  * Update pot file
+  * Update Turkish translations
+  * Fix residual package control order on other functions too
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 03 Sep 2024 15:44:32 +0300
+
 pardus-update (0.4.0) unstable; urgency=medium
 
   [ Fatih Altun ]
