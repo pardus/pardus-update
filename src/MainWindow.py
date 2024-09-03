@@ -771,11 +771,11 @@ class MainWindow(object):
         self.apt_update(force=True)
 
     def on_ui_upgradeinfook_button_clicked(self, button):
+        self.control_update_residual_message_section()
         if self.Package.upgradable():
             self.apt_update()
         else:
             self.ui_main_stack.set_visible_child_name("ok")
-        self.control_update_residual_message_section()
 
     def on_ui_upgradeconf_radiobutton_toggled(self, button):
         self.ui_upgrade_defaults_button.set_visible(
@@ -1572,8 +1572,8 @@ class MainWindow(object):
             self.isbroken = False
         else:
             self.isbroken = True
-        self.set_upgradable_page_and_notify()
         self.control_update_residual_message_section()
+        self.set_upgradable_page_and_notify()
 
     def clear_upgrade_listboxes(self):
         self.ui_upgradable_listbox.foreach(lambda child: self.ui_upgradable_listbox.remove(child))
