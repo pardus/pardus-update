@@ -51,6 +51,10 @@ gnome_desktop = False
 if "gnome" in getenv("SESSION").lower() or "gnome" in getenv("XDG_CURRENT_DESKTOP").lower():
     gnome_desktop = True
 
+xfce_desktop = False
+if "xfce" in getenv("SESSION").lower() or "xfce" in getenv("XDG_CURRENT_DESKTOP").lower():
+    xfce_desktop = True
+
 
 class MainWindow(object):
     def __init__(self, application):
@@ -486,7 +490,7 @@ class MainWindow(object):
         self.icon_inprogress = "pardus-update-inprogress-symbolic" if system_wide else "emblem-synchronizing-symbolic"
         self.icon_error = "pardus-update-error-symbolic" if system_wide else "security-low-symbolic"
 
-        if gnome_desktop:
+        if not xfce_desktop:
             self.icon_available = "software-update-available-symbolic"
             self.icon_normal = "security-medium-symbolic"
             self.icon_inprogress = "emblem-synchronizing-symbolic"
