@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=Pardus Update
+Name[pt]=Atualização Pardus
 Name[tr]=Pardus Güncelleyici
 Comment=Simple update application
+Comment[pt]=Aplicação de atualização simples
 Comment[tr]=Basit güncelleme uygulaması
 Exec=pardus-update --tray
 Icon=pardus-update

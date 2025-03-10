@@ -9,6 +9,9 @@ upmessage="Upgrading"
 if [[ $LANG == "tr_TR.UTF-8" ]]; then
     message="Sistem güncelleniyor, lütfen makineyi kapatmayın ..."
     upmessage="Güncelleniyor"
+elif [[ $LANG == "pt_PT.UTF-8" ]]; then
+    message="O sistema está a ser atualizado, não desligue a máquina ..."
+    upmessage="A atualizar"
 fi
 
 echo "$(date) - Pardus safe upgrade is starting" >> /var/log/pardus-upgrade.log
