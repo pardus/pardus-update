@@ -9,6 +9,7 @@
   <action id="tr.org.pardus.pkexec.pardus-update-sysaction">
     <description>Pardus Update Authentication</description>
     <message>Authentication is required for Pardus Update</message>
+    <message xml:lang="pt">A autenticação é necessária para a atualização do Pardus</message>
     <message xml:lang="tr">Pardus Güncelleyici için yetkilendirme gerekiyor</message>
     <icon_name>preferences-system</icon_name>
     <defaults>
@@ -23,6 +24,7 @@
   <action id="tr.org.pardus.pkexec.pardus-update-aptupdateaction">
     <description>Pardus Update Authentication</description>
     <message>Authentication is required for Pardus Update</message>
+    <message xml:lang="pt">A autenticação é necessária para a atualização do Pardus</message>
     <message xml:lang="tr">Pardus Güncelleyici için yetkilendirme gerekiyor</message>
     <icon_name>preferences-system</icon_name>
     <defaults>
@@ -37,6 +39,7 @@
   <action id="tr.org.pardus.pkexec.pardus-update-autoaptupgradeaction">
     <description>Pardus Update Authentication</description>
     <message>Authentication is required for Pardus Update</message>
+    <message xml:lang="pt">A autenticação é necessária para a atualização do Pardus</message>
     <message xml:lang="tr">Pardus Güncelleyici için yetkilendirme gerekiyor</message>
     <icon_name>preferences-system</icon_name>
     <defaults>
@@ -51,6 +54,7 @@
   <action id="tr.org.pardus.pkexec.pardus-update-systemsettingswrite">
     <description>Pardus Update Authentication</description>
     <message>Authentication is required for Pardus Update</message>
+    <message xml:lang="pt">A autenticação é necessária para a atualização do Pardus</message>
     <message xml:lang="tr">Pardus Güncelleyici için yetkilendirme gerekiyor</message>
     <icon_name>preferences-system</icon_name>
     <defaults>
@@ -65,6 +69,7 @@
   <action id="tr.org.pardus.pkexec.pardus-update-groupaction">
     <description>Pardus Software Center Authentication</description>
     <message>Authentication is required for Pardus Update</message>
+    <message xml:lang="pt">A autenticação é necessária para a atualização do Pardus</message>
     <message xml:lang="tr">Pardus Güncelleyici için yetkilendirme gerekiyor</message>
     <icon_name>preferences-system</icon_name>
     <defaults>
