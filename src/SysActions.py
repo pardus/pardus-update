@@ -61,6 +61,23 @@ def main():
                         env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
     def subupgrade(yq, dpkg_conf, keeps=None):
+        """
+        Performs a full system upgrade using 'apt full-upgrade'.
+
+        This function first checks for dpkg locks. If a lock cannot be acquired,
+        it prints a JSON error message to stderr and exits with a specific code.
+        If packages are specified to be kept, they are marked 'hold' before the
+        upgrade and 'unhold' afterwards.
+        The 'apt full-upgrade' command is then executed. If it fails (non-zero
+        return code), a JSON error message including apt's stderr is printed
+        to stderr.
+
+        Args:
+            yq (str): String containing '-y' and/or '-q' options for apt.
+            dpkg_conf (str): String containing Dpkg::Options for apt.
+            keeps (str, optional): A space-separated string of package names
+                                   to hold during the upgrade. Defaults to None.
+        """
         lock, msg = control_lock()
         if not lock:
             if "E:" in msg and "/var/lib/dpkg/lock-frontend" in msg:
@@ -261,6 +278,22 @@ def main():
             aptclean()
 
     def controldistupgrade(sourceslist):
+        """
+        Analyzes the system for a distribution upgrade.
+
+        Temporarily uses the provided `sourceslist` to update the apt cache and
+        calculate the changes required for a distribution upgrade (new installs,
+        upgrades, removals, held packages). The results, including download size,
+        install size, and detailed package lists with summaries and versions,
+        are written to a JSON file (`required_changes_for_upgrade.json`) in the
+        parent directory of the script.
+        This function manipulates global apt configuration during its execution
+        but restores it before returning.
+
+        Args:
+            sourceslist (str): A string containing the full content of the
+                               sources.list to be used for the upgrade analysis.
+        """
         sfile = open("/tmp/tmp-sources.list", "w")
         sfile.write(sourceslist)
         sfile.flush()
@@ -629,6 +662,25 @@ def main():
         subupdate()
 
     def fix_sources(slist_content, fix_slistd, slistd_remove, configure_state, fixbroken_state):
+        """
+        Corrects the system's APT sources lists and optionally performs recovery actions.
+
+        This function overwrites `/etc/apt/sources.list` with `slist_content`.
+        If `fix_slistd` is "1", it processes files in `/etc/apt/sources.list.d/`:
+            - If `slistd_remove` is "0", it comments out all entries in those files.
+            - If `slistd_remove` is "1", it removes and recreates the `/etc/apt/sources.list.d` directory.
+        After source list modifications, it cleans and updates the apt cache.
+        Optionally, if `configure_state` is "1", it runs `dpkg --configure -a`.
+        Optionally, if `fixbroken_state` is "1", it runs `apt install --fix-broken -yq`.
+
+        Args:
+            slist_content (str): The content to write to `/etc/apt/sources.list`.
+            fix_slistd (str): "1" to process sources.list.d, "0" to skip.
+            slistd_remove (str): If `fix_slistd` is "1": "1" to remove and recreate
+                                 sources.list.d, "0" to comment out entries.
+            configure_state (str): "1" to run `dpkg --configure -a`, "0" to skip.
+            fixbroken_state (str): "1" to run `apt install --fix-broken -yq`, "0" to skip.
+        """
         print("{}:\n\n{}".format(_("New Sources List"), slist_content))
         print("{}: {}\n".format(_("Fix sources.list.d"), fix_slistd))
         if fix_slistd == "1":

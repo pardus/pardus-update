@@ -5,6 +5,7 @@ Created on Sat Feb  5 19:05:13 2022
 
 @author: fatihaltun
 """
+import logging # Added logging
 import grp
 import json
 import os
@@ -59,16 +60,17 @@ if "xfce" in getenv("SESSION").lower() or "xfce" in getenv("XDG_CURRENT_DESKTOP"
 class MainWindow(object):
     def __init__(self, application):
         self.Application = application
+        self.logger = logging.getLogger(__name__) # Initialized logger
 
         self.main_window_ui_filename = os.path.dirname(os.path.abspath(__file__)) + "/../ui/MainWindow.glade"
         try:
             self.GtkBuilder = Gtk.Builder.new_from_file(self.main_window_ui_filename)
             self.GtkBuilder.connect_signals(self)
-        except GObject.GError:
-            print("Error reading GUI file: " + self.main_window_ui_filename)
+        except GObject.GError as e: # Capture exception
+            self.logger.error("Error reading GUI file: %s. Error: %s", self.main_window_ui_filename, e)
             raise
 
-        self.define_components()
+        self._define_components_new() # Changed to new method name
         self.define_variables()
         self.main_window.set_application(application)
         self.control_display()
@@ -78,6 +80,20 @@ class MainWindow(object):
         self.user_settings()
         self.system_settings()
 
+        self._apply_initial_user_settings()
+
+        self.init_indicator()
+        self.init_ui()
+        self.monitoring()
+
+        self._configure_about_dialog()
+        self._set_initial_window_visibility()
+        self.set_indicator()
+        self.set_initial_hide_widgets()
+        self.define_last_variables()
+        self._start_background_worker()
+
+    def _apply_initial_user_settings(self):
         autostart = self.UserSettings.config_autostart
         if self.SystemSettings.config_autostart is not None:
             autostart = self.SystemSettings.config_autostart
@@ -88,10 +104,7 @@ class MainWindow(object):
             update_selectable = self.SystemSettings.config_update_selectable
         self.user_keep_list = self.UserSettings.get_user_keeps_from_file() if update_selectable else []
 
-        self.init_indicator()
-        self.init_ui()
-        self.monitoring()
-
+    def _configure_about_dialog(self):
         self.about_dialog.set_program_name(_("Pardus Update"))
         if self.about_dialog.get_titlebar() is None:
             about_headerbar = Gtk.HeaderBar.new()
@@ -108,18 +121,14 @@ class MainWindow(object):
         except:
             pass
 
+    def _set_initial_window_visibility(self):
         if "tray" in self.Application.args.keys():
             self.main_window.set_visible(False)
         else:
             self.main_window.set_visible(True)
             self.main_window.show_all()
 
-        self.set_indicator()
-
-        self.set_initial_hide_widgets()
-
-        self.define_last_variables()
-
+    def _start_background_worker(self):
         p1 = threading.Thread(target=self.worker)
         p1.daemon = True
         p1.start()
@@ -139,9 +148,9 @@ class MainWindow(object):
                 self.repo_dist_control.ServerGet = self.server_get_dist
                 self.repo_dist_control.get("http://depo.pardus.org.tr/dists.json")
             except Exception as e:
-                print("{}".format(e))
+                self.logger.error("Error in control_distupgrade for Pardus: %s", e)
         else:
-            print("{} not yet supported for dist upgrade".format(distro.id()))
+            self.logger.info("%s not yet supported for dist upgrade", distro.id())
 
     def server_get_dist(self, response):
         def get_dist_key():
@@ -161,7 +170,7 @@ class MainWindow(object):
                 for data in datas:
                     if data["version"] > self.user_distro_version:
                         if "stable" in data["status"]:
-                            print("server:{} > user:{}".format(data["version"], self.user_distro_version))
+                            self.logger.info("Found newer stable version: server %s > user %s", data["version"], self.user_distro_version)
                             self.dist_upgradable = True
                             self.dist_new_version = "{} {}".format(dist_key.title(), data["version"], data["name"])
                             self.dist_new_codename = "{}".format(data["name"])
@@ -184,8 +193,8 @@ class MainWindow(object):
                         self.user_default_sources_list = data["sources"]
 
         else:
-            error_message = response["message"]
-            print(error_message)
+            error_message = response.get("message", "Unknown error from dists.json server.")
+            self.logger.error("Error fetching/parsing dists.json: %s", error_message)
 
     def utils(self):
         self.Utils = Utils()
@@ -203,16 +212,30 @@ class MainWindow(object):
             self.isbroken = False
         else:
             self.isbroken = True
-            print("Error while updating Cache")
+            self.logger.error("Error while updating package cache.")
 
-        print("package completed")
-        print("broken: {}".format(self.isbroken))
+        self.logger.info("Package processing completed.")
+        self.logger.info("System broken state: %s", self.isbroken)
 
     def apt_update(self, force=False):
         """
-        auto update control function
+        Checks for updates based on user/system settings or if forced.
+
+        This method determines if an update check ('apt update') should be performed.
+        It considers the update interval configured by the user or system-wide
+        settings and the timestamp of the last update. An update can also be
+        triggered unconditionally if the `force` parameter is True.
+
+        If an update check is due or forced, `self.start_aptupdate()` is called.
+        If the interval is set to -1 (never), or if it's not yet time for an
+        update according to the interval, `self.set_upgradable_page_and_notify()`
+        is called to reflect the current state.
+
+        Args:
+            force (bool, optional): If True, an update check is performed
+                                    regardless of interval settings. Defaults to False.
         """
-        print("in apt_update")
+        self.logger.info("apt_update called. Force: %s", force)
 
         interval = self.UserSettings.config_update_interval
         if self.SystemSettings.config_update_interval is not None:
@@ -226,16 +249,17 @@ class MainWindow(object):
             self.start_aptupdate()
             return
         if interval == -1:  # never auto update
+            self.logger.info("Auto update check skipped: interval is -1 (never).")
             self.set_upgradable_page_and_notify()
             return
         if lastupdate + interval - 10 <= int(datetime.now().timestamp()):
-            print("started timed update check")
-            print("lu:{} inv:{} now:{}".format(lastupdate, interval, int(datetime.now().timestamp())))
+            self.logger.info("Started timed update check. Last update: %s, Interval: %s, Now: %s",
+                             lastupdate, interval, int(datetime.now().timestamp()))
             self.start_aptupdate()
             return
         else:
-            print("not started timed update check")
-            print("lu:{} inv:{} now:{}".format(lastupdate, interval, int(datetime.now().timestamp())))
+            self.logger.info("Not starting timed update check. Last update: %s, Interval: %s, Now: %s",
+                             lastupdate, interval, int(datetime.now().timestamp()))
             self.set_upgradable_page_and_notify()
             return
 
@@ -243,9 +267,10 @@ class MainWindow(object):
         """
         auto upgrade control function
         """
-        print("in apt_upgrade")
+        self.logger.info("apt_upgrade called. Force: %s", force)
 
         if self.SystemSettings.config_upgrade_enabled is None or self.SystemSettings.config_upgrade_interval is None:
+            self.logger.info("Auto upgrade skipped: system settings for upgrade not configured.")
             return
 
         enabled = self.SystemSettings.config_upgrade_enabled
@@ -263,16 +288,17 @@ class MainWindow(object):
             self.start_aptupgrade()
             return
         if interval == -1:  # never auto upgrade
+            self.logger.info("Auto upgrade check skipped: interval is -1 (never).")
             # self.set_upgradable_page_and_notify()
             return
         if lastupgrade + interval - 10 <= int(datetime.now().timestamp()):
-            print("started timed upgrade check")
-            print("lu:{} inv:{} now:{}".format(lastupgrade, interval, int(datetime.now().timestamp())))
-            self.start_aptupgrade()
+            self.logger.info("Started timed auto-upgrade check. Last upgrade: %s, Interval: %s, Now: %s",
+                             lastupgrade, interval, int(datetime.now().timestamp()))
+            self.start_aptupgrade() # Note: This calls apt_update which then calls start_aptupdate, not directly upgrade
             return
         else:
-            print("not started timed upgrade check")
-            print("lu:{} inv:{} now:{}".format(lastupgrade, interval, int(datetime.now().timestamp())))
+            self.logger.info("Not starting timed auto-upgrade check. Last upgrade: %s, Interval: %s, Now: %s",
+                             lastupgrade, interval, int(datetime.now().timestamp()))
             # self.set_upgradable_page_and_notify()
             return
 
@@ -298,7 +324,7 @@ class MainWindow(object):
             self.main_window.present()
             self.item_sh_app.set_label(_("Hide App"))
 
-    def define_components(self):
+    def _define_main_dialog_components(self):
         self.main_window = self.GtkBuilder.get_object("ui_main_window")
         self.about_dialog = self.GtkBuilder.get_object("ui_about_dialog")
         self.ui_quit_dialog = self.GtkBuilder.get_object("ui_quit_dialog")
@@ -309,6 +335,7 @@ class MainWindow(object):
         self.ui_upgrade_buttonbox.set_homogeneous(False)
         self.ui_uptodate_image = self.GtkBuilder.get_object("ui_uptodate_image")
 
+    def _define_header_menu_components(self):
         self.ui_menu_popover = self.GtkBuilder.get_object("ui_menu_popover")
         self.ui_menusettings_image = self.GtkBuilder.get_object("ui_menusettings_image")
         self.ui_menusettings_label = self.GtkBuilder.get_object("ui_menusettings_label")
@@ -318,6 +345,8 @@ class MainWindow(object):
         self.ui_menudistupgrade_button = self.GtkBuilder.get_object("ui_menudistupgrade_button")
         self.ui_headerbar_messagebutton = self.GtkBuilder.get_object("ui_headerbar_messagebutton")
         self.ui_headerbar_messageimage = self.GtkBuilder.get_object("ui_headerbar_messageimage")
+
+    def _define_settings_general_components(self):
         self.ui_updatefreq_combobox = self.GtkBuilder.get_object("ui_updatefreq_combobox")
         self.ui_updatefreq_spin = self.GtkBuilder.get_object("ui_updatefreq_spin")
         self.ui_updatefreq_stack = self.GtkBuilder.get_object("ui_updatefreq_stack")
@@ -327,28 +356,29 @@ class MainWindow(object):
         self.ui_notifications_switch = self.GtkBuilder.get_object("ui_notifications_switch")
         self.ui_update_selectable_info_popover = self.GtkBuilder.get_object("ui_update_selectable_info_popover")
 
+    def _define_residual_info_components(self):
         self.ui_autoremovable_box = self.GtkBuilder.get_object("ui_autoremovable_box")
         self.ui_residual_box = self.GtkBuilder.get_object("ui_residual_box")
         self.ui_autoremovable_textview = self.GtkBuilder.get_object("ui_autoremovable_textview")
         self.ui_residual_textview = self.GtkBuilder.get_object("ui_residual_textview")
 
+    def _define_update_info_list_components(self):
         self.ui_upgradable_sw = self.GtkBuilder.get_object("ui_upgradable_sw")
         self.ui_newly_sw = self.GtkBuilder.get_object("ui_newly_sw")
         self.ui_removable_sw = self.GtkBuilder.get_object("ui_removable_sw")
         self.ui_kept_sw = self.GtkBuilder.get_object("ui_kept_sw")
-
         self.ui_upgradable_listbox = self.GtkBuilder.get_object("ui_upgradable_listbox")
         self.ui_newly_listbox = self.GtkBuilder.get_object("ui_newly_listbox")
         self.ui_removable_listbox = self.GtkBuilder.get_object("ui_removable_listbox")
         self.ui_kept_listbox = self.GtkBuilder.get_object("ui_kept_listbox")
 
+    def _define_update_info_summary_components(self):
         self.ui_downloadsize_box = self.GtkBuilder.get_object("ui_downloadsize_box")
         self.ui_installsize_box = self.GtkBuilder.get_object("ui_installsize_box")
         self.ui_upgradecount_box = self.GtkBuilder.get_object("ui_upgradecount_box")
         self.ui_newlycount_box = self.GtkBuilder.get_object("ui_newlycount_box")
         self.ui_removecount_box = self.GtkBuilder.get_object("ui_removecount_box")
         self.ui_keptcount_box = self.GtkBuilder.get_object("ui_keptcount_box")
-
         self.ui_downloadsize_label = self.GtkBuilder.get_object("ui_downloadsize_label")
         self.ui_installsize_label = self.GtkBuilder.get_object("ui_installsize_label")
         self.ui_upgradecount_label = self.GtkBuilder.get_object("ui_upgradecount_label")
@@ -356,6 +386,7 @@ class MainWindow(object):
         self.ui_removecount_label = self.GtkBuilder.get_object("ui_removecount_label")
         self.ui_keptcount_label = self.GtkBuilder.get_object("ui_keptcount_label")
 
+    def _define_update_options_components(self):
         self.ui_upgradeoptions_popover = self.GtkBuilder.get_object("ui_upgradeoptions_popover")
         self.ui_upgrade_defaults_button = self.GtkBuilder.get_object("ui_upgrade_defaults_button")
         self.ui_upgradenewconf_radiobutton = self.GtkBuilder.get_object("ui_upgradenewconf_radiobutton")
@@ -364,6 +395,7 @@ class MainWindow(object):
         self.ui_upgradewithyq_radiobutton = self.GtkBuilder.get_object("ui_upgradewithyq_radiobutton")
         self.ui_upgradewithoutyq_radiobutton = self.GtkBuilder.get_object("ui_upgradewithoutyq_radiobutton")
 
+    def _define_upgrade_process_components(self):
         self.ui_upgradevte_sw = self.GtkBuilder.get_object("ui_upgradevte_sw")
         self.ui_upgradeinfo_label = self.GtkBuilder.get_object("ui_upgradeinfo_label")
         self.ui_upgradeinfook_button = self.GtkBuilder.get_object("ui_upgradeinfook_button")
@@ -371,11 +403,13 @@ class MainWindow(object):
         self.ui_upgradeinfobusy_box = self.GtkBuilder.get_object("ui_upgradeinfobusy_box")
         self.ui_upgradeinfofixdpkg_button = self.GtkBuilder.get_object("ui_upgradeinfofixdpkg_button")
 
+    def _define_fix_components(self):
         self.ui_fix_stack = self.GtkBuilder.get_object("ui_fix_stack")
         self.ui_fix_button = self.GtkBuilder.get_object("ui_fix_button")
         self.ui_fix_spinner = self.GtkBuilder.get_object("ui_fix_spinner")
         self.ui_fixvte_sw = self.GtkBuilder.get_object("ui_fixvte_sw")
 
+    def _define_dpkg_configure_components(self):
         self.ui_dpkgconfigureinfo_box = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_box")
         self.ui_dpkgconfigureinfo_label = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_label")
         self.ui_dpkgconfigureinfo_spinner = self.GtkBuilder.get_object("ui_dpkgconfigureinfo_spinner")
@@ -385,10 +419,11 @@ class MainWindow(object):
         self.ui_dpkgconfigurefix_label = self.GtkBuilder.get_object("ui_dpkgconfigurefix_label")
         self.ui_dpkgconfigurefix_button = self.GtkBuilder.get_object("ui_dpkgconfigurefix_button")
 
+    def _define_dist_upgrade_labels(self):
         self.ui_distup_now_label = self.GtkBuilder.get_object("ui_distup_now_label")
         self.ui_distup_new_label = self.GtkBuilder.get_object("ui_distup_new_label")
 
-        # Dist upgrade widgets
+    def _define_dist_upgrade_general_components(self):
         self.ui_distupgrade_stack = self.GtkBuilder.get_object("ui_distupgrade_stack")
         self.ui_distupgradeoptions_popover = self.GtkBuilder.get_object("ui_distupgradeoptions_popover")
         self.ui_distupgradecontrol_spinner = self.GtkBuilder.get_object("ui_distupgradecontrol_spinner")
@@ -405,39 +440,35 @@ class MainWindow(object):
         self.ui_distupgradetextview_box = self.GtkBuilder.get_object("ui_distupgradetextview_box")
         self.ui_distupgrade_buttonbox = self.GtkBuilder.get_object("ui_distupgrade_buttonbox")
         self.ui_distupgrade_buttonbox.set_homogeneous(False)
-
         self.ui_controldistuperror_box = self.GtkBuilder.get_object("ui_controldistuperror_box")
         self.ui_controldistuperror_label = self.GtkBuilder.get_object("ui_controldistuperror_label")
-
         self.ui_distupgrade_defaults_button = self.GtkBuilder.get_object("ui_distupgrade_defaults_button")
         self.ui_distupgradenewconf_radiobutton = self.GtkBuilder.get_object("ui_distupgradenewconf_radiobutton")
         self.ui_distupgradeoldconf_radiobutton = self.GtkBuilder.get_object("ui_distupgradeoldconf_radiobutton")
-
         self.ui_distuptoinstall_button = self.GtkBuilder.get_object("ui_distuptoinstall_button")
         self.ui_distupdowninfo_label = self.GtkBuilder.get_object("ui_distupdowninfo_label")
         self.ui_distupdowninfo_spinner = self.GtkBuilder.get_object("ui_distupdowninfo_spinner")
-
         self.ui_distupgrade_button = self.GtkBuilder.get_object("ui_distupgrade_button")
         self.ui_distupgrade_lastinfo_box = self.GtkBuilder.get_object("ui_distupgrade_lastinfo_box")
         self.ui_distupgrade_lastinfo_spinner = self.GtkBuilder.get_object("ui_distupgrade_lastinfo_spinner")
 
+    def _define_dist_upgrade_info_list_components(self):
         self.ui_distupgradable_sw = self.GtkBuilder.get_object("ui_distupgradable_sw")
         self.ui_distnewly_sw = self.GtkBuilder.get_object("ui_distnewly_sw")
         self.ui_distremovable_sw = self.GtkBuilder.get_object("ui_distremovable_sw")
         self.ui_distkept_sw = self.GtkBuilder.get_object("ui_distkept_sw")
-
         self.ui_distupgradable_listbox = self.GtkBuilder.get_object("ui_distupgradable_listbox")
         self.ui_distnewly_listbox = self.GtkBuilder.get_object("ui_distnewly_listbox")
         self.ui_distremovable_listbox = self.GtkBuilder.get_object("ui_distremovable_listbox")
         self.ui_distkept_listbox = self.GtkBuilder.get_object("ui_distkept_listbox")
 
+    def _define_dist_upgrade_info_summary_components(self):
         self.ui_distdownloadsize_box = self.GtkBuilder.get_object("ui_distdownloadsize_box")
         self.ui_distinstallsize_box = self.GtkBuilder.get_object("ui_distinstallsize_box")
         self.ui_distupgradecount_box = self.GtkBuilder.get_object("ui_distupgradecount_box")
         self.ui_distnewlycount_box = self.GtkBuilder.get_object("ui_distnewlycount_box")
         self.ui_distremovecount_box = self.GtkBuilder.get_object("ui_distremovecount_box")
         self.ui_distkeptcount_box = self.GtkBuilder.get_object("ui_distkeptcount_box")
-
         self.ui_distdownloadsize_label = self.GtkBuilder.get_object("ui_distdownloadsize_label")
         self.ui_distinstallsize_label = self.GtkBuilder.get_object("ui_distinstallsize_label")
         self.ui_distupgradecount_label = self.GtkBuilder.get_object("ui_distupgradecount_label")
@@ -445,11 +476,13 @@ class MainWindow(object):
         self.ui_distremovecount_label = self.GtkBuilder.get_object("ui_distremovecount_label")
         self.ui_distkeptcount_label = self.GtkBuilder.get_object("ui_distkeptcount_label")
 
+    def _define_disk_usage_components(self):
         self.ui_rootusage_progressbar = self.GtkBuilder.get_object("ui_rootusage_progressbar")
         self.ui_rootfree_label = self.GtkBuilder.get_object("ui_rootfree_label")
         self.ui_roottotal_label = self.GtkBuilder.get_object("ui_roottotal_label")
         self.ui_distrequireddiskinfo_label = self.GtkBuilder.get_object("ui_distrequireddiskinfo_label")
 
+    def _define_settings_apt_components(self):
         self.ui_settingsapt_stack = self.GtkBuilder.get_object("ui_settingsapt_stack")
         self.ui_settings_apt_clear_box = self.GtkBuilder.get_object("ui_settings_apt_clear_box")
         self.ui_settings_vte_box = self.GtkBuilder.get_object("ui_settings_vte_box")
@@ -463,7 +496,6 @@ class MainWindow(object):
         self.ui_apt_listsclean_checkbutton = self.GtkBuilder.get_object("ui_apt_listsclean_checkbutton")
         self.ui_settings_aptclear_popover = self.GtkBuilder.get_object("ui_settings_aptclear_popover")
         self.ui_settings_aptclear_textview = self.GtkBuilder.get_object("ui_settings_aptclear_textview")
-
         self.ui_sources_listbox = self.GtkBuilder.get_object("ui_sources_listbox")
         self.ui_settings_default_sources_button = self.GtkBuilder.get_object("ui_settings_default_sources_button")
         self.ui_settings_sourceslist_info_label = self.GtkBuilder.get_object("ui_settings_sourceslist_info_label")
@@ -474,14 +506,45 @@ class MainWindow(object):
         self.ui_settings_cout_slistd_radiobutton = self.GtkBuilder.get_object("ui_settings_cout_slistd_radiobutton")
         self.ui_settings_fix_slistd_sub_box = self.GtkBuilder.get_object("ui_settings_fix_slistd_sub_box")
 
+    def _define_settings_passwordless_components(self):
         self.ui_passwordless_button = self.GtkBuilder.get_object("ui_passwordless_button")
         self.ui_passwordless_button_label = self.GtkBuilder.get_object("ui_passwordless_button_label")
 
+    def _define_vte_placeholders(self):
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
         self.fix_vteterm = None
         self.dpkgconfigure_vteterm = None
         self.settings_vteterm = None
+
+    def _define_components_new(self):
+        """
+        Initializes and assigns all UI components from the Glade file.
+
+        This method calls a series of private helper methods, each responsible
+        for fetching a logical group of UI widgets (e.g., main dialogs,
+        header menu, settings components) from the Gtk.Builder instance
+        and assigning them to instance attributes (e.g., `self.ui_main_window`).
+        It also initializes placeholder attributes for VTE terminals to None.
+        """
+        self._define_main_dialog_components()
+        self._define_header_menu_components()
+        self._define_settings_general_components()
+        self._define_residual_info_components()
+        self._define_update_info_list_components()
+        self._define_update_info_summary_components()
+        self._define_update_options_components()
+        self._define_upgrade_process_components()
+        self._define_fix_components()
+        self._define_dpkg_configure_components()
+        self._define_dist_upgrade_labels()
+        self._define_dist_upgrade_general_components()
+        self._define_dist_upgrade_info_list_components()
+        self._define_dist_upgrade_info_summary_components()
+        self._define_disk_usage_components()
+        self._define_settings_apt_components()
+        self._define_settings_passwordless_components()
+        self._define_vte_placeholders()
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
@@ -582,9 +645,9 @@ class MainWindow(object):
             self.main_window.resize(width, height)
 
         except Exception as e:
-            print("Error in controlDisplay: {}".format(e))
+            self.logger.error("Error in controlDisplay: %s", e)
 
-        print("window w:{} h:{} | monitor w:{} h:{} s:{}".format(width, height, w, h, s))
+        self.logger.info("Window dimensions: w:%s h:%s | Monitor: w:%s h:%s scale:%s", width, height, w, h, s)
 
     def update_vte_color(self, vte):
         style_context = self.main_window.get_style_context()
@@ -598,12 +661,13 @@ class MainWindow(object):
         self.UserSettings.createDefaultConfig()
         self.UserSettings.readConfig()
 
-        print("{} {}".format("config_update_interval", self.UserSettings.config_update_interval))
-        print("{} {} ({})".format("config_update_lastupdate", self.UserSettings.config_update_lastupdate,
-                                  datetime.fromtimestamp(self.UserSettings.config_update_lastupdate)))
-        print("{} {}".format("config_update_selectable", self.UserSettings.config_update_selectable))
-        print("{} {}".format("config_autostart", self.UserSettings.config_autostart))
-        print("{} {}".format("config_notifications", self.UserSettings.config_notifications))
+        self.logger.info("User Setting config_update_interval: %s", self.UserSettings.config_update_interval)
+        self.logger.info("User Setting config_update_lastupdate: %s (%s)",
+                         self.UserSettings.config_update_lastupdate,
+                         datetime.fromtimestamp(self.UserSettings.config_update_lastupdate))
+        self.logger.info("User Setting config_update_selectable: %s", self.UserSettings.config_update_selectable)
+        self.logger.info("User Setting config_autostart: %s", self.UserSettings.config_autostart)
+        self.logger.info("User Setting config_notifications: %s", self.UserSettings.config_notifications)
 
     def system_settings(self):
         self.SystemSettings = SystemSettings()
@@ -611,32 +675,28 @@ class MainWindow(object):
 
         try:
             if self.SystemSettings.config_update_interval is not None:
-                print("system: {} {}".format("config_update_interval", self.SystemSettings.config_update_interval))
+                self.logger.info("System Setting config_update_interval: %s", self.SystemSettings.config_update_interval)
             if self.SystemSettings.config_update_lastupdate is not None:
-                print("system: {} {}".format("config_update_lastupdate", self.SystemSettings.config_update_lastupdate))
+                self.logger.info("System Setting config_update_lastupdate: %s", self.SystemSettings.config_update_lastupdate)
             if self.SystemSettings.config_update_selectable is not None:
-                print("system: {} {}".format("config_update_selectable", self.SystemSettings.config_update_selectable))
+                self.logger.info("System Setting config_update_selectable: %s", self.SystemSettings.config_update_selectable)
             if self.SystemSettings.config_autostart is not None:
-                print("system: {} {}".format("config_autostart", self.SystemSettings.config_autostart))
+                self.logger.info("System Setting config_autostart: %s", self.SystemSettings.config_autostart)
             if self.SystemSettings.config_notifications is not None:
-                print("system: {} {}".format("config_notifications", self.SystemSettings.config_notifications))
+                self.logger.info("System Setting config_notifications: %s", self.SystemSettings.config_notifications)
 
             if self.SystemSettings.config_upgrade_enabled is not None:
-                print("system: {} {}".format("config_upgrade_enabled",
-                                             self.SystemSettings.config_upgrade_enabled))
+                self.logger.info("System Setting config_upgrade_enabled: %s", self.SystemSettings.config_upgrade_enabled)
             if self.SystemSettings.config_upgrade_interval is not None:
-                print("system: {} {}".format("config_upgrade_interval",
-                                             self.SystemSettings.config_upgrade_interval))
+                self.logger.info("System Setting config_upgrade_interval: %s", self.SystemSettings.config_upgrade_interval)
             if self.SystemSettings.config_upgrade_lastupgrade is not None:
-                print("system: {} {}".format("config_upgrade_lastupgrade",
-                                             self.SystemSettings.config_upgrade_lastupgrade))
+                self.logger.info("System Setting config_upgrade_lastupgrade: %s", self.SystemSettings.config_upgrade_lastupgrade)
             if self.SystemSettings.config_upgrade_fix is not None:
-                print("system: {} {}".format("config_upgrade_fix", self.SystemSettings.config_upgrade_fix))
+                self.logger.info("System Setting config_upgrade_fix: %s", self.SystemSettings.config_upgrade_fix)
             if self.SystemSettings.config_upgrade_sources is not None:
-                print("system: {} {}".format("config_upgrade_sources",
-                                             self.SystemSettings.config_upgrade_sources))
+                self.logger.info("System Setting config_upgrade_sources: %s", self.SystemSettings.config_upgrade_sources)
         except Exception as e:
-            print("system_settings exception: {}".format(e))
+            self.logger.error("Exception while reading system_settings: %s", e)
 
     def init_ui(self):
         self.ui_main_stack.set_visible_child_name("spinner")
@@ -822,7 +882,7 @@ class MainWindow(object):
         elif self.ui_upgradeaskconf_radiobutton.get_active():
             dpkg_conf = ""
 
-        print("yq_conf: {}\ndpkg_conf: {}".format(yq_conf, dpkg_conf))
+        self.logger.info("Upgrade options: yq_conf: '%s', dpkg_conf: '%s'", yq_conf, dpkg_conf)
         if not self.upgrade_inprogress:
             self.ui_upgradeinfo_label.set_markup(
                 "<b>{}</b>".format(_("Updates are installing. Please wait...")))
@@ -834,7 +894,7 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            print("upgrade in progress")
+            self.logger.warning("Upgrade button clicked while upgrade_inprogress is True.")
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_autoremovable_button_clicked(self, button):
@@ -859,7 +919,7 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            print("upgrade in progress")
+            self.logger.warning("Autoremovable button clicked while upgrade_inprogress is True.")
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_residual_button_clicked(self, button):
@@ -886,7 +946,7 @@ class MainWindow(object):
             self.upgrade_vte_start_process(command)
             self.upgrade_inprogress = True
         else:
-            print("upgrade in progress")
+            self.logger.warning("Residual button clicked while upgrade_inprogress is True.")
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_clear_apt_button_clicked(self, button):
@@ -989,9 +1049,9 @@ class MainWindow(object):
         repos = self.Package.get_sources()
 
         for source in repos.values():
-            # print(source)
+            # self.logger.debug("Source: %s", source) # Could be too verbose
             for sub in source:
-                print(sub)
+                self.logger.debug("Repo sub-entry: %s", sub)
                 repo_name = Gtk.Label.new()
                 repo_name.set_markup("{} {} {} {}".format(sub["type"], sub["uri"], sub["dist"], " ".join(sub["comps"])))
                 repo_name.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
@@ -1120,7 +1180,7 @@ class MainWindow(object):
 
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                        "controldistupgrade", self.dist_new_sources]
-
+            self.logger.info("Starting control dist-upgrade process with command: %s", command)
             self.startControlDistUpgradeProcess(command)
             self.upgrade_inprogress = True
             self.ui_distupgradecontrol_spinner.start()
@@ -1176,7 +1236,7 @@ class MainWindow(object):
         elif self.ui_distupgradeoldconf_radiobutton.get_active():
             ask_conf = "--force-confold"
 
-        print("dpkg_conf: {}".format(ask_conf))
+        self.logger.info("Dist-upgrade offline dpkg_conf: %s", ask_conf)
 
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                    "distupgradeoffline", self.dist_new_sources, ask_conf]
@@ -2257,6 +2317,53 @@ class MainWindow(object):
     def upgrade_vte_create_spawn_callback(self, terminal, pid, error, userdata):
         self.upgrade_vteterm.connect("child-exited", self.upgrade_vte_on_done)
 
+    def _try_parse_json_error_from_vte(self, terminal):
+        """
+        Tries to get text from VTE, parse the last few lines for JSON error,
+        and return the formatted error message.
+        Returns None if no JSON error is found or parsing fails.
+        """
+        if not terminal:
+            return None
+
+        # Get all text from the VTE terminal
+        # The method to get text might vary slightly based on VTE versions or how it's wrapped
+        # get_text is a common way if available directly or via buffer.
+        # Let's assume terminal.get_text() exists and works as expected for now.
+        # Vte.Terminal.get_text(start_offset, end_offset, include_hidden_chars)
+        # To get all text: terminal.get_text(None, None, True)
+        # However, direct get_text might not be available on the VTE object itself, but on its buffer.
+        # A more robust way for VTE is often to read from its PTY or scrollback.
+        # For simplicity in this step, we'll assume get_text works. If not, this part needs adjustment.
+
+        vte_text_bytes, _ = terminal.get_text_and_attributes(None, True) # Gets entire scrollback
+        if not vte_text_bytes:
+            return None
+
+        vte_text = vte_text_bytes.decode('utf-8', errors='ignore')
+        lines = vte_text.strip().splitlines()
+
+        # Check last few lines for a JSON string (e.g., last 5 lines)
+        for line in reversed(lines[-5:]):
+            try:
+                # print(f"Attempting to parse line as JSON: {line}") # Debug print
+                error_data = json.loads(line)
+                if isinstance(error_data, dict) and error_data.get("status") == "error":
+                    message = error_data.get("message", "Unknown error.")
+                    details = error_data.get("details", "")
+                    if details:
+                        # Escape details for Pango markup
+                        escaped_details = GLib.markup_escape_text(details, -1)
+                        return f"{GLib.markup_escape_text(message, -1)}\n<small><i>Details: {escaped_details}</i></small>"
+                    return GLib.markup_escape_text(message, -1)
+            except json.JSONDecodeError:
+                # print(f"Failed to parse JSON from line: {line}") # Debug print
+                continue # Not a JSON line or malformed
+            except Exception as e:
+                # print(f"Other exception during JSON processing: {e}") # Debug print
+                continue # Other error
+        return None
+
     def upgrade_vte_on_done(self, terminal, status):
         print("upgrade_vte_on_done status: {}".format(status))
 
@@ -2266,21 +2373,29 @@ class MainWindow(object):
         GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, False)
         GLib.idle_add(self.ui_upgradeinfook_button.set_visible, True)
 
-        if status == 32256:  # operation cancelled | Request dismissed
+        json_error_message = self._try_parse_json_error_from_vte(terminal)
+
+        if json_error_message:
+            self.ui_upgradeinfo_label.set_markup(f"<span color='red'><b>{json_error_message}</b></span>")
+        elif status == 32256:  # operation cancelled | Request dismissed
             if self.clean_residuals_clicked:
                 self.ui_main_stack.set_visible_child_name("clean")
             else:
                 self.ui_main_stack.set_visible_child_name("updateinfo")
-        elif status == 2816:  # dpkg lock error
+        elif status == 2816:  # dpkg lock error (exit code 11 from SysActions.py)
             self.ui_upgradeinfo_label.set_markup("<span color='red'><b>{}</b></span>".format(
                 _("Only one software management tool is allowed to run at the same time.\n"
                   "Please close the other application e.g. 'Update Manager', 'aptitude' or 'Synaptic' first.")))
-        elif status == 3072:  # dpkg interrupt error
+        elif status == 3072:  # dpkg interrupt error (exit code 12 from SysActions.py)
             self.ui_upgradeinfo_label.set_markup("<span color='red'><b>{}</b></span>".format(
                 _("dpkg interrupt detected. Click the 'Fix' button or\n"
                   "manually run 'sudo dpkg --configure -a' to fix the problem.")))
             GLib.idle_add(self.ui_upgradeinfofixdpkg_button.set_visible, True)
-        else:
+        elif status != 0 : # Other non-zero status from apt full-upgrade itself (e.g. apt's own exit codes like 100)
+             # Fallback for other errors if no JSON was parsed
+            self.ui_upgradeinfo_label.set_markup("<span color='red'><b>{} {}</b></span>".format(
+                _("An error occurred during the upgrade process. Exit code:"), status))
+        else: # Status is 0
             self.Package.updatecache()
             GLib.idle_add(self.ui_upgradeinfo_label.set_markup, "<b>{}</b>".format(_("Process completed.")))
 

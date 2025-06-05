@@ -36,6 +36,27 @@ sudo mk-build-deps -ir
 gbp buildpackage --git-export-dir=/tmp/build/pardus-update -us -uc
 ```
 
+### Running Tests
+This project uses pytest for testing.
+
+1.  **Install development dependencies:**
+    Make sure you have Python 3 and pip installed. It's recommended to use a virtual environment.
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate  # On Windows use `.venv\Scriptsctivate`
+    pip install -r requirements-dev.txt
+    ```
+
+2.  **Run tests:**
+    From the root directory of the project, run:
+    ```bash
+    pytest
+    ```
+    Or, to ensure it uses the project's Python environment correctly:
+    ```bash
+    python -m pytest
+    ```
+
 ### **Screenshots**
 
 ![Pardus Update 1](screenshots/pardus-update-1.png)
