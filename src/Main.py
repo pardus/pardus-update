@@ -6,6 +6,7 @@ Created on Tue Jun  6 23:53:26 2023
 @author: fatih
 """
 import sys
+import logging # Added logging
 
 import gi
 
@@ -56,6 +57,10 @@ class Application(Gtk.Application):
         self.activate()
         return 0
 
+# Setup logging configuration here, so it's done once when the script is executed.
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
 
 app = Application()
 app.run(sys.argv)
