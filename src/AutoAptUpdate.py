@@ -24,6 +24,7 @@ def check_connection():
         root.withdraw()
         messagebox.showerror(title="Connection Error", message="There is no active network connection, please connect to network to continue.")
         root.destroy()
+        exit()
 
 def main():
     # try:
@@ -33,10 +34,10 @@ def main():
     # except Exception as e:
     #     print(str(e))
     #     print("using subprocess for apt update")
+    check_connection()
     subprocess.call(["apt", "update"],
                     env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
 
 if __name__ == "__main__":
-    cehck_connection()
     main()
