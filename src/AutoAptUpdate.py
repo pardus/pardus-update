@@ -10,8 +10,6 @@ import os
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
-import subprocess
-
 
 # import apt
 
