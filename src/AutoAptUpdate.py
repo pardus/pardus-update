@@ -8,9 +8,22 @@ Created on Fri Sep 18 14:53:00 2020
 
 import os
 import subprocess
+import tkinter as tk
+from tkinter import messagebox
+import subprocess
 
 
 # import apt
+
+def check_connection():
+
+    try:
+        result = subprocess.run(["ping", "-c", "1", "8.8.8.8"], check=True)
+    except:
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror(title="Connection Error", message="There is no active network connection, please connect to network to continue.")
+        root.destroy()
 
 def main():
     # try:
@@ -25,4 +38,5 @@ def main():
 
 
 if __name__ == "__main__":
+    cehck_connection()
     main()
