@@ -1844,7 +1844,7 @@ class MainWindow(object):
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
                     self.ui_main_stack.set_visible_child_name("conerror")
                 self.indicator.set_icon(self.icon_error)
-                self.item_systemstatus.set_sensitive(False if not self.pargnome23 else True)
+                self.item_systemstatus.set_sensitive(False)
                 self.item_systemstatus.set_label(_("Repository Connection Error"))
 
         if self.autoupgrade_enabled:
