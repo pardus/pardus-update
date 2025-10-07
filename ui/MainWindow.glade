@@ -4888,7 +4888,7 @@ Use with caution. Are you sure you want to continue?</property>
                         <property name="can-focus">False</property>
                         <property name="margin-bottom">34</property>
                         <property name="pixel-size">288</property>
-                        <property name="icon-name">pardus-update-uptodate</property>
+                        <property name="icon-name">pardus-update-cantconnect</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
