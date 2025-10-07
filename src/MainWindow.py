@@ -1473,8 +1473,8 @@ class MainWindow(object):
         self.ui_fix_stack.set_visible_child_name("info")
 
     def on_ui_fixaccept_button_clicked(self, button):
-        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
-                   "fixapt"]
+        command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "fixsources",
+                   self.user_default_sources_list, "1", "1", "1", "1"]
         self.ui_fix_stack.set_visible_child_name("main")
         self.ui_fix_button.set_sensitive(False)
         self.ui_fix_spinner.start()
