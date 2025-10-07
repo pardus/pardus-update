@@ -756,10 +756,13 @@ class MainWindow(object):
             if self.isbroken:
                 self.ui_main_stack.set_visible_child_name("fix")
             else:
-                if self.Package.upgradable():
-                    self.ui_main_stack.set_visible_child_name("updateinfo")
+                if self.sources_err_count == 0:
+                    if self.Package.upgradable():
+                        self.ui_main_stack.set_visible_child_name("updateinfo")
+                    else:
+                        self.ui_main_stack.set_visible_child_name("ok")
                 else:
-                    self.ui_main_stack.set_visible_child_name("ok")
+                    self.ui_main_stack.set_visible_child_name("conerror")
         self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
         self.ui_menusettings_label.set_text(_("Settings"))
         self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
@@ -960,6 +963,11 @@ class MainWindow(object):
 
         self.ui_settings_apt_clear_box.set_visible(False)
         self.ui_settings_vte_box.set_visible(False)
+
+        self.ui_main_stack.set_visible_child_name("spinner")
+        self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
+        self.ui_menusettings_label.set_text(_("Settings"))
+        self.apt_update(force=True)
 
     def on_ui_settings_aptclear_info_button_clicked(self, button):
         def clear_textview():
@@ -1856,7 +1864,7 @@ class MainWindow(object):
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
                     self.ui_main_stack.set_visible_child_name("conerror")
                 self.indicator.set_icon(self.icon_error)
-                self.item_systemstatus.set_sensitive(False)
+                self.item_systemstatus.set_sensitive(False if not self.pargnome23 else True)
                 self.item_systemstatus.set_label(_("Repository Connection Error"))
 
         if self.autoupgrade_enabled:
