@@ -541,6 +541,19 @@ class MainWindow(object):
             self.user_distro_codename = None
             self.pargnome23 = False
 
+        try:
+            static_sources_file = os.path.dirname(os.path.abspath(__file__)) + "/../data/sources.json"
+            if os.path.isfile(static_sources_file):
+                with open(static_sources_file, "r", encoding="utf-8") as f:
+                    static_sources = json.load(f)
+                    if self.user_distro_id and self.user_distro_version and self.user_distro_codename:
+                        if self.user_distro_id in static_sources.keys():
+                            for codename in static_sources[self.user_distro_id]:
+                                if codename["name"] == self.user_distro_codename:
+                                    self.user_default_sources_list = codename["sources"]
+        except Exception as e:
+            print("{}".format(e))
+
     def define_last_variables(self):
         self.auto_upgrade_init = False
 

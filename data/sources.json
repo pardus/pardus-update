@@ -1,0 +1,31 @@
+{
+    "pardus": [
+      {
+        "name": "ondokuz",
+        "version": 19,
+        "sources": "deb http://depo.pardus.org.tr/pardus ondokuz main non-free contrib\n#deb-src http://depo.pardus.org.tr/pardus ondokuz main non-free contrib\n\ndeb http://depo.pardus.org.tr/guvenlik ondokuz main non-free contrib\n#deb-src http://depo.pardus.org.tr/guvenlik ondokuz main non-free contrib\n"
+      },
+      {
+        "name": "yirmibir",
+        "version": 21,
+        "sources": "deb http://depo.pardus.org.tr/pardus yirmibir main non-free contrib\n#deb-src http://depo.pardus.org.tr/pardus yirmibir main non-free contrib\n\ndeb http://depo.pardus.org.tr/guvenlik yirmibir main non-free contrib\n#deb-src http://depo.pardus.org.tr/guvenlik yirmibir main non-free contrib\n"
+      },
+      {
+        "name": "yirmiuc",
+        "version": 23,
+        "sources": "deb http://depo.pardus.org.tr/pardus yirmiuc main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/pardus yirmiuc main contrib non-free non-free-firmware\n\ndeb http://depo.pardus.org.tr/pardus yirmiuc-deb main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/pardus yirmiuc-deb main contrib non-free non-free-firmware\n\ndeb http://depo.pardus.org.tr/guvenlik yirmiuc-deb main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/guvenlik yirmiuc-deb main contrib non-free non-free-firmware\n"
+      },
+      {
+        "name": "yirmibes",
+        "version": 25,
+        "sources": "deb http://depo.pardus.org.tr/pardus yirmibes main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/pardus yirmibes main contrib non-free non-free-firmware\n\ndeb http://depo.pardus.org.tr/pardus yirmibes-deb main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/pardus yirmibes-deb main contrib non-free non-free-firmware\n\ndeb http://depo.pardus.org.tr/guvenlik yirmibes-deb main contrib non-free non-free-firmware\n#deb-src http://depo.pardus.org.tr/guvenlik yirmibes-deb main contrib non-free non-free-firmware\n"
+      }
+    ],
+    "etap": [
+      {
+        "name": "etap-yirmiuc",
+        "version": 23,
+        "sources": "deb http://depo.etap.org.tr/etap yirmiuc main contrib non-free non-free-firmware\n#deb-src http://depo.etap.org.tr/etap yirmiuc main contrib non-free non-free-firmware\n\ndeb http://depo.etap.org.tr/pardus yirmiuc main contrib non-free non-free-firmware\n#deb-src http://depo.etap.org.tr/pardus yirmiuc main contrib non-free non-free-firmware\n\ndeb http://depo.etap.org.tr/pardus yirmiuc-deb main contrib non-free non-free-firmware\n#deb-src http://depo.etap.org.tr/pardus yirmiuc-deb main contrib non-free non-free-firmware\n\ndeb http://depo.etap.org.tr/guvenlik yirmiuc-deb main contrib non-free non-free-firmware\n#deb-src http://depo.etap.org.tr/guvenlik yirmiuc-deb main contrib non-free non-free-firmware\n"
+      }
+    ]
+}
