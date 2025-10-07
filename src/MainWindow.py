@@ -1536,6 +1536,11 @@ class MainWindow(object):
         self.ui_main_stack.set_visible_child_name("spinner")
         self.apt_update()
 
+    def on_ui_conerror_tryfix_button_clicked(self, button):
+        self.on_menu_settings_app()
+        self.on_ui_fix_sources_button_clicked(button=None)
+        self.ui_settingsapt_stack.set_visible_child_name("defaultsources")
+
     def on_ui_quitdialogyes_button_clicked(self, button):
         self.ui_quit_dialog.hide()
         if self.about_dialog.is_visible():
