@@ -477,6 +477,9 @@ class MainWindow(object):
         self.ui_passwordless_button = self.GtkBuilder.get_object("ui_passwordless_button")
         self.ui_passwordless_button_label = self.GtkBuilder.get_object("ui_passwordless_button_label")
 
+        self.ui_conerror_info_label = self.GtkBuilder.get_object("ui_conerror_info_label")
+        self.ui_conerror_info_popover = self.GtkBuilder.get_object("ui_conerror_info_popover")
+
         self.upgrade_vteterm = None
         self.distupgrade_vteterm = None
         self.fix_vteterm = None
@@ -524,6 +527,7 @@ class MainWindow(object):
         self.user_default_sources_list = None
 
         self.sources_err_count = 0
+        self.sources_err_lines = ""
 
         try:
             self.user_distro_id = distro.id()
@@ -1541,6 +1545,9 @@ class MainWindow(object):
         self.on_ui_fix_sources_button_clicked(button=None)
         self.ui_settingsapt_stack.set_visible_child_name("defaultsources")
 
+    def on_ui_conerror_info_button_clicked(self, button):
+        self.ui_conerror_info_popover.popup()
+
     def on_ui_quitdialogyes_button_clicked(self, button):
         self.ui_quit_dialog.hide()
         if self.about_dialog.is_visible():
@@ -1784,6 +1791,7 @@ class MainWindow(object):
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/AutoAptUpdate.py"]
             self.startAptUpdateProcess(command)
             self.sources_err_count = 0
+            self.sources_err_lines = ""
             self.update_inprogress = True
         else:
             print("apt_update: upgrade_inprogress | update_inprogress")
@@ -1812,7 +1820,6 @@ class MainWindow(object):
             self.autoupgrade_glibid = GLib.timeout_add_seconds(interval, self.apt_upgrade)
 
     def set_upgradable_page_and_notify(self):
-
         if self.isbroken:
             self.ui_main_stack.set_visible_child_name("fix")
             self.indicator.set_icon(self.icon_error)
@@ -2183,6 +2190,7 @@ class MainWindow(object):
             return False
         line = source.readline()
         print("onAptUpdateProcessStdout: {}".format(line))
+        self.sources_err_lines += line
         if "Err:" in line:
             self.sources_err_count += 1
         return True
@@ -2191,6 +2199,7 @@ class MainWindow(object):
         if condition == GLib.IO_HUP:
             return False
         line = source.readline()
+        self.sources_err_lines += line
         print("onAptUpdateProcessStderr: {}".format(line))
         if "Err:" in line:
             self.sources_err_count += 1
@@ -2224,7 +2233,7 @@ class MainWindow(object):
             else:
                 print("There is an error in the repository connections.")
                 self.set_upgradable_page_and_notify()
-                self.sources_err_count = 0
+                self.ui_conerror_info_label.set_text(self.sources_err_lines)
         else:
             self.indicator.set_icon(self.icon_error)
 
