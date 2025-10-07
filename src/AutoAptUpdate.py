@@ -21,7 +21,9 @@ def main():
     #     print(str(e))
     #     print("using subprocess for apt update")
     subprocess.call(["apt", "update"],
-                    env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+                    env={**os.environ,
+                         'DEBIAN_FRONTEND': 'noninteractive',
+                         'LC_ALL': 'C'})
 
 
 if __name__ == "__main__":

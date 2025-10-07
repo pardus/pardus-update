@@ -523,6 +523,8 @@ class MainWindow(object):
 
         self.user_default_sources_list = None
 
+        self.sources_err_count = 0
+
         try:
             self.user_distro_id = distro.id()
             self.user_distro_version = int(distro.major_version())
@@ -1765,6 +1767,7 @@ class MainWindow(object):
             GLib.idle_add(self.indicator.set_icon, self.icon_inprogress)
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/AutoAptUpdate.py"]
             self.startAptUpdateProcess(command)
+            self.sources_err_count = 0
             self.update_inprogress = True
         else:
             print("apt_update: upgrade_inprogress | update_inprogress")
@@ -1801,30 +1804,37 @@ class MainWindow(object):
             self.item_systemstatus.set_label(_("System is Broken"))
             GLib.idle_add(self.ui_headerbar_messagebutton.set_visible, False)
         else:
-            upgradable = self.Package.upgradable()
-            if upgradable:
-                self.control_required_changes()
-                if self.ui_main_stack.get_visible_child_name() == "spinner" or \
-                        self.ui_main_stack.get_visible_child_name() == "ok":
-                    self.ui_main_stack.set_visible_child_name("updateinfo")
-                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
-                if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
-                    self.ui_main_stack.set_visible_child_name("updateinfo")
-                    self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+            if self.sources_err_count == 0:
+                upgradable = self.Package.upgradable()
+                if upgradable:
+                    self.control_required_changes()
+                    if self.ui_main_stack.get_visible_child_name() == "spinner" or \
+                            self.ui_main_stack.get_visible_child_name() == "ok":
+                        self.ui_main_stack.set_visible_child_name("updateinfo")
+                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
+                    if self.ui_main_stack.get_visible_child_name() == "upgrade" and not self.upgrade_inprogress:
+                        self.ui_main_stack.set_visible_child_name("updateinfo")
+                        self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
 
-                notification = Notification(summary=_("Software Update"),
-                                            body=_("There are {} software updates available.").format(len(upgradable))
-                                            if len(upgradable) >= 1 else
-                                            _("There is {} software update available.").format(len(upgradable)),
-                                            icon=self.icon_available, appid=self.Application.get_application_id())
-                notification_state = self.UserSettings.config_notifications
-                if self.SystemSettings.config_notifications is not None:
-                    notification_state = self.SystemSettings.config_notifications
-                GLib.idle_add(notification.show, notification_state)
+                    notification = Notification(summary=_("Software Update"),
+                                                body=_("There are {} software updates available.").format(len(upgradable))
+                                                if len(upgradable) >= 1 else
+                                                _("There is {} software update available.").format(len(upgradable)),
+                                                icon=self.icon_available, appid=self.Application.get_application_id())
+                    notification_state = self.UserSettings.config_notifications
+                    if self.SystemSettings.config_notifications is not None:
+                        notification_state = self.SystemSettings.config_notifications
+                    GLib.idle_add(notification.show, notification_state)
+                else:
+                    if self.ui_main_stack.get_visible_child_name() != "distupgrade":
+                        self.ui_main_stack.set_visible_child_name("ok")
+                self.update_indicator_updates_labels(upgradable)
             else:
                 if self.ui_main_stack.get_visible_child_name() != "distupgrade":
-                    self.ui_main_stack.set_visible_child_name("ok")
-            self.update_indicator_updates_labels(upgradable)
+                    self.ui_main_stack.set_visible_child_name("conerror")
+                self.indicator.set_icon(self.icon_error)
+                self.item_systemstatus.set_sensitive(False if not self.pargnome23 else True)
+                self.item_systemstatus.set_label(_("Repository Connection Error"))
 
         if self.autoupgrade_enabled:
             self.apt_upgrade()
@@ -2157,6 +2167,8 @@ class MainWindow(object):
             return False
         line = source.readline()
         print("onAptUpdateProcessStdout: {}".format(line))
+        if "Err:" in line:
+            self.sources_err_count += 1
         return True
 
     def onAptUpdateProcessStderr(self, source, condition):
@@ -2164,37 +2176,44 @@ class MainWindow(object):
             return False
         line = source.readline()
         print("onAptUpdateProcessStderr: {}".format(line))
+        if "Err:" in line:
+            self.sources_err_count += 1
         return True
 
     def onAptUpdateProcessExit(self, pid, status):
         print("onAptUpdateProcessExit: {}".format(status))
         self.Package.updatecache()
         if status == 0:
-            try:
-                timestamp = int(datetime.now().timestamp())
-            except Exception as e:
-                print("timestamp Error: {}".format(e))
-                timestamp = 0
+            if self.sources_err_count == 0:
+                try:
+                    timestamp = int(datetime.now().timestamp())
+                except Exception as e:
+                    print("timestamp Error: {}".format(e))
+                    timestamp = 0
 
-            self.UserSettings.writeConfig(self.UserSettings.config_update_interval, timestamp,
-                                          self.UserSettings.config_update_selectable,
-                                          self.UserSettings.config_autostart, self.UserSettings.config_notifications)
-            self.user_settings()
-            self.update_lastcheck_labels()
-            self.control_update_residual_message_section()
-            self.create_autoupdate_glibid()
-            self.set_upgradable_page_and_notify()
+                self.UserSettings.writeConfig(self.UserSettings.config_update_interval, timestamp,
+                                              self.UserSettings.config_update_selectable,
+                                              self.UserSettings.config_autostart, self.UserSettings.config_notifications)
+                self.user_settings()
+                self.update_lastcheck_labels()
+                self.control_update_residual_message_section()
+                self.create_autoupdate_glibid()
+                self.set_upgradable_page_and_notify()
 
-            if self.SystemSettings.config_update_interval is not None:
-                print("SystemSettings.config_update_lastupdate writed")
-                command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SystemSettingsWrite.py",
-                           "write", "lastupdate", "{}".format(timestamp)]
-                subprocess.run(command)
+                if self.SystemSettings.config_update_interval is not None:
+                    print("SystemSettings.config_update_lastupdate writed")
+                    command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SystemSettingsWrite.py",
+                               "write", "lastupdate", "{}".format(timestamp)]
+                    subprocess.run(command)
+            else:
+                print("There is an error in the repository connections.")
+                self.set_upgradable_page_and_notify()
+                self.sources_err_count = 0
         else:
             self.indicator.set_icon(self.icon_error)
 
         self.update_inprogress = False
-        print("update in progress set to False " + str(self.update_inprogress))
+        print("update in progress set to " + str(self.update_inprogress))
 
     def upgrade_vte_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
