@@ -13,6 +13,7 @@ Depends: ${misc:Depends},
          gir1.2-ayatanaappindicator3-0.1,
          gir1.2-glib-2.0,
          gir1.2-gtk-3.0,
+         gir1.2-vte-2.91,
          python3-apt
 Breaks: gnome-shell-extension-apt-update-indicator,
         package-update-indicator,
