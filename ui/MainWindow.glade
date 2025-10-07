@@ -4955,7 +4955,6 @@ Use with caution. Are you sure you want to continue?</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
-                            <property name="relief">none</property>
                             <signal name="clicked" handler="on_ui_conerror_info_button_clicked" swapped="no"/>
                             <child>
                               <object class="GtkImage">
@@ -4983,6 +4982,7 @@ Use with caution. Are you sure you want to continue?</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
+                        <property name="orientation">vertical</property>
                         <property name="spacing">21</property>
                         <child>
                           <object class="GtkButton" id="ui_checkupdates_button1">
@@ -5014,7 +5014,7 @@ Use with caution. Are you sure you want to continue?</property>
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Check Updates</property>
+                                    <property name="label" translatable="yes">Check Updates Again</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
