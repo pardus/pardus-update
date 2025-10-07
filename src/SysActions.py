@@ -384,8 +384,19 @@ def main():
             subupdate()
 
             # set plymouth
-            subprocess.run(["plymouth-set-default-theme", "bgrt"])
-            subprocess.run(["update-initramfs", "-u"])
+            current_theme = ""
+            try:
+                with open("/etc/plymouth/plymouthd.conf", "r") as f:
+                    for line in f:
+                        if line.strip().startswith("Theme="):
+                            current_theme = line.strip().split("=", 1)[1]
+                            break
+            except Exception as e:
+                print("{}".format(e))
+                current_theme = ""
+            if current_theme != "bgrt":
+                subprocess.run(["plymouth-set-default-theme", "bgrt"])
+                subprocess.run(["update-initramfs", "-u"])
 
             # system-update file
             sup_path = "/system-update"
