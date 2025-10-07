@@ -323,6 +323,7 @@ def main():
         app_service_path = os.path.dirname(os.path.abspath(__file__)) + "/../data/pardus-safeupgrade.service"
         service_path = "/usr/lib/systemd/system/pardus-safeupgrade.service"
         service_symlink_path = "/usr/lib/systemd/system/system-update.target.wants/pardus-safeupgrade.service"
+        service_symlink_dir = "/usr/lib/systemd/system/system-update.target.wants"
 
         if os.path.isfile(app_safeupgrade_path) and os.path.isfile(app_service_path):
 
@@ -347,6 +348,8 @@ def main():
             user_service_file.flush()
             user_service_file.close()
 
+            if not os.path.exists(service_symlink_dir):
+                os.makedirs(service_symlink_dir, exist_ok=True)
             service_symlink_file = Path(service_symlink_path)
             if service_symlink_file.exists():
                 service_symlink_file.unlink(missing_ok=True)
