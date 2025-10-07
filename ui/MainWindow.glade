@@ -199,13 +199,13 @@ Fatih Altun &lt;fatih.altun@pardus.org.tr&gt;</property>
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
-        <property name="shadow-type">in</property>
-        <property name="min-content-width">400</property>
-        <property name="min-content-height">300</property>
+        <property name="min-content-width">500</property>
+        <property name="min-content-height">350</property>
         <child>
           <object class="GtkViewport">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="shadow-type">none</property>
             <child>
               <object class="GtkLabel" id="ui_conerror_info_label">
                 <property name="visible">True</property>
