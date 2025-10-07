@@ -1049,6 +1049,12 @@ class MainWindow(object):
     def on_ui_settings_default_sources_accept_button_clicked(self, button):
         if not self.update_inprogress and not self.upgrade_inprogress and not self.auto_upgrade_inprogress:
 
+            if self.user_default_sources_list is None:
+                ErrorDialog(_("Error"), "{}\n{}\n{}\n{}".format(_("Your system is not supported."),
+                                                                self.user_distro_id, self.user_distro_version,
+                                                                self.user_distro_codename))
+                return
+
             GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
 
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "fixsources",
@@ -1475,6 +1481,11 @@ class MainWindow(object):
         self.ui_fix_stack.set_visible_child_name("info")
 
     def on_ui_fixaccept_button_clicked(self, button):
+        if self.user_default_sources_list is None:
+            ErrorDialog(_("Error"), "{}\n{}\n{}\n{}".format(_("Your system is not supported."),
+                                                            self.user_distro_id, self.user_distro_version,
+                                                            self.user_distro_codename))
+            return
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py", "fixsources",
                    self.user_default_sources_list, "1", "1", "1", "1"]
         self.ui_fix_stack.set_visible_child_name("main")
