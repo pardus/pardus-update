@@ -61,6 +61,7 @@ data_files = [
                    "data/pardus-update-inprogress-symbolic.svg",
                    "data/pardus-update-symbolic.svg",
                    "data/pardus-update-uptodate.svg",
+                   "data/pardus-update-cantconnect.svg",
                    "data/pardus-safeupgrade-template.sh",
                    "data/pardus-safeupgrade.service",
                    "data/style.css"]),
@@ -74,7 +75,8 @@ data_files = [
                    "data/pardus-update-error-symbolic.svg",
                    "data/pardus-update-inprogress-symbolic.svg",
                    "data/pardus-update-symbolic.svg",
-                   "data/pardus-update-uptodate.svg"]),
+                   "data/pardus-update-uptodate.svg",
+                   "data/pardus-update-cantconnect.svg"]),
                  ("/var/lib/polkit-1/localauthority/50-local.d/",
                   ["data/pardus-update-group.pkla"])
              ] + create_mo_files()
