@@ -1,3 +1,32 @@
+pardus-update (0.6.0) unstable; urgency=medium
+
+  [ Hugo Carvalho ]
+  * Add/update Portuguese lang
+
+  [ Fatih Altun ]
+  * Add missing vte dependency
+  * Rm unused funcs
+  * Add repo connection control
+  * Fix offline upgrade service system dir
+  * Add plymouth theme control to offline upgrade
+  * Add missing soup dependency
+  * Add user default sources control for auto fix
+  * Fix conerror menu action sensitive
+  * Add cantconnect image
+  * Update cantconnect page image
+  * Add pardus-update-cantconnect.svg to setup.py
+  * Add try fix button to connection error page
+  * Add conerror info label with popover
+  * Update conerror fix controls
+  * Update conerror popover size
+  * Add static sources.json
+  * Add sources.json to setup.py
+  * Update labels
+  * Update pot file
+  * Update Turkish translations
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Wed, 08 Oct 2025 10:11:30 +0300
+
 pardus-update (0.5.1) unstable; urgency=medium
 
   [ Hugo Carvalho ]
