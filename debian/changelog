@@ -1,3 +1,17 @@
+pardus-update (0.6.1) unstable; urgency=medium
+
+  [ Hugo Carvalho ]
+  * Update Portuguese translations
+
+  [ cyphermen ]
+  * Fix missing 'install' command in README dependencies section
+
+  [ Fatih Altun ]
+  * Update missing emblem-synchronizing-symbolic icon to alternative
+  * Update app icon
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Mon, 24 Nov 2025 12:04:07 +0300
+
 pardus-update (0.6.0) unstable; urgency=medium
 
   [ Hugo Carvalho ]
