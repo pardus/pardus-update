@@ -1,3 +1,9 @@
+pardus-update (0.6.2) unstable; urgency=medium
+
+  * Update .pkla as .rules due to pkla deprecated
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Mon, 24 Nov 2025 12:19:46 +0300
+
 pardus-update (0.6.1) unstable; urgency=medium
 
   [ Hugo Carvalho ]
