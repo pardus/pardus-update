@@ -1,0 +1,7 @@
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("pardus-update")) {
+        if (action.id == "tr.org.pardus.pkexec.pardus-update-sysaction") {
+            return polkit.Result.YES;
+        }
+    }
+});

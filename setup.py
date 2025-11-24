@@ -78,8 +78,8 @@ data_files = [
                    "data/pardus-update-symbolic.svg",
                    "data/pardus-update-uptodate.svg",
                    "data/pardus-update-cantconnect.svg"]),
-                 ("/var/lib/polkit-1/localauthority/50-local.d/",
-                  ["data/pardus-update-group.pkla"])
+                 ("/usr/share/polkit-1/rules.d/",
+                  ["data/pardus-update-group.rules"])
              ] + create_mo_files()
 
 setup(
