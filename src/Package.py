@@ -29,7 +29,8 @@ class Package(object):
         try:
             self.cache = apt.Cache()
             self.cache.open()
-        except:
+        except (SystemError, Exception) as e:
+            print("Failed to update cache: {}".format(e))
             return False
         if self.cache.broken_count > 0:
             return False
@@ -50,14 +51,14 @@ class Package(object):
     def controlPackageCache(self, packagename):
         try:
             self.cache[packagename]
-        except:
+        except KeyError:
             return False
         return True
 
     def isinstalled(self, packagename):
         try:
             package = self.cache[packagename]
-        except:
+        except KeyError:
             return None
         return package.is_installed
 
@@ -202,11 +203,11 @@ class Package(object):
     def installed_version(self, packagename):
         try:
             package = self.cache[packagename]
-        except:
+        except KeyError:
             return None
         try:
             version = package.installed.version
-        except:
+        except AttributeError:
             version = ""
         return version
 
@@ -323,7 +324,8 @@ class Package(object):
                                 self.cache[kd].mark_keep()
                                 user_keep_list_depends.append(kd)
                                 print("keeping from depends: {}".format(kd))
-                        except:
+                        except (KeyError, SystemError) as e:
+                            print("Could not process dependency {}: {}".format(kd, e))
                             continue
                 except Exception as e:
                     print("{} not found".format(kp))
