@@ -1,3 +1,9 @@
+pardus-update (0.6.6) unstable; urgency=medium
+
+  * Fix repo dist control url
+
+ -- Fatih Altun <fatih.altun@pardus.org.tr>  Tue, 05 May 2026 17:51:38 +0300
+
 pardus-update (0.6.5) unstable; urgency=medium
 
   * Add update, upgrade in progress controls to monitoring action
