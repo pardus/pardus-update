@@ -135,7 +135,7 @@ class MainWindow(object):
 
                 self.repo_dist_control = RepoDistControl()
                 self.repo_dist_control.ServerGet = self.server_get_dist
-                self.repo_dist_control.get("http://depo.pardus.org.tr/dists.json")
+                self.repo_dist_control.get("https://depo.pardus.org.tr/dists.json")
             except Exception as e:
                 print("{}".format(e))
         else:
