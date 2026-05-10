@@ -2652,8 +2652,9 @@ class Notification(GObject.GObject):
         self.appid = appid
         if Notify.is_initted():
             Notify.uninit()
-        Notify.init(appid)
+        Notify.init(_("Pardus Update"))
         self.notification = Notify.Notification.new(summary, body, icon)
+        self.notification.set_hint("desktop-entry", GLib.Variant("s", appid))
         if not only_info:
             self.notification.set_timeout(Notify.EXPIRES_NEVER)
             self.notification.add_action('update', _('Update'), self.update_callback)
