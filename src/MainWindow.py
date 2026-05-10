@@ -55,6 +55,9 @@ xfce_desktop = False
 if "xfce" in getenv("SESSION").lower() or "xfce" in getenv("XDG_CURRENT_DESKTOP").lower():
     xfce_desktop = True
 
+kde_desktop = False
+if "kde" in getenv("SESSION").lower() or "kde" in getenv("XDG_CURRENT_DESKTOP").lower():
+    kde_desktop = True
 
 class MainWindow(object):
     def __init__(self, application):
@@ -454,9 +457,15 @@ class MainWindow(object):
         self.icon_inprogress = "pardus-update-inprogress-symbolic" if system_wide else "media-playlist-repeat-symbolic"
         self.icon_error = "pardus-update-error-symbolic" if system_wide else "security-low-symbolic"
 
-        if not xfce_desktop:
+        if gnome_desktop:
             self.icon_available = "software-update-available-symbolic"
             self.icon_normal = "security-medium-symbolic"
+            self.icon_inprogress = "media-playlist-repeat-symbolic"
+            self.icon_error = "security-low-symbolic"
+
+        if kde_desktop:
+            self.icon_available = "system-software-update-symbolic"
+            self.icon_normal = "security-high-symbolic"
             self.icon_inprogress = "media-playlist-repeat-symbolic"
             self.icon_error = "security-low-symbolic"
 
