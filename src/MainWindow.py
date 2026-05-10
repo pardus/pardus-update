@@ -454,7 +454,7 @@ class MainWindow(object):
         self.icon_inprogress = "pardus-update-inprogress-symbolic" if system_wide else "media-playlist-repeat-symbolic"
         self.icon_error = "pardus-update-error-symbolic" if system_wide else "security-low-symbolic"
 
-        if not xfce_desktop:
+        if gnome_desktop:
             self.icon_available = "software-update-available-symbolic"
             self.icon_normal = "security-medium-symbolic"
             self.icon_inprogress = "media-playlist-repeat-symbolic"
