@@ -55,6 +55,9 @@ xfce_desktop = False
 if "xfce" in getenv("SESSION").lower() or "xfce" in getenv("XDG_CURRENT_DESKTOP").lower():
     xfce_desktop = True
 
+kde_desktop = False
+if "kde" in getenv("SESSION").lower() or "kde" in getenv("XDG_CURRENT_DESKTOP").lower():
+    kde_desktop = True
 
 class MainWindow(object):
     def __init__(self, application):
@@ -454,9 +457,15 @@ class MainWindow(object):
         self.icon_inprogress = "pardus-update-inprogress-symbolic" if system_wide else "media-playlist-repeat-symbolic"
         self.icon_error = "pardus-update-error-symbolic" if system_wide else "security-low-symbolic"
 
-        if not xfce_desktop:
+        if gnome_desktop:
             self.icon_available = "software-update-available-symbolic"
             self.icon_normal = "security-medium-symbolic"
+            self.icon_inprogress = "media-playlist-repeat-symbolic"
+            self.icon_error = "security-low-symbolic"
+
+        if kde_desktop:
+            self.icon_available = "system-software-update-symbolic"
+            self.icon_normal = "security-high-symbolic"
             self.icon_inprogress = "media-playlist-repeat-symbolic"
             self.icon_error = "security-low-symbolic"
 
@@ -2643,8 +2652,9 @@ class Notification(GObject.GObject):
         self.appid = appid
         if Notify.is_initted():
             Notify.uninit()
-        Notify.init(appid)
+        Notify.init(_("Pardus Update"))
         self.notification = Notify.Notification.new(summary, body, icon)
+        self.notification.set_hint("desktop-entry", GLib.Variant("s", appid))
         if not only_info:
             self.notification.set_timeout(Notify.EXPIRES_NEVER)
             self.notification.add_action('update', _('Update'), self.update_callback)
