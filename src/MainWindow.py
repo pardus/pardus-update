@@ -42,22 +42,36 @@ locale.bindtextdomain('pardus-update', '/usr/share/locale')
 locale.textdomain('pardus-update')
 
 
-def getenv(str):
-    env = os.environ.get(str)
-    return env if env else ""
+def getenv(name):
+    return os.environ.get(name, "").lower()
 
 
-gnome_desktop = False
-if "gnome" in getenv("SESSION").lower() or "gnome" in getenv("XDG_CURRENT_DESKTOP").lower():
-    gnome_desktop = True
+desktop_env = f"{getenv('SESSION')} {getenv('XDG_CURRENT_DESKTOP')}"
 
-xfce_desktop = False
-if "xfce" in getenv("SESSION").lower() or "xfce" in getenv("XDG_CURRENT_DESKTOP").lower():
-    xfce_desktop = True
+xfce_desktop = "xfce" in desktop_env
+kde_desktop = "kde" in desktop_env
 
-kde_desktop = False
-if "kde" in getenv("SESSION").lower() or "kde" in getenv("XDG_CURRENT_DESKTOP").lower():
-    kde_desktop = True
+ICONS_PARDUS = {
+    "available": "pardus-update-available-symbolic",
+    "normal": "pardus-update-symbolic",
+    "inprogress": "pardus-update-inprogress-symbolic",
+    "error": "pardus-update-error-symbolic",
+}
+
+ICONS_GENERIC = {
+    "available": "software-update-available-symbolic",
+    "normal": "security-medium-symbolic",
+    "inprogress": "media-playlist-repeat-symbolic",
+    "error": "security-low-symbolic",
+}
+
+ICONS_KDE = {
+    "available": "system-software-update-symbolic",
+    "normal": "security-high-symbolic",
+    "inprogress": "media-playlist-repeat-symbolic",
+    "error": "security-low-symbolic",
+}
+
 
 class MainWindow(object):
     def __init__(self, application):
@@ -452,22 +466,21 @@ class MainWindow(object):
 
     def define_variables(self):
         system_wide = "usr/share" in os.path.dirname(os.path.abspath(__file__))
-        self.icon_available = "pardus-update-available-symbolic" if system_wide else "software-update-available-symbolic"
-        self.icon_normal = "pardus-update-symbolic" if system_wide else "security-medium-symbolic"
-        self.icon_inprogress = "pardus-update-inprogress-symbolic" if system_wide else "media-playlist-repeat-symbolic"
-        self.icon_error = "pardus-update-error-symbolic" if system_wide else "security-low-symbolic"
+        
+        icons = ICONS_PARDUS if system_wide else ICONS_GENERIC
 
-        if gnome_desktop:
-            self.icon_available = "software-update-available-symbolic"
-            self.icon_normal = "security-medium-symbolic"
-            self.icon_inprogress = "media-playlist-repeat-symbolic"
-            self.icon_error = "security-low-symbolic"
+        # GNOME, Cinnamon, COSMIC, MATE, ...
+        if not xfce_desktop:
+            icons = ICONS_GENERIC
 
+        # KDE override
         if kde_desktop:
-            self.icon_available = "system-software-update-symbolic"
-            self.icon_normal = "security-high-symbolic"
-            self.icon_inprogress = "media-playlist-repeat-symbolic"
-            self.icon_error = "security-low-symbolic"
+            icons = ICONS_KDE
+
+        self.icon_available = icons["available"]
+        self.icon_normal = icons["normal"]
+        self.icon_inprogress = icons["inprogress"]
+        self.icon_error = icons["error"]
 
         self.autoupdate_glibid = None
         self.autoupdate_monitoring_glibid = None
