@@ -9,6 +9,8 @@ Created on Fri Sep 18 14:53:00 2020
 import os
 import subprocess
 
+from PackageOperation import package_operation
+
 
 # import apt
 
@@ -27,4 +29,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with package_operation():
+        main()

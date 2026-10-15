@@ -259,7 +259,9 @@ class MainWindow(object):
         if "page" in self.Application.args.keys():
             page = self.Application.args["page"]
 
-            if self.upgrade_inprogress:
+            if self.distupgrade_operation:
+                self.show_distupgrade()
+            elif self.upgrade_inprogress:
                 self.ui_main_stack.set_visible_child_name("upgrade")
             else:
                 if page == "updateinfo":
@@ -488,7 +490,7 @@ class MainWindow(object):
         self.monitoring_timeoutadd_sec = 60
         self.update_inprogress = False
         self.upgrade_inprogress = False
-        self.distup_download_inprogress = False
+        self.distupgrade_operation = None
         self.laststack = None
         self.aptlist_directory = "/var/lib/apt/lists"
         self.dpkg_directory = "/var/lib/dpkg"
@@ -721,7 +723,9 @@ class MainWindow(object):
         self.item_sh_app.set_label(_("Hide App"))
 
     def on_menu_updatespage_app(self, *args):
-        if self.upgrade_inprogress or self.clean_residuals_clicked:
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+        elif self.upgrade_inprogress or self.clean_residuals_clicked:
             self.ui_main_stack.set_visible_child_name("upgrade")
         else:
             if self.isbroken:
@@ -744,6 +748,9 @@ class MainWindow(object):
         self.item_sh_app.set_label(_("Hide App"))
 
     def on_ui_checkupdates_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         if button.get_name() == "fromdist":
             self.ui_menudistupgrade_image.set_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menudistupgrade_label.set_text(_("Version Upgrade"))
@@ -775,6 +782,9 @@ class MainWindow(object):
             not self.ui_upgradenewconf_radiobutton.get_active() or not self.ui_upgradewithyq_radiobutton.get_active())
 
     def on_ui_upgrade_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
 
@@ -816,6 +826,9 @@ class MainWindow(object):
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_autoremovable_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         self.clean_residuals_clicked = True
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
@@ -841,6 +854,9 @@ class MainWindow(object):
             self.ui_upgradeinfobusy_box.set_visible(True)
 
     def on_ui_residual_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         self.clean_residuals_clicked = True
         if self.upgrade_vteterm:
             self.upgrade_vteterm.reset(True, True)
@@ -907,6 +923,7 @@ class MainWindow(object):
 
     def on_ui_settingsaptclear_button_clicked(self, button):
         if not self.update_inprogress and not self.upgrade_inprogress:
+            self.invalidate_distupgrade()
 
             GLib.idle_add(self.ui_settings_aptclear_ok_button.set_visible, False)
 
@@ -1060,7 +1077,7 @@ class MainWindow(object):
     def on_ui_settings_fix_slistd_checkbox_toggled(self, toggle_button):
         self.ui_settings_fix_slistd_sub_box.set_visible(toggle_button.get_active())
 
-    def on_ui_controldistup_button_clicked(self, button):
+    def show_distupgrade(self):
         if self.ui_main_stack.get_visible_child_name() != "clean" and \
                 self.ui_main_stack.get_visible_child_name() != "settings" and \
                 self.ui_main_stack.get_visible_child_name() != "distupgrade":
@@ -1072,32 +1089,79 @@ class MainWindow(object):
         self.ui_menusettings_label.set_text(_("Settings"))
         self.ui_headerbar_messageimage.set_from_icon_name("mail-unread-symbolic", Gtk.IconSize.BUTTON)
 
-        if button.get_name() == "retry":
+    def begin_distupgrade(self, operation):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return False
+        if self.upgrade_inprogress or self.update_inprogress:
+            ErrorDialog(_("Error"), _("Package manager is busy, try again after the process is completed."))
+            return False
+        # Reserve the operation before starting a worker or a privileged process.
+        self.distupgrade_operation = operation
+        self.upgrade_inprogress = True
+        return True
+
+    def finish_distupgrade(self, operation):
+        if self.distupgrade_operation != operation:
+            return False
+        self.distupgrade_operation = None
+        self.upgrade_inprogress = False
+        return True
+
+    def invalidate_distupgrade(self):
+        # Package/source changes outside this workflow invalidate its plan.
+        if not self.distupgrade_operation:
             self.ui_distupgrade_stack.set_visible_child_name("control")
-        elif button.get_name() == "homecontrol":
-            self.ui_distupgrade_stack.set_visible_child_name("control")
-            if self.distup_download_inprogress:
-                self.ui_distupgrade_stack.set_visible_child_name("download")
-                return
 
-        GLib.idle_add(self.ui_controldistup_button.set_sensitive, False)
+    def distupgrade_control_failed(self, message):
+        if not self.finish_distupgrade("control"):
+            return
+        self.ui_distupgradecontrol_spinner.stop()
+        self.ui_controldistup_button.set_sensitive(True)
+        self.ui_controldistuperror_label.set_text(message)
+        self.ui_controldistuperror_box.set_visible(True)
 
-        GLib.idle_add(self.ui_distupgotoupdates_box.set_visible, False)
-        GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
+    def on_ui_controldistup_button_clicked(self, button):
+        self.show_distupgrade()
+        if self.distupgrade_operation:
+            return
+        # The home button resumes the existing workflow, including downloaded
+        # packages. Only the explicit control/retry buttons start a new check.
+        if button.get_name() == "homecontrol" and \
+                self.ui_distupgrade_stack.get_visible_child_name() != "control":
+            return
+        if not self.begin_distupgrade("control"):
+            return
+        self.ui_distupgrade_stack.set_visible_child_name("control")
 
-        upg_thread = threading.Thread(target=self.before_distupgradables_worker_thread, daemon=True)
-        upg_thread.start()
+        self.ui_controldistup_button.set_sensitive(False)
+
+        self.ui_distupgotoupdates_box.set_visible(False)
+        self.ui_controldistuperror_box.set_visible(False)
+
+        try:
+            upg_thread = threading.Thread(target=self.before_distupgradables_worker_thread, daemon=True)
+            upg_thread.start()
+        except Exception as error:
+            self.distupgrade_control_failed(str(error))
 
     def before_distupgradables_worker_thread(self):
-        rcbu = self.before_distupgradables_worker()
-        GLib.idle_add(self.before_distupgradables_worker_thread_done, rcbu)
+        try:
+            rcbu = self.before_distupgradables_worker()
+        except Exception as error:
+            GLib.idle_add(self.distupgrade_control_failed, str(error))
+        else:
+            GLib.idle_add(self.before_distupgradables_worker_thread_done, rcbu)
 
     def before_distupgradables_worker(self):
         return self.Package.required_changes_upgrade()
 
     def before_distupgradables_worker_thread_done(self, requireds):
+        if self.distupgrade_operation != "control":
+            return
 
         if requireds["changes_available"] and (requireds["to_install"] or requireds["to_upgrade"]):
+            self.finish_distupgrade("control")
             print("changes_available:{}, to_install:{}, to_upgrade:{}".format(
                 requireds["changes_available"], requireds["to_install"], requireds["to_upgrade"]))
 
@@ -1110,13 +1174,18 @@ class MainWindow(object):
             command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                        "controldistupgrade", self.dist_new_sources]
 
-            self.startControlDistUpgradeProcess(command)
-            self.upgrade_inprogress = True
+            try:
+                self.startControlDistUpgradeProcess(command)
+            except GLib.Error as error:
+                self.distupgrade_control_failed(str(error))
+                return
             self.ui_distupgradecontrol_spinner.start()
             GLib.idle_add(self.ui_controldistup_button.set_sensitive, False)
             GLib.idle_add(self.ui_controldistuperror_box.set_visible, False)
 
     def on_ui_distuptodown_button_clicked(self, button):
+        if not self.begin_distupgrade("download"):
+            return
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                    "downupgrade", self.dist_new_sources]
 
@@ -1140,18 +1209,24 @@ class MainWindow(object):
 
         self.ui_distupgrade_stack.set_visible_child_name("download")
 
-        self.distupgrade_vte_start_process(command)
-        self.upgrade_inprogress = True
-        self.distup_download_inprogress = True
+        try:
+            self.distupgrade_vte_start_process(command)
+        except GLib.Error as error:
+            self.distupgrade_vte_on_done(self.distupgrade_vteterm, 1)
+            self.ui_distupdowninfo_label.set_text(str(error))
 
     def on_ui_distuptoinstall_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         self.ui_distupgrade_lastinfo_box.set_visible(False)
         self.ui_distupgrade_lastinfo_spinner.stop()
         self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
         self.ui_distupgrade_stack.set_visible_child_name("install")
 
     def on_ui_distupgrade_button_clicked(self, button):
-        self.upgrade_inprogress = True
+        if not self.begin_distupgrade("prepare"):
+            return
 
         self.ui_distupgrade_buttonbox.set_sensitive(False)
         self.ui_distuptoinstallcancel_button.set_sensitive(False)
@@ -1170,11 +1245,21 @@ class MainWindow(object):
         command = ["/usr/bin/pkexec", os.path.dirname(os.path.abspath(__file__)) + "/SysActions.py",
                    "distupgradeoffline", self.dist_new_sources, ask_conf]
 
-        self.startDistUpgradeProcess(command)
-
         self.ui_distupgrade_lastinfo_box.set_visible(True)
         self.ui_distupgrade_lastinfo_spinner.start()
         self.ui_distupgradetextview_box.set_visible(True)
+        try:
+            self.startDistUpgradeProcess(command)
+        except GLib.Error as error:
+            self.onDistUpgradeExit(None, 1)
+            self.ui_distupgrade_textview.get_buffer().insert_at_cursor(str(error))
+
+    def on_ui_distuptoinstallcancel_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
+        self.ui_distupgrade_stack.set_visible_child_name("control")
+        self.on_ui_homepage_button_clicked(button)
 
     def on_ui_distupgradeconf_radiobutton_toggled(self, button):
         self.ui_distupgrade_defaults_button.set_visible(not self.ui_distupgradenewconf_radiobutton.get_active())
@@ -1190,6 +1275,9 @@ class MainWindow(object):
         self.ui_upgradeinfobusy_box.set_visible(False)
 
     def on_ui_homepage_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         if self.ui_main_stack.get_visible_child_name() == "clean" or \
                 self.ui_main_stack.get_visible_child_name() == "settings" or \
                 self.ui_main_stack.get_visible_child_name() == "distupgrade":
@@ -1213,6 +1301,10 @@ class MainWindow(object):
             self.laststack = self.ui_main_stack.get_visible_child_name()
 
         if self.ui_main_stack.get_visible_child_name() == "settings":
+            if self.distupgrade_operation:
+                self.show_distupgrade()
+                self.ui_menu_popover.popdown()
+                return
             self.ui_menusettings_image.set_from_icon_name("preferences-system-symbolic", Gtk.IconSize.BUTTON)
             self.ui_menusettings_label.set_text(_("Settings"))
             self.ui_main_stack.set_visible_child_name(self.laststack)
@@ -1462,6 +1554,9 @@ class MainWindow(object):
         self.ui_fix_stack.set_visible_child_name("info")
 
     def on_ui_fixaccept_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         if self.user_default_sources_list is None:
             ErrorDialog(_("Error"), "{}\n{}\n{}\n{}".format(_("Your system is not supported."),
                                                             self.user_distro_id, self.user_distro_version,
@@ -1493,6 +1588,9 @@ class MainWindow(object):
         self.on_ui_dpkgconfigurefix_button_clicked(None)
 
     def on_ui_dpkgconfigurefix_button_clicked(self, button):
+        if self.distupgrade_operation:
+            self.show_distupgrade()
+            return
         self.ui_dpkgconfigurefix_button.set_sensitive(False)
 
         self.ui_dpkgconfigureinfo_box.set_visible(True)
@@ -1561,6 +1659,7 @@ class MainWindow(object):
         self.dpkg_monitor.connect('changed', self.on_apt_changed)
 
     def on_apt_changed(self, file_monitor, file, other_file, event_type):
+        self.invalidate_distupgrade()
         print("{} file changed, update_inprogress: {}, upgrade_inprogress: {}".format(
             file.get_path(), self.update_inprogress, self.upgrade_inprogress))
         if not self.update_inprogress and not self.upgrade_inprogress:
@@ -1892,7 +1991,8 @@ class MainWindow(object):
         return True
 
     def onControlDistUpgradeExit(self, pid, status):
-        self.upgrade_inprogress = False
+        if not self.finish_distupgrade("control"):
+            return
 
         self.ui_distupgradecontrol_spinner.stop()
         self.ui_controldistup_button.set_sensitive(True)
@@ -1912,10 +2012,15 @@ class MainWindow(object):
         ### read all changes from a file and set ui
 
         rc_file_path = os.path.dirname(os.path.abspath(__file__)) + "/../required_changes_for_upgrade.json"
-        rc_file = open(rc_file_path, "r")
+        try:
+            with open(rc_file_path, "r") as rc_file:
+                requireds = json.load(rc_file)
+        except (OSError, ValueError) as error:
+            self.ui_controldistuperror_label.set_text(str(error))
+            self.ui_controldistuperror_box.set_visible(True)
+            return
 
-        if os.path.isfile(rc_file_path):
-            requireds = json.load(rc_file)
+        if requireds:
 
             GLib.idle_add(self.clear_distupgrade_listboxes)
 
@@ -2109,7 +2214,8 @@ class MainWindow(object):
 
     def onDistUpgradeExit(self, pid, status):
         print("onDistUpgradeExit: {}".format(status))
-        self.upgrade_inprogress = False
+        if not self.finish_distupgrade("prepare"):
+            return
         self.ui_distupgrade_lastinfo_box.set_visible(False)
         self.ui_distupgrade_lastinfo_spinner.stop()
         self.ui_distupgrade_buttonbox.set_sensitive(True)
@@ -2180,6 +2286,11 @@ class MainWindow(object):
                 print("There is an error in the repository connections.")
                 self.set_upgradable_page_and_notify()
                 self.ui_conerror_info_label.set_text(self.sources_err_lines)
+        elif os.WIFEXITED(status) and os.WEXITSTATUS(status) == 11:
+            # Another helper owns the operation. Keep the cached view and the
+            # next scheduled check without recording a successful refresh.
+            self.set_upgradable_page_and_notify()
+            self.create_autoupdate_glibid()
         else:
             self.indicator.set_icon(self.icon_error)
 
@@ -2419,9 +2530,15 @@ class MainWindow(object):
             )
 
     def distupgrade_vte_create_spawn_callback(self, terminal, pid, error, userdata):
-        self.distupgrade_vteterm.connect("child-exited", self.distupgrade_vte_on_done)
+        if error:
+            self.distupgrade_vte_on_done(terminal, 1)
+            self.ui_distupdowninfo_label.set_text(str(error))
+        else:
+            terminal.connect("child-exited", self.distupgrade_vte_on_done)
 
     def distupgrade_vte_on_done(self, terminal, status):
+        if terminal is not self.distupgrade_vteterm or not self.finish_distupgrade("download"):
+            return
         print("distupgrade_vte_on_done status: {}".format(status))
         if status == 32256:  # operation cancelled | Request dismissed
             self.ui_distupgrade_stack.set_visible_child_name("distupdateinfo")
@@ -2450,9 +2567,6 @@ class MainWindow(object):
 
             self.ui_distuptodownretry_button.set_visible(True)
             self.ui_distuptodownretry_button.set_sensitive(True)
-
-        self.upgrade_inprogress = False
-        self.distup_download_inprogress = False
 
     def dpkgconfigure_vte_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:

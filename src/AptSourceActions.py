@@ -17,6 +17,8 @@ from shutil import rmtree
 
 from aptsources import sourceslist as aptsourceslist
 
+from PackageOperation import package_operation
+
 locale.bindtextdomain('pardus-update', '/usr/share/locale')
 locale.textdomain('pardus-update')
 
@@ -162,4 +164,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with package_operation():
+        main()

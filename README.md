@@ -36,6 +36,17 @@ sudo mk-build-deps -ir
 gbp buildpackage --git-export-dir=/tmp/build/pardus-update -us -uc
 ```
 
+### **Tests**
+
+The regression tests use Python's standard library. GTK tests require the
+application dependencies above and Xvfb; package processes and network requests
+are not started. Lock tests use temporary files and real child processes.
+
+```bash
+python3 tests/package_operation.py
+xvfb-run -a python3 tests/distupgrade.py
+```
+
 ### **Screenshots**
 
 ![Pardus Update 1](screenshots/pardus-update-1.png)

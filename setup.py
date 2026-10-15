@@ -46,6 +46,7 @@ data_files = [
                    "src/Main.py",
                    "src/MainWindow.py",
                    "src/Package.py",
+                   "src/PackageOperation.py",
                    "src/RepoDistControl.py",
                    "src/SysActions.py",
                    "src/SystemSettings.py",

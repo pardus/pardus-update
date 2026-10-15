@@ -4589,7 +4589,7 @@ Use with caution. Are you sure you want to continue?</property>
                                 <property name="receives-default">True</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
-                                <signal name="clicked" handler="on_ui_homepage_button_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_ui_distuptoinstallcancel_button_clicked" swapped="no"/>
                                 <style>
                                   <class name="destructive-action"/>
                                 </style>
