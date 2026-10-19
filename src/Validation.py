@@ -31,7 +31,9 @@ SOURCES_ALLOWED_SCHEMES = (
 # or "-" allows the arch+=/arch-= forms.
 SOURCES_OPTION_RE = re.compile(r'^(arch|lang|target)(\+|-)?=[A-Za-z0-9_.,-]+$')
 
-SOURCES_URI_RE = re.compile(r'^([a-z+]+)://\S+$')
+# RFC 3986 URI characters without quotes and brackets: apt treats '"' and
+# "[ ]" as quoting, and a URI must not be able to start or end a quoted word.
+SOURCES_URI_RE = re.compile(r"^([a-z+]+)://[A-Za-z0-9._~:/?@!$&()*+,;=%-]+$")
 
 # Suite and component names, e.g. "yirmibes", "yirmibes-security",
 # "stable/updates", "./", "main", "non-free-firmware".

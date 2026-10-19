@@ -129,6 +129,32 @@ class IsSafeSourcesTest(unittest.TestCase):
             with self.subTest(line=line):
                 self.assertFalse(is_safe_sources(line))
 
+    def test_rejects_quoting_characters_in_uri(self):
+        """Quotes, brackets, control and non-ASCII characters in the URI fail."""
+        for uri in ('http://a"/', "http://a/[trusted=yes]", "http://a/]",
+                    "http://a/\x00", "http://dep\u00f6.org/"):
+            line = "deb {} stable main".format(uri)
+            with self.subTest(line=line):
+                self.assertFalse(is_safe_sources(line))
+
+    def test_comment_or_line_break_cannot_split_option_block(self):
+        """A "#" or any line separator inside [...] leaves it unclosed."""
+        for sep in ("#", "\r", "\n", "\x0b", "\x0c", "\x85", "\u2028"):
+            text = "deb [arch=amd64{}trusted=yes] http://example.org/debian stable main".format(sep)
+            with self.subTest(separator=repr(sep)):
+                self.assertFalse(is_safe_sources(text))
+
+    def test_rejects_second_option_block_and_deb822(self):
+        """Only one leading option block exists; deb822 stanzas are rejected."""
+        texts = (
+            "deb [arch=amd64] [trusted=yes] http://example.org/debian stable main",
+            "Types: deb\nURIs: http://example.org/debian\nSuites: stable\nTrusted: yes",
+        )
+
+        for text in texts:
+            with self.subTest(text=text):
+                self.assertFalse(is_safe_sources(text))
+
 
 class ParsePackagesTest(unittest.TestCase):
     """Behaviour of parse_packages for keep/residual package lists."""
