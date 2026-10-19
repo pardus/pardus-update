@@ -8,7 +8,6 @@ Created on Fri Sep 18 14:53:00 2020
 import json
 import locale
 import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +15,8 @@ from shutil import rmtree
 
 import apt
 import apt_pkg
+
+from Validation import is_safe_sources, parse_packages
 
 locale.bindtextdomain('pardus-update', '/usr/share/locale')
 locale.textdomain('pardus-update')
@@ -489,54 +490,6 @@ def main():
         if aptlists == "1":
             rmtree("/var/lib/apt/lists/", ignore_errors=True)
             subupdate()
-
-    def is_safe_sources(sources_text):
-        if not sources_text or not str(sources_text).strip():
-            return False
-
-        blacklisted_terms = [
-            "trusted=yes", "trusted=true",
-            "allow-insecure",
-            "signed-by=",
-            "file://", "copy://", "cdrom://"
-        ]
-
-        for line in str(sources_text).splitlines():
-
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            if not re.match(r"^deb(-src)?\s+", line):
-                return False
-
-            compact_line = line.lower().replace(" ", "")
-            for term in blacklisted_terms:
-                if term.replace(" ", "") in compact_line:
-                    return False
-
-        return True
-
-    def parse_packages(packages):
-        if not packages or not packages.strip():
-            return []
-
-        packagelist = packages.split()
-        valid_packages = []
-
-        package_re = re.compile(r'^[a-z0-9][a-z0-9+.-]+(?::[a-z0-9]+)?$')
-
-        for item in packagelist:
-            item = item.strip()
-            if not item:
-                continue
-
-            if package_re.fullmatch(item):
-                valid_packages.append(item)
-            else:
-                raise ValueError(f"Invalid package name detected: '{item}'")
-
-        return valid_packages
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "upgrade":

@@ -1,7 +1,36 @@
+// Members of the pardus-update group may run the routine SysActions.py
+// commands without a password. Release upgrade commands
+// (controldistupgrade, downupgrade, distupgradeoffline) rewrite
+// /etc/apt/sources.list from a caller supplied text and reboot the system,
+// so they are not listed here and fall back to the action default
+// (auth_admin_keep).
 polkit.addRule(function(action, subject) {
-    if (subject.isInGroup("pardus-update")) {
-        if (action.id == "tr.org.pardus.pkexec.pardus-update-sysaction") {
-            return polkit.Result.YES;
-        }
+    // Kept inside the rule because all rules files share one JS scope.
+    var helper = "/usr/share/pardus/pardus-update/src/SysActions.py";
+    var groupCommands = [
+        "upgrade", "removeauto", "removeresidual", "aptclear", "dpkgconfigure"
+    ];
+
+    if (action.id != "tr.org.pardus.pkexec.pardus-update-sysaction") {
+        return polkit.Result.NOT_HANDLED;
     }
+
+    if (!subject.isInGroup("pardus-update")) {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    // pkexec joins its argv with single spaces into "command_line". The
+    // program must be the installed helper itself (checked in both details),
+    // so a crafted program path containing spaces cannot shift the
+    // subcommand position.
+    var args = (action.lookup("command_line") || "").split(" ");
+    var isHelper = action.lookup("program") == helper && args[0] == helper;
+    var isGroupCommand = args.length > 1 &&
+        groupCommands.indexOf(args[1]) >= 0;
+
+    if (isHelper && isGroupCommand) {
+        return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
 });
