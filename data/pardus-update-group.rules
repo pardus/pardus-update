@@ -20,10 +20,11 @@ polkit.addRule(function(action, subject) {
     }
 
     // pkexec joins its argv with single spaces into "command_line". The
-    // program must be the installed helper itself, so a crafted program path
-    // containing spaces cannot shift the subcommand position.
+    // program must be the installed helper itself (checked in both details),
+    // so a crafted program path containing spaces cannot shift the
+    // subcommand position.
     var args = (action.lookup("command_line") || "").split(" ");
-    var isHelper = args[0] == helper;
+    var isHelper = action.lookup("program") == helper && args[0] == helper;
     var isGroupCommand = args.length > 1 &&
         groupCommands.indexOf(args[1]) >= 0;
 
