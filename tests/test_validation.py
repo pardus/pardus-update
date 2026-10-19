@@ -10,14 +10,15 @@ Run from the project root:
     python3 -B -m unittest discover -s tests -v
 """
 
+import json
 import os
 import sys
 import unittest
 
 # The application ships its modules as plain scripts in src/, not as a
 # package, so the tests import them the same way the helpers do.
-SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
-sys.path.insert(0, os.path.abspath(SRC_DIR))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+sys.path.insert(0, os.path.join(PROJECT_DIR, "src"))
 
 from Validation import is_safe_sources, parse_packages, validate_timestamp  # noqa: E402
 
@@ -33,6 +34,16 @@ class IsSafeSourcesTest(unittest.TestCase):
                 "deb-src http://depo.pardus.org.tr/pardus yirmibes main\n")
 
         self.assertTrue(is_safe_sources(text))
+
+    def test_accepts_shipped_default_sources(self):
+        """Every default in data/sources.json passes, so fixsources keeps working."""
+        with open(os.path.join(PROJECT_DIR, "data", "sources.json"), encoding="utf-8") as f:
+            static_sources = json.load(f)
+
+        for distro_name, releases in static_sources.items():
+            for release in releases:
+                with self.subTest(distro=distro_name, release=release["name"]):
+                    self.assertTrue(is_safe_sources(release["sources"]))
 
     def test_rejects_empty_input(self):
         """Empty, blank and None input never counts as a valid sources list."""
@@ -68,6 +79,55 @@ class IsSafeSourcesTest(unittest.TestCase):
                 "deb [trusted=yes] http://example.org/debian stable main\n")
 
         self.assertFalse(is_safe_sources(text))
+
+    def test_accepts_allowed_options_and_transports(self):
+        """Options that only select content and remote transports pass."""
+        lines = (
+            "deb [arch=amd64] http://depo.pardus.org.tr/pardus yirmibes main",
+            "deb [ arch=amd64,i386 lang=tr ] https://example.org/debian stable main",
+            "deb [arch+=arm64 target=Contents-deb] https://example.org/debian stable main",
+            "deb\thttps://example.org/debian\tstable\tmain",
+            "deb tor+https://example.onion/debian stable main",
+            "deb mirror+http://example.org/mirrors.txt stable main",
+            "deb https://example.org/repo ./",
+            "deb http://depo.pardus.org.tr/pardus yirmibes main # comment",
+        )
+
+        for line in lines:
+            with self.subTest(line=line):
+                self.assertTrue(is_safe_sources(line))
+
+    def test_rejects_options_outside_allow_list(self):
+        """Every option that weakens verification is rejected (S2 bypasses)."""
+        options = (
+            "trusted=on", "trusted=1", "trusted=with", "trusted=enable",
+            "allow-downgrade-to-insecure=yes", "allow-weak=yes",
+            "check-valid-until=no", "check-date=no", "date-max-future=99999",
+            "signed-by=/home/user/key.gpg", "inrelease-path=x",
+            "arch=amd64;trusted=yes", "arch = amd64",
+        )
+
+        for option in options:
+            line = "deb [{}] http://example.org/debian stable main".format(option)
+            with self.subTest(line=line):
+                self.assertFalse(is_safe_sources(line))
+
+    def test_rejects_unsupported_transports_and_malformed_lines(self):
+        """Local or unknown transports and incomplete lines are rejected."""
+        lines = (
+            "deb file:/tmp/repo ./",
+            "deb ssh://host/repo stable main",
+            "deb ftp://example.org/debian stable main",
+            "deb http://example.org/debian",
+            "deb [arch=amd64 http://example.org/debian stable main",
+            "deb[trusted=yes] http://example.org/debian stable main",
+            "deb http://example.org/debian stable main$(id)",
+            "deb",
+        )
+
+        for line in lines:
+            with self.subTest(line=line):
+                self.assertFalse(is_safe_sources(line))
 
 
 class ParsePackagesTest(unittest.TestCase):
