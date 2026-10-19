@@ -52,6 +52,7 @@ data_files = [
                    "src/SystemSettingsWrite.py",
                    "src/UserSettings.py",
                    "src/Utils.py",
+                   "src/Validation.py",
                    "src/__version__"]),
                  ("/usr/share/pardus/pardus-update/data",
                   ["data/tr.org.pardus.update-autostart.desktop",

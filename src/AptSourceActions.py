@@ -7,7 +7,6 @@ Created on Fri Sep 18 14:53:00 2020
 """
 import locale
 import os
-import re
 import subprocess
 import sys
 from datetime import datetime
@@ -16,6 +15,8 @@ from pathlib import Path
 from shutil import rmtree
 
 from aptsources import sourceslist as aptsourceslist
+
+from Validation import is_safe_sources
 
 locale.bindtextdomain('pardus-update', '/usr/share/locale')
 locale.textdomain('pardus-update')
@@ -122,33 +123,6 @@ def main():
             fixbroken()
         else:
             print(_("fixbroken skipped per user request."))
-
-    def is_safe_sources(sources_text):
-        if not sources_text or not str(sources_text).strip():
-            return False
-
-        blacklisted_terms = [
-            "trusted=yes", "trusted=true",
-            "allow-insecure",
-            "signed-by=",
-            "file://", "copy://", "cdrom://"
-        ]
-
-        for line in str(sources_text).splitlines():
-
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            if not re.match(r"^deb(-src)?\s+", line):
-                return False
-
-            compact_line = line.lower().replace(" ", "")
-            for term in blacklisted_terms:
-                if term.replace(" ", "") in compact_line:
-                    return False
-
-        return True
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "setsourcestate":

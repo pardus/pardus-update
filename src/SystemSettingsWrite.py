@@ -9,6 +9,8 @@ Created on Wed Feb 16 14:53:13 2022
 import sys
 from configparser import ConfigParser
 
+from Validation import validate_timestamp
+
 
 def main():
     configdir = "/etc/pardus/"
@@ -25,15 +27,6 @@ def main():
 
         with open(configdir + configfile, "w") as cf:
             config.write(cf)
-
-    def validate_timestamp(value):
-        try:
-            ts = int(value)
-            if ts < 0:
-                raise ValueError
-            return str(ts)
-        except ValueError:
-            raise ValueError("Invalid timestamp")
 
     if len(sys.argv) > 2:
         if sys.argv[1] == "write":
