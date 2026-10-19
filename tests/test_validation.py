@@ -129,6 +129,25 @@ class IsSafeSourcesTest(unittest.TestCase):
             with self.subTest(line=line):
                 self.assertFalse(is_safe_sources(line))
 
+    def test_rejects_quoted_option_values(self):
+        """Quoted values are honoured by apt, so they must not pass.
+
+        Regression for https://github.com/pardus/pardus-update/issues/25:
+        [trusted="yes"] slipped past the old substring blacklist.
+        """
+        lines = (
+            'deb [trusted="yes"] http://127.0.0.1:18081/ ./',
+            "deb [trusted='yes'] http://127.0.0.1:18081/ ./",
+            'deb [arch="amd64"] http://example.org/debian stable main',
+            "deb [trusted\t=\tyes] http://example.org/debian stable main",
+            "deb [trusted =yes] http://example.org/debian stable main",
+            "deb [TRUSTED=YES] http://example.org/debian stable main",
+        )
+
+        for line in lines:
+            with self.subTest(line=line):
+                self.assertFalse(is_safe_sources(line))
+
     def test_rejects_quoting_characters_in_uri(self):
         """Quotes, brackets, control and non-ASCII characters in the URI fail."""
         for uri in ('http://a"/', "http://a/[trusted=yes]", "http://a/]",

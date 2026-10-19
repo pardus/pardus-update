@@ -25,6 +25,8 @@ SOURCES_ALLOWED_SCHEMES = (
     "mirror+http", "mirror+https",
 )
 
+# Quoted values such as [trusted="yes"] are not matched, so they are
+# rejected (reported by Lunixizm0, https://github.com/pardus/pardus-update/issues/25).
 # Options that only select what is downloaded. Everything else in [...]
 # (trusted, signed-by, allow-insecure, allow-weak, check-valid-until, ...)
 # changes how apt verifies a repository and is rejected. The optional "+"
