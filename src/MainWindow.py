@@ -976,7 +976,7 @@ class MainWindow(object):
             for sub in source:
                 print(sub)
                 repo_name = Gtk.Label.new()
-                repo_name.set_markup("{} {} {} {}".format(sub["type"], sub["uri"], sub["dist"], " ".join(sub["comps"])))
+                repo_name.set_text("{} {} {} {}".format(sub["type"], sub["uri"], sub["dist"], " ".join(sub["comps"])))
                 repo_name.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
                 # repo_name.set_tooltip_text("{} {} {}".format(sub["type"], sub["uri"], " ".join(sub["comps"])))
 
