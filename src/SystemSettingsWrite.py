@@ -7,6 +7,7 @@ Created on Wed Feb 16 14:53:13 2022
 """
 
 import sys
+import time
 from configparser import ConfigParser
 
 
@@ -29,7 +30,10 @@ def main():
     def validate_timestamp(value):
         try:
             ts = int(value)
-            if ts < 0:
+            # This runs without a password and the value overrides the user
+            # settings, a time in the future would stop the update checks of
+            # every user on the machine.
+            if ts < 0 or ts > time.time() + 60:
                 raise ValueError
             return str(ts)
         except ValueError:
