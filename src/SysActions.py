@@ -5,12 +5,14 @@ Created on Fri Sep 18 14:53:00 2020
 
 @author: fatih
 """
+import atexit
 import json
 import locale
 import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from shutil import rmtree
 
@@ -35,6 +37,16 @@ def main():
             return False, msg
         apt_pkg.pkgsystem_unlock()
         return True, msg
+
+    def write_temp_sources(sourceslist):
+        # mkstemp creates a new file with a random name and 0600 mode,
+        # so nothing already sitting in /tmp gets reused or overwritten
+        fd, path = tempfile.mkstemp(prefix="pardus-update-", suffix=".list")
+        with os.fdopen(fd, "w") as sfile:
+            sfile.write(sourceslist)
+        # also removed when apt fails half way and the script exits
+        atexit.register(lambda: os.path.exists(path) and os.unlink(path))
+        return path
 
     def subupdate():
         subprocess.call(["apt", "update"],
@@ -138,10 +150,7 @@ def main():
             print("Malicious apt source detected. Execution aborted.", file=sys.stderr)
             sys.exit(1)
 
-        sfile = open("/tmp/tmp-sources.list", "w")
-        sfile.write(sourceslist)
-        sfile.flush()
-        sfile.close()
+        tmp_sources = write_temp_sources(sourceslist)
 
         rc_file = os.path.dirname(os.path.abspath(__file__)) + "/../required_changes_for_upgrade.json"
 
@@ -163,7 +172,7 @@ def main():
         old_sources_list_d = apt_pkg.config.find("Dir::Etc::sourceparts")
         old_cleanup = apt_pkg.config.find("APT::List-Cleanup")
         apt_pkg.init_config()
-        apt_pkg.config.set("Dir::Etc::sourcelist", os.path.abspath("/tmp/tmp-sources.list"))
+        apt_pkg.config.set("Dir::Etc::sourcelist", tmp_sources)
         apt_pkg.config.set("Dir::Etc::sourceparts", "xxx")
         apt_pkg.config.set("APT::List-Cleanup", "0")
         apt_pkg.init_system()
@@ -305,6 +314,7 @@ def main():
         apt_pkg.config.set("Dir::Etc::sourcelist", old_sources_list)
         apt_pkg.config.set("Dir::Etc::sourceparts", old_sources_list_d)
         apt_pkg.config.set("APT::List-Cleanup", old_cleanup)
+        os.unlink(tmp_sources)
 
     def downupgrade(sourceslist):
 
@@ -314,13 +324,10 @@ def main():
 
         aptclean()
 
-        sfile = open("/tmp/tmp-sources.list", "w")
-        sfile.write(sourceslist)
-        sfile.flush()
-        sfile.close()
+        tmp_sources = write_temp_sources(sourceslist)
 
         apt_pkg.init_config()
-        apt_pkg.config.set("Dir::Etc::sourcelist", os.path.abspath("/tmp/tmp-sources.list"))
+        apt_pkg.config.set("Dir::Etc::sourcelist", tmp_sources)
         apt_pkg.config.set("Dir::Etc::sourceparts", "xxx")
         apt_pkg.config.set("APT::List-Cleanup", "0")
         apt_pkg.init_system()
@@ -341,6 +348,7 @@ def main():
                 print("{}".format(e))
 
         cache.fetch_archives()
+        os.unlink(tmp_sources)
 
         # subprocess.call(["apt", "full-upgrade", "-yqd"],
         #                 env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
