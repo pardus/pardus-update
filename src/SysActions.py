@@ -494,26 +494,17 @@ def main():
         if not sources_text or not str(sources_text).strip():
             return False
 
-        blacklisted_terms = [
-            "trusted=yes", "trusted=true",
-            "allow-insecure",
-            "signed-by=",
-            "file://", "copy://", "cdrom://"
-        ]
-
+        # Only plain http(s) lines, like the ones in data/sources.json. A list
+        # of bad words can't cover this: apt reads these options as booleans
+        # (not only yes and true) and has more of them that weaken the checks.
         for line in str(sources_text).splitlines():
 
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
 
-            if not re.match(r"^deb(-src)?\s+", line):
+            if not re.fullmatch(r"deb(-src)?\s+https?://\S+(\s+\S+)+", line):
                 return False
-
-            compact_line = line.lower().replace(" ", "")
-            for term in blacklisted_terms:
-                if term.replace(" ", "") in compact_line:
-                    return False
 
         return True
 
