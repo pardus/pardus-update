@@ -28,7 +28,6 @@ class Package(object):
     def updatecache(self):
         try:
             self.cache = apt.Cache()
-            self.cache.open()
         except:
             return False
         if self.cache.broken_count > 0:

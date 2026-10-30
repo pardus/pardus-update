@@ -109,7 +109,6 @@ def main():
 
         try:
             cache = apt.Cache()
-            cache.open()
         except Exception as e:
             print(f"Could not open apt cache. Aborting. Error: {e}", file=sys.stderr)
             sys.exit(1)
